@@ -10,7 +10,7 @@
  * be both faster and better. ``better'', if your compiler allows
  * cleaner use of such functions by proper use of ``const''.
  *
- * $Id: fptools.h,v 1.5 2002/03/31 20:08:42 root Exp $
+ * $Id: fptools.h,v 1.6 2002/03/31 22:11:58 root Exp $
  */
 
 #ifndef FPTOOLS_H__

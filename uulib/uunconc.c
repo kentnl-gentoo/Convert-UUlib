@@ -54,7 +54,7 @@
 #include <fptools.h>
 #include <uustring.h>
 
-char * uunconc_id = "$Id: uunconc.c,v 1.5 2002/03/31 20:08:42 root Exp $";
+char * uunconc_id = "$Id: uunconc.c,v 1.6 2002/03/31 22:11:58 root Exp $";
 
 /* for braindead systems */
 #ifndef SEEK_SET

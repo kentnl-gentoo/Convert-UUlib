@@ -33,7 +33,7 @@ SetMsgCallback (sub {
 
 SetFileNameCallback sub {
    return unless $_[1]; # skip "Re:"-plies et al.
-   local _$ = $_[0];
+   local $_ = $_[0];
 
    # the following rules are rather effective on some newsgroups,
    # like alt.binaries.games.anime, where non-mime, uuencoded data
