@@ -1,5 +1,14 @@
 Revision history for Perl extension Convert::UUlib.
 
+1.03 Sun Apr 18 22:05:43 CEST 2004
+	- upgrade to uudeview-0.5.20, which supposedly fixes a few buffer
+          overflows. However, judging from the patch these vulnerabilities
+          were not present in the Convert-UUlib version (I might err, though,
+          documentation on the actual exploits is scarce).
+          As every uudeview update usually brings more instability than stability
+          I advise against using this version until it has proven itself
+          to be stable, or 1.02 is proven to contain the same buffer overflows.
+
 1.02 Sun Apr 18 16:47:26 CEST 2004
         - renamed crc32 to uulib_crc32, to work around yet another
           shortcoming in this oh-so-outdated macosx.

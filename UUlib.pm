@@ -5,7 +5,7 @@ use Carp;
 require Exporter;
 require DynaLoader;
 
-$VERSION = "1.02";
+$VERSION = "1.03";
 
 @ISA = qw(Exporter DynaLoader);
 

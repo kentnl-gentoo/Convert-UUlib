@@ -448,7 +448,7 @@ _FP_fgets (char *buf, int n, FILE *stream)
   if (feof (stream))
     return NULL;
 
-  while (--n) {
+  while (--n && !feof (stream)) {
     if ((c = fgetc (stream)) == EOF) {
       if (ferror (stream))
 	return NULL;
@@ -482,10 +482,27 @@ _FP_fgets (char *buf, int n, FILE *stream)
      */
     *buf++ = c;
   }
+
   /*
    * n-1 characters already transferred
    */
+
   *buf = '\0';
+
+  /*
+   * If a line break is coming up, read it
+   */
+
+  if (!feof (stream)) {
+    if ((c = fgetc (stream)) == '\015' && !feof (stream)) {
+      if ((c = fgetc (stream)) != '\012' && !feof (stream)) {
+	ungetc (c, stream);
+      }
+    }
+    else if (c != '\012' && !feof (stream)) {
+      ungetc (c, stream);
+    }
+  }
 
   return obp;
 }

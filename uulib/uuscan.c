@@ -155,7 +155,7 @@ IsHeaderLine (char *data)
 {
   if (data == NULL) return 0;
   if (*data == ':') return 0;
-  while (*data && isalnum (*data)) data++;
+  while (*data && (isalnum (*data) || *data=='-')) data++;
   return (*data == ':') ? 1 : 0;
 }
 
@@ -402,8 +402,10 @@ ParseValue (char *attribute)
 	   *attribute != '\\' &&*attribute != '"' &&
 	   *attribute != '/' && /* *attribute != '[' &&
 	   *attribute != ']' && */ *attribute != '?' &&
-	   *attribute != '=' && length < 255)
+	   *attribute != '=' && length < 255) {
       *ptr++ = *attribute++;
+      length++;
+    }
 
     *ptr = '\0';
   }
@@ -642,12 +644,12 @@ ScanData (FILE *datei, char *fname, int *errcode,
 
   while (!feof (datei)) {
     oldposition = ftell (datei);
-    if (_FP_fgets (line, 299, datei) == NULL)
+    if (_FP_fgets (line, 255, datei) == NULL)
       break;
     if (ferror (datei))
       break;
 
-    line[299] = '\0'; /* For Safety of string functions */
+    line[255] = '\0'; /* For Safety of string functions */
 
     /*
      * Make Busy Polls

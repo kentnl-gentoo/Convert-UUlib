@@ -111,60 +111,6 @@ done
 dnl
 dnl
 dnl
-AC_DEFUN(wi_HPUX_CFLAGS,
-[AC_MSG_CHECKING(if HP-UX ansi C compiler flags are needed)
-AC_REQUIRE([AC_PROG_CC])
-os=`uname -s | tr '[A-Z]' '[a-z]'`
-ac_cv_hpux_flags=no
-if test "$os" = hp-ux ; then
-	if test "$ac_cv_prog_gcc" = yes ; then
-		if test "$CFLAGS" != "" ; then
-			# Shouldn't be in there.
-			CFLAGS=`echo "$CFLAGS" | sed 's/-Aa//g'`
-		fi
-	else
-		# If you're not using gcc, then you better have a cc/c89
-		# that is usable.  If you have the barebones compiler, it
-		# won't work.  The good compiler uses -Aa for the ANSI
-		# compatible stuff.
-		x=`echo $CFLAGS | grep 'Aa' 2>/dev/null`
-		if test "$x" = "" ; then
-			CFLAGS="$CFLAGS -Aa"
-		fi
-		ac_cv_hpux_flags=yes
-	fi
-	# Also add _HPUX_SOURCE to get the extended namespace.
-	x=`echo $CFLAGS | grep '_HPUX_SOURCE' 2>/dev/null`
-	if test "$x" = "" ; then
-		CFLAGS="$CFLAGS -D_HPUX_SOURCE"
-	fi
-fi
-AC_MSG_RESULT($ac_cv_hpux_flags)
-])
-dnl
-dnl
-dnl
-AC_DEFUN(wi_CFLAGS, [AC_REQUIRE([AC_PROG_CC])
-wi_HPUX_CFLAGS
-	if test "$CFLAGS" = "" ; then
-		CFLAGS="-O"
-	elif test "$ac_cv_prog_gcc" = "yes" ; then
-		case "$CFLAGS" in
-			*"-g -O"*)
-				#echo "using -g as default gcc CFLAGS" 1>&6
-				CFLAGS=`echo $CFLAGS | sed 's/-g\ -O/-O/'`
-				;;
-			*"-O -g"*)
-				# Leave the -g, but remove all -O options.
-				#echo "using -g as default gcc CFLAGS" 1>&6
-				CFLAGS=`echo $CFLAGS | sed 's/-O\ -g/-O/'`
-				;;
-		esac
-	fi
-])
-dnl
-dnl
-dnl
 AC_DEFUN(wi_PROTOTYPES, [
 AC_MSG_CHECKING(if the compiler supports function prototypes)
 AC_TRY_COMPILE(,[extern void exit(int status);],[wi_cv_prototypes=yes
