@@ -14,15 +14,23 @@
  * GNU General Public License for more details.
  */
 
-#ifndef UUDEVIEW_H__
-#define UUDEVIEW_H__
+#ifndef __UUDEVIEW_H__
+#define __UUDEVIEW_H__
 
 /*
  * This include file features all the definitions that should
  * be externally visible. This isn't much.
  *
- * $Id: uudeview.h,v 1.15 2001/06/06 18:21:47 fp Exp $
+ * $Id: uudeview.h,v 1.3 2002/03/31 21:42:37 root Exp $
  */
+
+#ifndef _ANSI_ARGS_
+#ifdef PROTOTYPES
+#define _ANSI_ARGS_(c)	c
+#else
+#define _ANSI_ARGS_(c)	()
+#endif
+#endif
 
 /*
  * Message Types
@@ -74,6 +82,7 @@
 #define BH_ENCODED	(4)	/* Binhex encoded   */
 #define PT_ENCODED	(5)	/* Plain-Text encoded (MIME) */
 #define QP_ENCODED	(6)	/* Quoted-Printable (MIME)   */
+#define YENC_ENCODED	(7)	/* yEnc encoded */
 
 /*
  * Option indices for GetOption / SetOption
@@ -177,66 +186,78 @@ typedef struct {
 extern "C" {
 #endif
 
-int	UUEXPORT UUInitialize		(void);
-int	UUEXPORT UUCleanUp		(void);
+int	UUEXPORT UUInitialize		_ANSI_ARGS_((void));
+int	UUEXPORT UUGetOption		_ANSI_ARGS_((int, int *, char *, int));
+int	UUEXPORT UUSetOption		_ANSI_ARGS_((int, int, char *));
+char *	UUEXPORT UUstrerror		_ANSI_ARGS_((int));
+int	UUEXPORT UUSetMsgCallback	_ANSI_ARGS_((void *,
+						     void (*) (void *, 
+							       char *,
+							       int)));
+int	UUEXPORT UUSetBusyCallback	_ANSI_ARGS_((void *,
+						     int (*) (void *,
+							      uuprogress *),
+						     long));
+int	UUEXPORT UUSetFileCallback	_ANSI_ARGS_((void *,
+						     int (*) (void *, char *,
+							      char *, int)));
+int	UUEXPORT UUSetFNameFilter	_ANSI_ARGS_((void *,
+						     char * (*) (void *,
+								 char *)));
+int	UUEXPORT UUSetFileNameCallback	_ANSI_ARGS_((void *,
+						     char * (*) (void *,
+								 char *, char *)));
+char *	UUEXPORT UUFNameFilter		_ANSI_ARGS_((char *));
+int	UUEXPORT UULoadFile		_ANSI_ARGS_((char *, char *, int, int *));
+uulist *UUEXPORT UUGetFileListItem	_ANSI_ARGS_((int));
+int	UUEXPORT UURenameFile		_ANSI_ARGS_((uulist *, char *));
+int	UUEXPORT UUDecodeToTemp		_ANSI_ARGS_((uulist *));
+int	UUEXPORT UURemoveTemp		_ANSI_ARGS_((uulist *));
+int	UUEXPORT UUDecodeFile		_ANSI_ARGS_((uulist *, char *));
+int	UUEXPORT UUInfoFile		_ANSI_ARGS_((uulist *, void *,
+						     int (*) (void *, 
+							      char *)));
+int	UUEXPORT UUSmerge		_ANSI_ARGS_((int));
+int	UUEXPORT UUCleanUp		_ANSI_ARGS_((void));
 
-int	UUEXPORT UUGetOption		(int, int *, char *, int);
-int	UUEXPORT UUSetOption		(int, int, char *);
-char *	UUEXPORT UUstrerror		(int);
+int	UUEXPORT UUQuickDecode		_ANSI_ARGS_((FILE *, FILE *,
+						     char *, long));
 
-int	UUEXPORT UUSetMsgCallback	(void *, void (*) (void *, char *, int));
-int	UUEXPORT UUSetBusyCallback	(void *, int (*) (void *, uuprogress *), long msecs);
-int	UUEXPORT UUSetFileCallback	(void *, int (*) (void *, char *, char *, int));
-int	UUEXPORT UUSetFNameFilter	(void *, char * (*) (void *, char *));
+int	UUEXPORT UUEncodeMulti		_ANSI_ARGS_((FILE *, FILE *,
+						     char *, int,
+						     char *, char *, int));
+int	UUEXPORT UUEncodePartial	_ANSI_ARGS_((FILE *, FILE *,
+						     char *, int,
+						     char *, char *,
+						     int, int, long));
+int	UUEXPORT UUEncodeToStream	_ANSI_ARGS_((FILE *, FILE *,
+						     char *, int,
+						     char *, int));
+int	UUEXPORT UUEncodeToFile		_ANSI_ARGS_((FILE *, char *, int,
+						     char *, char *, long));
+int	UUEXPORT UUE_PrepSingle		_ANSI_ARGS_((FILE *, FILE *,
+						     char *, int,
+						     char *, int,
+						     char *, char *,
+						     char *, int));
+int	UUEXPORT UUE_PrepPartial	_ANSI_ARGS_((FILE *, FILE *,
+						     char *, int,
+						     char *, int,
+						     int, long, long, char *,
+						     char *, char *, int));
 
-char *	UUEXPORT UUFNameFilter		(char *);
-
-int	UUEXPORT UULoadFile		(char *, char *, int, int *partcount);
-uulist *UUEXPORT UUGetFileListItem	(int);
-int	UUEXPORT UURenameFile		(uulist *, char *);
-int	UUEXPORT UUDecodeToTemp		(uulist *);
-int	UUEXPORT UURemoveTemp		(uulist *);
-int	UUEXPORT UUDecodeFile		(uulist *, char *);
-int	UUEXPORT UUInfoFile		(uulist *, void *, int (*) (void *, char *));
-int	UUEXPORT UUSmerge		(int);
-
-int	UUEXPORT UUQuickDecode		(FILE *, FILE *, char *, long);
-
-int	UUEXPORT UUEncodeMulti		(FILE *, FILE *,
-				         char *, int,
-				         char *, char *, int);
-int	UUEXPORT UUEncodePartial	(FILE *, FILE *,
-				         char *, int,
-				         char *, char *,
-				         int, int, long);
-int	UUEXPORT UUEncodeToStream	(FILE *, FILE *,
-				         char *, int,
-				         char *, int);
-int	UUEXPORT UUEncodeToFile		(FILE *, char *, int,
-				         char *, char *, long);
-int	UUEXPORT UUE_PrepSingle		(FILE *, FILE *,
-				         char *, int,
-				         char *, int,
-				         char *, char *,
-				         char *, int);
-int	UUEXPORT UUE_PrepPartial	(FILE *, FILE *,
-				         char *, int,
-				         char *, int,
-				         int, long, long, char *,
-				         char *, char *, int);
-
-int    UUEXPORT UUE_PrepSingleExt       (FILE *, FILE *,
-                                         char *, int,
-                                         char *, int,
-                                         char *, char *,
-                                         char *, char *,
-                                         int);
-int    UUEXPORT UUE_PrepPartialExt      (FILE *, FILE *,
-                                         char *, int,
-                                         char *, int,
-                                         int, long, long, char *,
-                                         char *, char *, char *,
-                                         int);
+int	UUEXPORT UUE_PrepSingleExt	_ANSI_ARGS_((FILE *, FILE *,
+						     char *, int,
+						     char *, int,
+						     char *, char *,
+						     char *, char *,
+						     int));
+int	UUEXPORT UUE_PrepPartialExt	_ANSI_ARGS_((FILE *, FILE *,
+						     char *, int,
+						     char *, int,
+						     int, long, long, char *,
+						     char *, char *, char *,
+						     int));
 #ifdef __cplusplus
 }
 #endif

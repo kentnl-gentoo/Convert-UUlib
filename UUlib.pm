@@ -6,7 +6,7 @@ require Exporter;
 require DynaLoader;
 use AutoLoader;
 
-$VERSION = 0.201;
+$VERSION = 0.21;
 
 @ISA = qw(Exporter DynaLoader);
 
@@ -27,16 +27,16 @@ $VERSION = 0.201;
 	RET_NOEND RET_NOMEM RET_OK RET_UNSUP
 
 	B64ENCODED BH_ENCODED PT_ENCODED QP_ENCODED
-	XX_ENCODED UU_ENCODED
+	XX_ENCODED UU_ENCODED YENC_ENCODED
 );
 
 @_funcs = qw(
-	Initialize CleanUp GetOption SetOption strerror
-	SetMsgCallback SetBusyCallback SetFileCallback
-	SetFNameFilter FNameFilter LoadFile GetFileListItem
-	RenameFile DecodeToTemp RemoveTemp DecodeFile
-	InfoFile Smerge QuickDecode EncodeMulti EncodePartial
-	EncodeToStream EncodeToFile E_PrepSingle E_PrepPartial
+        Initialize CleanUp GetOption SetOption strerror SetMsgCallback
+        SetBusyCallback SetFileCallback SetFNameFilter SetFileNameCallback
+        FNameFilter LoadFile GetFileListItem RenameFile DecodeToTemp
+        RemoveTemp DecodeFile InfoFile Smerge QuickDecode EncodeMulti
+        EncodePartial EncodeToStream EncodeToFile E_PrepSingle
+        E_PrepPartial
 
         straction strencoding strmsglevel
 );
@@ -64,18 +64,19 @@ sub straction($) {
    return 'encoding'	if $_[0] == &ACT_ENCODING;
    return 'idle'	if $_[0] == &ACT_IDLE;
    return 'scanning'	if $_[0] == &ACT_SCANNING;
-   ();
+   'unknown';
 }
 
 # encoding type -> string mapping
 sub strencoding($) {
+   return 'uuencode'		if $_[0] == &UU_ENCODED;
    return 'base64'		if $_[0] == &B64ENCODED;
+   return 'yenc'		if $_[0] == &YENC_ENCODED;
    return 'binhex'		if $_[0] == &BH_ENCODED;
    return 'plaintext'		if $_[0] == &PT_ENCODED;
    return 'quoted-printable'	if $_[0] == &QP_ENCODED;
    return 'xxencode'		if $_[0] == &XX_ENCODED;
-   return 'uuencode'		if $_[0] == &UU_ENCODED;
-   ();
+   'unknown';
 }
 
 sub strmsglevel($) {
@@ -85,7 +86,7 @@ sub strmsglevel($) {
    return 'error'	if $_[0] == &MSG_ERROR;
    return 'panic'	if $_[0] == &MSG_PANIC;
    return 'fatal'	if $_[0] == &MSG_FATAL;
-   ();
+   'unknown';
 }
 
 1;
@@ -227,8 +228,8 @@ Error/Result codes:
 
 Encoding types:
 
-  B64ENCODED BH_ENCODED PT_ENCODED
-  QP_ENCODED XX_ENCODED UU_ENCODED
+  B64ENCODED BH_ENCODED PT_ENCODED QP_ENCODED XX_ENCODED
+  UU_ENCODED YENC_ENCODED
 
 =head1 Exported functions
 
@@ -299,6 +300,43 @@ Functions below not documented and not very well tested:
   int	  EncodeToFile		() ;
   int	  E_PrepSingle		() ;
   int	  E_PrepPartial	() ;
+
+=head2 EXTENSION FUNCTIONS
+
+Functions found in this module but not documented in the uulib documentation:
+
+=over 4
+
+=item SetFileNameCallback $cb
+
+Sets (or queries) the FileNameCallback, which is called whenever the
+decoding library can't find a filename and wants to extract a filename
+from the subject line of a posting. The callback will be called with
+two arguments, the subject line and the current candidate for the
+filename. The latter argument can be C<undef>, which means that no
+filename could be found (and likely no one exists, so it is safe to also
+return C<undef> in this case). If it doesn't return anything (not even
+C<undef>!), then nothing happens, so this is a no-op callback:
+
+   sub cb {
+      return ();
+   }
+
+If it returns C<undef>, then this indicates that no filename could be
+found. In all other cases, the return value is taken to be the filename.
+
+This is a slightly more useful callback:
+
+  sub cb {
+     return unless $_[1]; # skip "Re:"-plies et al.
+     my ($subject, $filename) = @_;
+     # if we find some *.rar, take it
+     return $1 if $subject =~ /(\w+\.rar)/;
+     # otherwise just pass what we have
+     return ();
+  }
+
+=back
 
 =head1 AUTHOR
 

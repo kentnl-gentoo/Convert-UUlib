@@ -31,6 +31,25 @@ SetMsgCallback (sub {
    print uc(strmsglevel($_[1])),": $msg\n";
 });
 
+SetFileNameCallback sub {
+   return unless $_[1]; # skip "Re:"-plies et al.
+   local _$ = $_[0];
+
+   # the following rules are rather effective on some newsgroups,
+   # like alt.binaries.games.anime, where non-mime, uuencoded data
+   # is very common
+
+   # if we find some *.rar, take it
+   return $1 if /(\S+\.(?:[rstuvwxyz]\d\d|rar))\s/i;
+
+   # - filename.par (04/55)
+   return $1 if /- "?(\S+\.\S+?)"? (:yenc )?\(\d+\/\d+\)/i;
+
+   # otherwise just pass what we have
+   return ();
+};
+
+
 for(<uusrc/*>) {
    my($retval,$count)=LoadFile ($_,$_,1);
    print "file($_), status(",strerror($retval),") parts($count)\n";

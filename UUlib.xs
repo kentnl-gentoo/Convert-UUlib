@@ -84,6 +84,8 @@ constant(char *name)
 	if (strEQ(name, "UU_ENCODED")) return UU_ENCODED;
     case 'X':
 	if (strEQ(name, "XX_ENCODED")) return XX_ENCODED;
+    case 'Y':
+	if (strEQ(name, "YENC_ENCODED")) return YENC_ENCODED;
     }
     errno = EINVAL;
     return 0;
@@ -144,7 +146,7 @@ static char *uu_fnamefilter_callback (void *cb, char *fname)
   if (count != 1)
     croak ("fnamefilter perl callback returned more than one argument");
 
-  FP_free(str); str = FP_strdup (POPp);
+  _FP_free(str); str = _FP_strdup (POPp);
 
   PUTBACK; FREETMPS; LEAVE;
 
@@ -179,7 +181,52 @@ static int uu_file_callback (void *cb, char *id, char *fname, int retrieve)
   return retval;
 }
 
-static SV *uu_msg_sv, *uu_busy_sv, *uu_file_sv, *uu_fnamefilter_sv;
+static char *uu_filename_callback (void *cb, char *subject, char *filename)
+{
+  dSP;
+  int count;
+  SV *retval;
+  STRLEN dc;
+  
+  ENTER; SAVETMPS; PUSHMARK(SP); EXTEND(SP,3);
+
+  PUSHs(sv_2mortal(newSVpv(subject, 0)));
+  PUSHs(filename ? sv_2mortal(newSVpv(filename, 0)) : &PL_sv_undef);
+
+  PUTBACK; count = perl_call_sv ((SV *)cb, G_ARRAY); SPAGAIN;
+
+  if (count > 1)
+    croak ("filenamecallback perl callback returned more than one argument");
+
+  if (count)
+    {
+      _FP_free (filename);
+
+      retval = POPs;
+
+      if (SvOK (retval))
+        {
+          STRLEN len;
+          char *fn = SvPV (retval, len);
+
+          filename = malloc (len + 1);
+
+          if (filename)
+            {
+              memcpy (filename, fn, len);
+              filename[len] = 0;
+            }
+        }
+      else
+        filename = 0;
+    }
+
+  PUTBACK; FREETMPS; LEAVE;
+
+  return filename;
+}
+
+static SV *uu_msg_sv, *uu_busy_sv, *uu_file_sv, *uu_fnamefilter_sv, *uu_filename_sv;
 
 #define FUNC_CB(cb) (void *)(sv_setsv (cb ## _sv, func), cb ## _sv), func ? cb ## _callback : NULL
 
@@ -317,6 +364,12 @@ UUSetFNameFilter(func=0)
 	SV *	func
 	CODE:
 	UUSetFNameFilter (FUNC_CB(uu_fnamefilter));
+
+void
+UUSetFileNameCallback(func=0)
+	SV *	func
+	CODE:
+	UUSetFileNameCallback (FUNC_CB(uu_filename));
 
 char *
 UUFNameFilter(fname)
@@ -499,8 +552,8 @@ filename(li,newfilename=0)
         CODE:
         if (newfilename)
 	  {
-            FP_free (li->filename);
-	    li->filename = FP_strdup (newfilename);
+            _FP_free (li->filename);
+	    li->filename = _FP_strdup (newfilename);
           }
         RETVAL = li->filename;
         OUTPUT:
@@ -575,8 +628,9 @@ parts(li)
         }
 
 BOOT:
-uu_msg_sv		= newSVsv(&PL_sv_undef);
-uu_busy_sv		= newSVsv(&PL_sv_undef);
-uu_file_sv		= newSVsv(&PL_sv_undef);
-uu_fnamefilter_sv	= newSVsv(&PL_sv_undef);
+  uu_msg_sv		= newSVsv(&PL_sv_undef);
+  uu_busy_sv		= newSVsv(&PL_sv_undef);
+  uu_file_sv		= newSVsv(&PL_sv_undef);
+  uu_fnamefilter_sv	= newSVsv(&PL_sv_undef);
+  uu_filename_sv	= newSVsv(&PL_sv_undef);
 

@@ -1,7 +1,7 @@
 
 /*
  * needed for auto configuration
- * $Id: acconfig.h,v 1.2 2001/06/12 03:20:44 root Exp $
+ * $Id: acconfig.h,v 1.5 2002/03/31 20:08:42 root Exp $
  */
 
 /*
@@ -43,9 +43,14 @@
 #undef HAVE_UMASK
 
 /*
+ * define if your system has mkstemp
+ */
+#undef HAVE_MKSTEMP
+
+/*
  * Replacement functions.
- * #define strerror FP_strerror
- * #define tempnam  FP_tempnam
+ * #define strerror _FP_strerror
+ * #define tempnam  _FP_tempnam
  * if you don't have these functions
  */
 #undef strerror

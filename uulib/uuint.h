@@ -22,7 +22,7 @@
  * of UUDeview. It should not be included from other packages. Subject to
  * change without notice. Do not depend on anything here.
  *
- * $Id: uuint.h,v 1.2 2001/06/11 20:42:37 root Exp $
+ * $Id: uuint.h,v 1.4 2002/03/31 21:42:37 root Exp $
  */
 
 /*
@@ -177,6 +177,7 @@ extern void *uu_MsgCBArg;
 extern void *uu_BusyCBArg;
 extern void *uu_FileCBArg;
 extern void *uu_FFCBArg;
+extern void *uu_FNCBArg;
 
 /*
  * variables
@@ -254,10 +255,11 @@ extern char *uunconc_BHxlat, *uunconc_save;
 extern "C" {
 #endif
 
-extern void   (*uu_MsgCallback)  (void *, char *, int);
-extern int    (*uu_BusyCallback) (void *, uuprogress *);
-extern int    (*uu_FileCallback) (void *, char *, char *, int);
-extern char * (*uu_FNameFilter)  (void *, char *);
+extern void   (*uu_MsgCallback)     (void *, char *, int);
+extern int    (*uu_BusyCallback)    (void *, uuprogress *);
+extern int    (*uu_FileCallback)    (void *, char *, char *, int);
+extern char * (*uu_FNameFilter)     (void *, char *);
+extern char * (*uu_FileNameCallback)(void *, char *, char *);
 
 /*
  * Functions from uulib.c that aren't defined in <uudeview.h>

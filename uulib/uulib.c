@@ -81,7 +81,7 @@
 #include <fptools.h>
 #include <uustring.h>
 
-char * uulib_id = "$Id: uulib.c,v 1.4 2001/06/12 09:56:11 root Exp $";
+char * uulib_id = "$Id: uulib.c,v 1.7 2002/03/31 21:42:37 root Exp $";
 
 #ifdef SYSTEM_WINDLL
 BOOL _export WINAPI 
@@ -114,15 +114,17 @@ DllEntryPoint (HINSTANCE hInstance, DWORD seginfo,
  * Callback functions and their opaque arguments
  */
 
-void   (*uu_MsgCallback)  (void *, char *, int)         = NULL;
-int    (*uu_BusyCallback) (void *, uuprogress *)        = NULL;
-int    (*uu_FileCallback) (void *, char *, char *, int) = NULL;
-char * (*uu_FNameFilter)  (void *, char *)              = NULL;
-
+void   (*uu_MsgCallback)     (void *, char *, int)         = NULL;
+int    (*uu_BusyCallback)    (void *, uuprogress *)        = NULL;
+int    (*uu_FileCallback)    (void *, char *, char *, int) = NULL;
+char * (*uu_FNameFilter)     (void *, char *)              = NULL;
+char * (*uu_FileNameCallback)(void *, char *, char *);
+;
 void *uu_MsgCBArg  = NULL;
 void *uu_BusyCBArg = NULL;
 void *uu_FileCBArg = NULL;
 void *uu_FFCBArg   = NULL;
+void *uu_FNCBArg;
 
 /*
  * Global variables
@@ -233,22 +235,22 @@ static allomap toallocate[] = {
   { &uuestr_itemp,       256 },  /* from uuencode.c:UUEncodeStream() */
   { &uuestr_otemp,      1024 },
   { &uulib_msgstring,   1024 },  /* from uulib.c:UUMessage() */
-  { &uuncdl_fulline,   256+4 },  /* from uunconc.c:UUDecodeLine(). +4 is for leftover parts */
-  { &uuncdp_oline,     4*257 },  /* from uunconc.c:UUDecodePart() */
+  { &uuncdl_fulline,     300 },  /* from uunconc.c:UUDecodeLine() */
+  { &uuncdp_oline,      1200 },  /* from uunconc.c:UUDecodePart() */
   { &uunconc_UUxlat,     256 * sizeof (int) },  /* from uunconc.c:toplevel */
   { &uunconc_UUxlen,      64 * sizeof (int) },
   { &uunconc_B64xlat,    256 * sizeof (int) },
   { &uunconc_XXxlat,     256 * sizeof (int) },
   { &uunconc_BHxlat,     256 * sizeof (int) },
-  { &uunconc_save,     3*256 },  /* from uunconc.c:decoding buffer */
+  { &uunconc_save,     3*300 },  /* from uunconc.c:decoding buffer */
   { &uuscan_shlline,    1024 },  /* from uuscan.c:ScanHeaderLine() */
-  { &uuscan_pvvalue,     256 },  /* from uuscan.c:ParseValue() */
-  { &uuscan_phtext,      256 },  /* from uuscan.c:ParseHeader() */
-  { &uuscan_sdline,      256 },  /* from uuscan.c:ScanData() */
-  { &uuscan_sdbhds1,     256 },
-  { &uuscan_sdbhds2,     256 },
-  { &uuscan_spline,      256 },  /* from uuscan.c:ScanPart() */
-  { &uuutil_bhwtmp,      256 },  /* from uuutil.c:UUbhwrite() */
+  { &uuscan_pvvalue,     300 },  /* from uuscan.c:ParseValue() */
+  { &uuscan_phtext,      300 },  /* from uuscan.c:ParseHeader() */
+  { &uuscan_sdline,      300 },  /* from uuscan.c:ScanData() */
+  { &uuscan_sdbhds1,     300 },
+  { &uuscan_sdbhds2,     300 },
+  { &uuscan_spline,      300 },  /* from uuscan.c:ScanPart() */
+  { &uuutil_bhwtmp,      300 },  /* from uuutil.c:UUbhwrite() */
   { NULL, 0 }
 };
 
@@ -392,7 +394,7 @@ UUInitialize (void)
        * areas (uulib_msgstring) in UUMessage()
        */
       for (aiter=toallocate; aiter->ptr; aiter++) {
-	FP_free (*(aiter->ptr));
+	_FP_free (*(aiter->ptr));
       }
       return UURET_NOMEM;
     }
@@ -418,7 +420,7 @@ UUGetOption (int option, int *ivalue, char *cvalue, int clength)
 
   switch (option) {
   case UUOPT_VERSION:
-    FP_strncpy (cvalue, uulibversion, clength);
+    _FP_strncpy (cvalue, uulibversion, clength);
     result = 0;
     break;
   case UUOPT_FAST:
@@ -458,7 +460,7 @@ UUGetOption (int option, int *ivalue, char *cvalue, int clength)
     result = uu_overwrite;
     break;
   case UUOPT_SAVEPATH:
-    FP_strncpy (cvalue, uusavepath, clength);
+    _FP_strncpy (cvalue, uusavepath, clength);
     result = 0;
     break;
   case UUOPT_PROGRESS:
@@ -486,7 +488,7 @@ UUGetOption (int option, int *ivalue, char *cvalue, int clength)
     result = uu_tinyb64;
     break;
   case UUOPT_ENCEXT:
-    FP_strncpy (cvalue, uuencodeext, clength);
+    _FP_strncpy (cvalue, uuencodeext, clength);
     result = 0;
     break;
   case UUOPT_REMOVE:
@@ -532,8 +534,8 @@ UUSetOption (int option, int ivalue, char *cvalue)
     uu_overwrite      = ivalue;
     break;
   case UUOPT_SAVEPATH:
-    FP_free (uusavepath);
-    uusavepath = FP_strdup (cvalue);
+    _FP_free (uusavepath);
+    uusavepath = _FP_strdup (cvalue);
     break;
   case UUOPT_IGNMODE:
     uu_ignmode = ivalue;
@@ -548,8 +550,8 @@ UUSetOption (int option, int ivalue, char *cvalue)
     uu_tinyb64 = ivalue;
     break;
   case UUOPT_ENCEXT:
-    FP_free (uuencodeext);
-    uuencodeext = FP_strdup (cvalue);
+    _FP_free (uuencodeext);
+    uuencodeext = _FP_strdup (cvalue);
     break;
   case UUOPT_REMOVE:
     uu_remove_input = ivalue;
@@ -611,6 +613,16 @@ UUSetFNameFilter (void *opaque,
 {
   uu_FNameFilter = func;
   uu_FFCBArg     = opaque;
+
+  return UURET_OK;
+}
+
+int UUEXPORT
+UUSetFileNameCallback (void *opaque,
+		       char * (*func) (void *, char *, char *))
+{
+  uu_FileNameCallback = func;
+  uu_FNCBArg          = opaque;
 
   return UURET_OK;
 }
@@ -692,10 +704,10 @@ UULoadFile (char *filename, char *fileid, int delflag, int *partcount)
       UUMessage (uulib_id, __LINE__, UUMSG_WARNING,
 		 uustring (S_OUT_OF_MEMORY), sizeof (itbd));
     }
-    else if ((killem->fname = FP_strdup (filename)) == NULL) {
+    else if ((killem->fname = _FP_strdup (filename)) == NULL) {
       UUMessage (uulib_id, __LINE__, UUMSG_WARNING,
 		 uustring (S_OUT_OF_MEMORY), strlen(filename)+1);
-      FP_free (killem);
+      _FP_free (killem);
     }
     else {
       killem->NEXT = ftodel;
@@ -709,7 +721,7 @@ UULoadFile (char *filename, char *fileid, int delflag, int *partcount)
   progress.fsize    = (long) ((finfo.st_size>0)?finfo.st_size:-1);
   progress.percent  = 0;
   progress.foffset  = 0;
-  FP_strncpy (progress.curfile,
+  _FP_strncpy (progress.curfile,
 	       (strlen(filename)>255)?
 	       (filename+strlen(filename)-255):filename,
 	       256);
@@ -956,7 +968,7 @@ UUDecodeFile (uulist *thefile, char *destname)
     }
 
   progress.action   = 0;
-  FP_strncpy (progress.curfile,
+  _FP_strncpy (progress.curfile,
 	       (strlen(uugen_fnbuffer)>255)?
 	       (uugen_fnbuffer+strlen(uugen_fnbuffer)-255):uugen_fnbuffer,
 	       256);
@@ -1038,7 +1050,7 @@ UUDecodeFile (uulist *thefile, char *destname)
   }
 
 skip_copy:
-  FP_free (thefile->binfile);
+  _FP_free (thefile->binfile);
   thefile->binfile = NULL;
   thefile->state  &= ~UUFILE_TMPFILE;
   thefile->state  |=  UUFILE_DECODED;
@@ -1087,7 +1099,7 @@ UUInfoFile (uulist *thefile, void *opaque,
 		 strerror (uu_errno=errno));
       return UURET_IOERR;
     }
-    FP_strncpy (uugen_fnbuffer, thefile->thisfile->data->sfname, 1024);
+    _FP_strncpy (uugen_fnbuffer, thefile->thisfile->data->sfname, 1024);
   }
 
   /*
@@ -1099,7 +1111,7 @@ UUInfoFile (uulist *thefile, void *opaque,
 
   while (!feof (inpfile) && 
 	 (uu_fast_scanning || ftell(inpfile) < maxpos)) {
-    if (FP_fgets (uugen_inbuffer, 511, inpfile) == NULL)
+    if (_FP_fgets (uugen_inbuffer, 511, inpfile) == NULL)
       break;
     uugen_inbuffer[511] = '\0';
 
@@ -1150,14 +1162,14 @@ UURenameFile (uulist *thefile, char *newname)
 
   oldname = thefile->filename;
 
-  if ((thefile->filename = FP_strdup (newname)) == NULL) {
+  if ((thefile->filename = _FP_strdup (newname)) == NULL) {
     UUMessage (uulib_id, __LINE__, UUMSG_ERROR,
 	       uustring (S_NOT_RENAME),
 	       oldname, newname);
     thefile->filename = oldname;
     return UURET_NOMEM;
   }
-  FP_free (oldname);
+  _FP_free (oldname);
   return UURET_OK;
 }
 
@@ -1174,7 +1186,7 @@ UURemoveTemp (uulist *thefile)
 		 thefile->binfile,
 		 strerror (uu_errno = errno));
     }
-    FP_free (thefile->binfile);
+    _FP_free (thefile->binfile);
     thefile->binfile = NULL;
     thefile->state  &= ~UUFILE_TMPFILE;
   }
@@ -1199,10 +1211,10 @@ UUCleanUp (void)
 		 uustring (S_TMP_NOT_REMOVED),
 		 iter->fname, strerror (uu_errno = errno));
     }
-    FP_free (iter->fname);
+    _FP_free (iter->fname);
     ptr  = iter;
     iter = iter->NEXT;
-    FP_free (ptr);
+    _FP_free (ptr);
   }
 
   ftodel = NULL;
@@ -1234,9 +1246,9 @@ UUCleanUp (void)
   UUkilllist (UUGlobalFileList);
   UUGlobalFileList = NULL;
 
-  FP_free (uusavepath);
-  FP_free (uuencodeext);
-  FP_free (sstate.source);
+  _FP_free (uusavepath);
+  _FP_free (uuencodeext);
+  _FP_free (sstate.source);
 
   uusavepath  = NULL;
   uuencodeext = NULL;
@@ -1249,7 +1261,7 @@ UUCleanUp (void)
   while (mssdepth) {
     mssdepth--;
     UUkillheaders (&(multistack[mssdepth].envelope));
-    FP_free (multistack[mssdepth].source);
+    _FP_free (multistack[mssdepth].source);
   }
 
   /*
@@ -1257,7 +1269,7 @@ UUCleanUp (void)
    */
 
   for (aiter=toallocate; aiter->ptr; aiter++) {
-    FP_free (*(aiter->ptr));
+    _FP_free (*(aiter->ptr));
     *(aiter->ptr) = NULL;
   }
 

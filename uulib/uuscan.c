@@ -57,7 +57,7 @@
 #include <fptools.h>
 #include <uustring.h>
 
-char * uuscan_id = "$Id: uuscan.c,v 1.3 2001/08/07 13:38:38 root Exp $";
+char * uuscan_id = "$Id: uuscan.c,v 1.5 2002/03/31 20:08:42 root Exp $";
 
 /*
  * Header fields we recognize as such. See RFC822. We add "From ",
@@ -162,13 +162,13 @@ ScanHeaderLine (FILE *datei, char *initial)
   int hadcr;
 
   if (initial) {
-    FP_strncpy (uuscan_shlline, initial, 1024);
+    _FP_strncpy (uuscan_shlline, initial, 1024);
   }
   else {
     /* read first line */
     if (feof (datei) || ferror (datei))
       return NULL;
-    if (FP_fgets (uuscan_shlline, 1023, datei) == NULL)
+    if (_FP_fgets (uuscan_shlline, 1023, datei) == NULL)
       return NULL;
     uuscan_shlline[1023] = '\0';
   }
@@ -221,7 +221,7 @@ ScanHeaderLine (FILE *datei, char *initial)
 
     /* read next line */
     curpos = ftell (datei);
-    if (FP_fgets (uugen_inbuffer, 255, datei) == NULL)
+    if (_FP_fgets (uugen_inbuffer, 255, datei) == NULL)
       break;
     uugen_inbuffer[255] = '\0';
 
@@ -230,7 +230,7 @@ ScanHeaderLine (FILE *datei, char *initial)
       break;
     }
 
-    FP_strncpy (ptr, uugen_inbuffer, 1024-llength);
+    _FP_strncpy (ptr, uugen_inbuffer, 1024-llength);
 
     /*
      * see if line was terminated with CR. Otherwise, it continues ...
@@ -341,88 +341,88 @@ ParseHeader (headers *theheaders, char *line)
   if (line == NULL)
     return theheaders;
 
-  if (FP_strnicmp (line, "From:", 5) == 0) {
+  if (_FP_strnicmp (line, "From:", 5) == 0) {
     if (theheaders->from) return theheaders;
     variable = &theheaders->from;
     value    = line+5;
     delimit  = 0;
   }
-  else if (FP_strnicmp (line, "Subject:", 8) == 0) {
+  else if (_FP_strnicmp (line, "Subject:", 8) == 0) {
     if (theheaders->subject) return theheaders;
     variable = &theheaders->subject;
     value    = line+8;
     delimit  = 0;
   }
-  else if (FP_strnicmp (line, "To:", 3) == 0) {
+  else if (_FP_strnicmp (line, "To:", 3) == 0) {
     if (theheaders->rcpt) return theheaders;
     variable = &theheaders->rcpt;
     value    = line+3;
     delimit  = 0;
   }
-  else if (FP_strnicmp (line, "Date:", 5) == 0) {
+  else if (_FP_strnicmp (line, "Date:", 5) == 0) {
     if (theheaders->date) return theheaders;
     variable = &theheaders->date;
     value    = line+5;
     delimit  = 0;
   }
-  else if (FP_strnicmp (line, "Mime-Version:", 13) == 0) {
+  else if (_FP_strnicmp (line, "Mime-Version:", 13) == 0) {
     if (theheaders->mimevers) return theheaders;
     variable = &theheaders->mimevers;
     value    = line+13;
     delimit  = 0;
   }
-  else if (FP_strnicmp (line, "Content-Type:", 13) == 0) {
+  else if (_FP_strnicmp (line, "Content-Type:", 13) == 0) {
     if (theheaders->ctype) return theheaders;
     variable = &theheaders->ctype;
     value    = line+13;
     delimit  = ';';
 
     /* we can probably extract more information */
-    if ((ptr = FP_stristr (line, "boundary")) != NULL) {
+    if ((ptr = _FP_stristr (line, "boundary")) != NULL) {
       if ((thenew = ParseValue (ptr))) {
 	if (theheaders->boundary) free (theheaders->boundary);
-	theheaders->boundary = FP_strdup (thenew);
+	theheaders->boundary = _FP_strdup (thenew);
       }
     }
-    if ((ptr = FP_stristr (line, "name")) != NULL) {
+    if ((ptr = _FP_stristr (line, "name")) != NULL) {
       if ((thenew = ParseValue (ptr))) {
 	if (theheaders->fname) free (theheaders->fname);
-	theheaders->fname = FP_strdup (thenew);
+	theheaders->fname = _FP_strdup (thenew);
       }
     }
-    if ((ptr = FP_stristr (line, "id")) != NULL) {
+    if ((ptr = _FP_stristr (line, "id")) != NULL) {
       if ((thenew = ParseValue (ptr))) {
 	if (theheaders->mimeid) free (theheaders->mimeid);
-	theheaders->mimeid = FP_strdup (thenew);
+	theheaders->mimeid = _FP_strdup (thenew);
       }
     }
-    if ((ptr = FP_stristr (line, "number")) != NULL) {
+    if ((ptr = _FP_stristr (line, "number")) != NULL) {
       if ((thenew = ParseValue (ptr))) {
 	theheaders->partno = atoi (thenew);
       }
     }
-    if ((ptr = FP_stristr (line, "total")) != NULL) {
+    if ((ptr = _FP_stristr (line, "total")) != NULL) {
       if ((thenew = ParseValue (ptr))) {
 	theheaders->numparts = atoi (thenew);
       }
     }
   }
-  else if (FP_strnicmp (line, "Content-Transfer-Encoding:", 26) == 0) {
+  else if (_FP_strnicmp (line, "Content-Transfer-Encoding:", 26) == 0) {
     if (theheaders->ctenc) return theheaders;
     variable = &theheaders->ctenc;
     value    = line+26;
     delimit  = ';';
   }
-  else if (FP_strnicmp (line, "Content-Disposition:", 20) == 0) {
+  else if (_FP_strnicmp (line, "Content-Disposition:", 20) == 0) {
     /*
      * Some encoders mention the original filename as parameter to
      * Content-Type, others as parameter to Content-Disposition. We
      * do prefer the first solution, but accept this situation, too.
      * TODO: Read RFC1806
      */
-    if ((ptr = FP_stristr (line, "name")) != NULL) {
+    if ((ptr = _FP_stristr (line, "name")) != NULL) {
       if (theheaders->fname == NULL && (thenew=ParseValue(ptr)) != NULL) {
-	theheaders->fname = FP_strdup (thenew);
+	theheaders->fname = _FP_strdup (thenew);
       }
     }
     variable = NULL;
@@ -431,7 +431,7 @@ ParseHeader (headers *theheaders, char *line)
     /*
      * nothing interesting
      */
-    variable = NULL;
+    return theheaders;
   }
 
   /*
@@ -453,7 +453,7 @@ ParseHeader (headers *theheaders, char *line)
     }
     *ptr = '\0';
 
-    if ((*variable = FP_strdup (uuscan_phtext)) == NULL)
+    if ((*variable = _FP_strdup (uuscan_phtext)) == NULL)
       return NULL;
   }
 
@@ -470,7 +470,7 @@ IsKnownHeader (char *line)
   char **iter = knownmsgheaders;
 
   while (iter && *iter) {
-    if (FP_strnicmp (line, *iter, strlen (*iter)) == 0)
+    if (_FP_strnicmp (line, *iter, strlen (*iter)) == 0)
       return 1;
     iter++;
   }
@@ -478,7 +478,7 @@ IsKnownHeader (char *line)
   iter = knownmimeheaders;
 
   while (iter && *iter) {
-    if (FP_strnicmp (line, *iter, strlen (*iter)) == 0)
+    if (_FP_strnicmp (line, *iter, strlen (*iter)) == 0)
       return 2;
     iter++;
   }
@@ -528,10 +528,11 @@ ScanData (FILE *datei, char *fname, int *errcode,
   int isb64[10], isuue[10], isxxe[10], isbhx[10], iscnt;
   int cbb64, cbuue, cbxxe, cbbhx;
   int bhflag=0, vflag, haddh=0, hadct=0;
-  int bhrpc=0, bhnf=0, c, hcount, lcount, blen;
+  int bhrpc=0, bhnf=0, c, hcount, lcount, blen=0;
   int encoding=0, dflag=0, ctline=42;
   int dontcare=0, hadnl=0;
-  long preheaders, oldposition;
+  long preheaders=0, oldposition;
+  long yefilesize=0, yepartends=0;
   size_t dcc, bhopc;
 
   blen = 0; preheaders = 0; /* calm down gcc */
@@ -557,12 +558,12 @@ ScanData (FILE *datei, char *fname, int *errcode,
 
   while (!feof (datei)) {
     oldposition = ftell (datei);
-    if (FP_fgets (line, 255, datei) == NULL)
+    if (_FP_fgets (line, 299, datei) == NULL)
       break;
     if (ferror (datei))
       break;
 
-    line[255] = '\0'; /* For Safety of string functions */
+    line[299] = '\0'; /* For Safety of string functions */
 
     /*
      * Make Busy Polls
@@ -632,9 +633,9 @@ ScanData (FILE *datei, char *fname, int *errcode,
       break;
     }
     if (boundary != NULL && line[0] == 'C' && line[1] == 'o' &&
-	FP_strnicmp (line, "Content-Type:", 13) == 0) {
+	_FP_strnicmp (line, "Content-Type:", 13) == 0) {
       ptr = ScanHeaderLine (datei, line);
-      p2  = (ptr)?FP_stristr(ptr,"boundary"):NULL;
+      p2  = (ptr)?_FP_stristr(ptr,"boundary"):NULL;
       p3  = (p2)?ParseValue(p2):NULL;
 
       if (p3 && strcmp (p3, boundary) == 0) {
@@ -647,7 +648,7 @@ ScanData (FILE *datei, char *fname, int *errcode,
     }
 
     if (strncmp      (line, "begin ",       6) == 0 ||
-	FP_strnicmp (line, "<pre>begin ", 11) == 0) {
+	_FP_strnicmp (line, "<pre>begin ", 11) == 0) {
       if ((result->begin || result->end ||
 	   result->uudet == B64ENCODED ||
 	   result->uudet == BH_ENCODED) && !uu_more_mime) {
@@ -668,8 +669,8 @@ ScanData (FILE *datei, char *fname, int *errcode,
       /*
        * We may have picked up a filename from a uuenview-style header
        */
-      FP_free (result->filename);
-      result->filename = FP_strdup (ptr);
+      _FP_free (result->filename);
+      result->filename = _FP_strdup (ptr);
       result->begin    = 1;
 
       while (isspace (result->filename[strlen(result->filename)-1]))
@@ -678,7 +679,9 @@ ScanData (FILE *datei, char *fname, int *errcode,
       continue;
     }
 
-    if ((strncmp (line, "end", 3) == 0) && result->uudet != BH_ENCODED) {
+    if ((strncmp (line, "end", 3) == 0) &&
+	result->uudet != BH_ENCODED &&
+	result->uudet != YENC_ENCODED) {
       if (result->uudet == B64ENCODED && result->begin)
 	result->uudet = XX_ENCODED;
 
@@ -696,13 +699,14 @@ ScanData (FILE *datei, char *fname, int *errcode,
      * Detect a UUDeview-Style header
      */
 
-    if (FP_strnicmp (line, "_=_ Part ", 9) == 0) {
+    if (_FP_strnicmp (line, "_=_ Part ", 9) == 0 &&
+	result->uudet != YENC_ENCODED) {
       if (result->uudet) {
 	fseek (datei, oldposition, SEEK_SET);
 	break;
       }
       result->partno = atoi (line + 8);
-      if ((ptr = FP_stristr (line, "of file ")) != NULL) {
+      if ((ptr = _FP_stristr (line, "of file ")) != NULL) {
 	ptr += 8;
 	while (isspace (*ptr)) ptr++;
 	p2 = ptr;
@@ -712,13 +716,13 @@ ScanData (FILE *datei, char *fname, int *errcode,
 	  p2++;
 	c = *p2; *p2 = '\0';
 	if (p2 != ptr && result->filename == NULL)
-	  result->filename = FP_strdup (ptr);
+	  result->filename = _FP_strdup (ptr);
 	else if (p2 - ptr > 5 && strchr (ptr, '.') != NULL) {
 	  /*
 	   * This file name looks good, too. Let's use it
 	   */
-	  FP_free (result->filename);
-	  result->filename = FP_strdup (ptr);
+	  _FP_free (result->filename);
+	  result->filename = _FP_strdup (ptr);
 	}
 	*p2 = c;
       }
@@ -728,9 +732,10 @@ ScanData (FILE *datei, char *fname, int *errcode,
      * Some reduced MIME handling. Only use if boundary == NULL. Also
      * accept the "X-Orcl-Content-Type" used by some braindead program.
      */
-    if (boundary == NULL && !ismime && !uu_more_mime) {
-      if (FP_strnicmp (line, "Content-Type", 12) == 0 ||
-	  FP_strnicmp (line, "X-Orcl-Content-Type", 19) == 0) {
+    if (boundary == NULL && !ismime && !uu_more_mime &&
+	result->uudet != YENC_ENCODED) {
+      if (_FP_strnicmp (line, "Content-Type", 12) == 0 ||
+	  _FP_strnicmp (line, "X-Orcl-Content-Type", 19) == 0) {
 	/*
 	 * We use Content-Type to mark a new attachment and split the file.
 	 * However, we do not split if we haven't found anything encoded yet.
@@ -745,35 +750,35 @@ ScanData (FILE *datei, char *fname, int *errcode,
 	  while (!isspace (*p2) && *p2 != ';') p2++;
 	  c = *p2; *p2 = '\0';
 	  if (p2 != ptr) {
-	    FP_free (result->mimetype);
-	    result->mimetype = FP_strdup (ptr);
+	    _FP_free (result->mimetype);
+	    result->mimetype = _FP_strdup (ptr);
 	  }
 	  *p2 = c;
 	}
 	ctline=0;
 	hadct=1;
       }
-      if ((ptr = FP_stristr (line, "number=")) && ctline<4) {
+      if ((ptr = _FP_stristr (line, "number=")) && ctline<4) {
 	ptr += 7; if (*ptr == '"') ptr++;
 	result->partno = atoi (ptr);
       }
-      if ((ptr = FP_stristr (line, "total=")) && ctline<4) {
+      if ((ptr = _FP_stristr (line, "total=")) && ctline<4) {
 	ptr += 6; if (*ptr == '"') ptr++;
 	result->maxpno = atoi (ptr);
       }
-      if ((ptr = FP_stristr (line, "name=")) && ctline<4) {
+      if ((ptr = _FP_stristr (line, "name=")) && ctline<4) {
 	ptr += 5;
 	while (isspace (*ptr)) ptr++;
 	if (*ptr == '"' && *(ptr+1) && (p2 = strchr (ptr+2, '"')) != NULL) {
 	  c = *p2; *p2 = '\0';
-	  FP_free (result->filename);
-	  result->filename = FP_strdup (ptr+1);
+	  _FP_free (result->filename);
+	  result->filename = _FP_strdup (ptr+1);
 	  *p2 = c;
 	}
 	else if (*ptr=='\''&&*(ptr+1)&&(p2 = strchr(ptr+2, '\'')) != NULL) {
 	  c = *p2; *p2 = '\0';
-	  FP_free (result->filename);
-	  result->filename = FP_strdup (ptr+1);
+	  _FP_free (result->filename);
+	  result->filename = _FP_strdup (ptr+1);
 	  *p2 = c;
 	}
 	else {
@@ -784,18 +789,18 @@ ScanData (FILE *datei, char *fname, int *errcode,
 	    p2++;
 	  c = *p2; *p2 = '\0';
 	  if (p2 != ptr && result->filename == NULL)
-	    result->filename = FP_strdup (ptr);
+	    result->filename = _FP_strdup (ptr);
 	  else if (p2 - ptr > 5 && strchr (ptr, '.') != NULL) {
 	    /*
 	     * This file name looks good, too. Let's use it
 	     */
-	    FP_free (result->filename);
-	    result->filename = FP_strdup (ptr);
+	    _FP_free (result->filename);
+	    result->filename = _FP_strdup (ptr);
 	  }
 	  *p2 = c;
 	}
       }
-      if ((ptr = FP_stristr (line, "id=")) && ctline<4) {
+      if ((ptr = _FP_stristr (line, "id=")) && ctline<4) {
 	p2 = ptr += 3;
 	if (*p2 == '"') {
 	  p2 = strchr (++ptr, '"');
@@ -807,8 +812,8 @@ ScanData (FILE *datei, char *fname, int *errcode,
 	if (p2 && *p2 && p2!=ptr) {
 	  c = *p2; *p2 = '\0';
 	  if (result->mimeid)
-	    FP_free (result->mimeid);
-	  result->mimeid = FP_strdup (ptr);
+	    _FP_free (result->mimeid);
+	  result->mimeid = _FP_strdup (ptr);
 	  *p2 = c;
 	}
       }
@@ -839,13 +844,13 @@ ScanData (FILE *datei, char *fname, int *errcode,
 
     if (boundary == NULL && !ismime && !uu_more_mime && dflag <= 1 &&
 	line[0] == '-' && line[1] == '-' && strlen(line+2)>10 &&
-	(((ptr = FP_strrstr (line+2, "--")) == NULL) ||
-	 *(ptr+2) != '\012' && *(ptr+2) != '\015') &&
-	FP_strstr (line+2, "_=_") != NULL) {
-      if (FP_fgets (line, 255, datei) == NULL) {
+	(((ptr = _FP_strrstr (line+2, "--")) == NULL) ||
+	 (*(ptr+2) != '\012' && *(ptr+2) != '\015')) &&
+	_FP_strstr (line+2, "_=_") != NULL) {
+      if (_FP_fgets (line, 255, datei) == NULL) {
 	break;
       }
-      if (FP_strnicmp (line, "Content-", 8) == 0) {
+      if (_FP_strnicmp (line, "Content-", 8) == 0) {
 	/*
 	 * Okay, let's do it. This breaks out of ScanData. ScanPart will
 	 * recognize the boundary on the next call and use it.
@@ -853,6 +858,85 @@ ScanData (FILE *datei, char *fname, int *errcode,
 	fseek (datei, oldposition, SEEK_SET);
 	break;
       }
+    }
+
+    /*
+     * Detection for yEnc encoding
+     */
+
+    if (strncmp (line, "=ybegin ", 8) == 0 &&
+	_FP_strstr (line, " size=") != NULL &&
+	_FP_strstr (line, " name=") != NULL) {
+      if ((result->begin || result->end) && !uu_more_mime) {
+	fseek (datei, oldposition, SEEK_SET);
+	break;
+      }
+
+      /*
+       * name continues to the end of the line
+       */
+      
+      _FP_free (result->filename);
+      ptr = _FP_strstr (line, " name=") + 6;
+      result->filename = _FP_strdup (ptr);
+
+      while (isspace (result->filename[strlen(result->filename)-1]))
+	result->filename[strlen(result->filename)-1] = '\0';
+
+      /*
+       * Determine size
+       */
+
+      ptr = _FP_strstr (line, " size=") + 6;
+      yefilesize = atoi (ptr);
+
+      /*
+       * check for multipart file and read =ypart line
+       */
+
+      if ((ptr = _FP_strstr (line, " part=")) != NULL) {
+	result->partno = atoi (ptr + 6);
+
+	if (result->partno == 1) {
+	  result->begin = 1;
+	}
+
+	if (_FP_fgets (line, 255, datei) == NULL) {
+	  break;
+	}
+
+	line[255] = '\0';
+
+	if (strncmp (line, "=ypart ", 7) != 0) {
+	  break;
+	}
+
+	if ((ptr = _FP_strstr (line, " end=")) == NULL) {
+	  break;
+	}
+       
+	yepartends = atoi (ptr + 5);
+      }
+      else {
+	result->partno = 1;
+	result->begin = 1;
+      }
+
+      /*
+       * Don't want auto-detection
+       */
+
+      result->uudet = YENC_ENCODED;
+      continue;
+    }
+
+    if (strncmp (line, "=yend ", 6) == 0 &&
+	result->uudet == YENC_ENCODED) {
+      if (yepartends == 0 || yepartends >= yefilesize) {
+	result->end = 1;
+      }
+      if (!uu_more_mime)
+	break;
     }
 
     /*
@@ -936,13 +1020,13 @@ ScanData (FILE *datei, char *fname, int *errcode,
 	      result->filename==NULL) {
 	    memcpy (bhds1, bhds2+1, (int) bhds2[0]);
 	    bhds1[(int)bhds2[0]]='\0';
-	    result->filename = FP_strdup (bhds1);
+	    result->filename = _FP_strdup (bhds1);
 	    bhnf             = 1;
 	  }
 	  else if (bhdsp-bhds2 >= 256 && bhds2[0]>0) {
 	    memcpy (bhds1, bhds2+1, 255);
 	    bhds1[255]       = '\0';
-	    result->filename = FP_strdup (bhds1);
+	    result->filename = _FP_strdup (bhds1);
 	    bhnf             = 1;
 	  }
 	  else if (bhds2[0] <= 0)
@@ -1017,7 +1101,7 @@ ScanData (FILE *datei, char *fname, int *errcode,
 	    }
 
 	    oldposition = ftell (datei);
-	    if (FP_fgets (line, 255, datei) == NULL)
+	    if (_FP_fgets (line, 255, datei) == NULL)
 	      break;
 	    if (ferror (datei))
 	      break;
@@ -1204,7 +1288,8 @@ ScanData (FILE *datei, char *fname, int *errcode,
     result->begin = result->end = 0;
 
   /* Base64 and BinHex don't have a file mode */
-  if (result->uudet == B64ENCODED || result->uudet == BH_ENCODED)
+  if (result->uudet == B64ENCODED || result->uudet == BH_ENCODED ||
+      result->uudet == YENC_ENCODED)
     result->mode  = 6*64+4*8+4;
 
   /*
@@ -1255,7 +1340,7 @@ ScanData (FILE *datei, char *fname, int *errcode,
     return 2;
   else if (boundary && p3 &&
 	   line[0] == 'C' && line[1] == 'o' &&
-	   FP_strnicmp (line, "Content-Type:", 13) == 0 &&
+	   _FP_strnicmp (line, "Content-Type:", 13) == 0 &&
 	   strcmp (p3, boundary) == 0)
     return 2;
   else if (IsKnownHeader (line))
@@ -1272,8 +1357,8 @@ fileread *
 ScanPart (FILE *datei, char *fname, int *errcode)
 {
   int ecount, hcount, lcount;
-  int bhflag, begflag, vflag, blen, res;
-  long preheaders, prevpos, preenc, before;
+  int bhflag, begflag, vflag, blen=0, res;
+  long preheaders, prevpos=0, preenc, before;
   char *line=uuscan_spline;
   fileread *result;
   char *ptr1, *ptr2;
@@ -1307,16 +1392,16 @@ ScanPart (FILE *datei, char *fname, int *errcode)
     while (mssdepth) {
       mssdepth--;
       UUkillheaders (&(multistack[mssdepth].envelope));
-      FP_free (multistack[mssdepth].source);
+      _FP_free (multistack[mssdepth].source);
     }
 
     UUkillheaders (&sstate.envelope);
     memset (&sstate.envelope, 0, sizeof (headers));
 
-    FP_free (sstate.source);
-    if ((sstate.source = FP_strdup (fname)) == NULL) {
+    _FP_free (sstate.source);
+    if ((sstate.source = _FP_strdup (fname)) == NULL) {
       *errcode = UURET_NOMEM;
-      FP_free (result);
+      _FP_free (result);
       return NULL;
     }
 
@@ -1324,7 +1409,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
     preheaders = ftell (datei);
     while (!feof (datei)) {
       if (UUBUSYPOLL(ftell(datei),progress.fsize)) SPCANCEL();
-      if (FP_fgets (line, 255, datei) == NULL)
+      if (_FP_fgets (line, 255, datei) == NULL)
 	break;
       if (!IsLineEmpty (line)) {
 	fseek (datei, preheaders, SEEK_SET);
@@ -1336,7 +1421,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
   }
 
   if (ferror(datei) || feof(datei)) {
-    FP_free (result);
+    _FP_free (result);
     return NULL;
   }
 
@@ -1358,11 +1443,11 @@ ScanPart (FILE *datei, char *fname, int *errcode)
     while (mssdepth) {
       mssdepth--;
       UUkillheaders (&(multistack[mssdepth].envelope));
-      FP_free (multistack[mssdepth].source);
+      _FP_free (multistack[mssdepth].source);
     }
 
-    if (FP_fgets (line, 255, datei) == NULL) {
-      FP_free (result);
+    if (_FP_fgets (line, 255, datei) == NULL) {
+      _FP_free (result);
       return NULL;
     }
     line[255] = '\0';
@@ -1382,13 +1467,13 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       }
 
       sstate.ismime            = 1;
-      sstate.envelope.mimevers = FP_strdup ("1.0");
-      sstate.envelope.boundary = FP_strdup (line+2);
-      sstate.envelope.ctype    = FP_strdup ("multipart/mixed");
+      sstate.envelope.mimevers = _FP_strdup ("1.0");
+      sstate.envelope.boundary = _FP_strdup (line+2);
+      sstate.envelope.ctype    = _FP_strdup ("multipart/mixed");
       sstate.mimestate         = MS_SUBPART;
 
       *errcode = UURET_CONT;
-      FP_free (result);
+      _FP_free (result);
       return NULL;
     }
 
@@ -1403,7 +1488,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       ptr1 = ScanHeaderLine (datei, line);
       if (ParseHeader (&sstate.envelope, ptr1) == NULL) {
 	*errcode = UURET_NOMEM;
-	FP_free (result);
+	_FP_free (result);
 	return NULL;
       }
       /*
@@ -1414,14 +1499,14 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       if (lcount > WAITHEADER && hcount < hlcount.afternl)
 	break;
 
-      if (FP_fgets (line, 255, datei) == NULL)
+      if (_FP_fgets (line, 255, datei) == NULL)
 	break;
       line[255] = '\0';
     }
     /* skip empty lines */
     prevpos = ftell (datei);
     while (!feof (datei)) {
-      if (FP_fgets (line, 255, datei) == NULL)
+      if (_FP_fgets (line, 255, datei) == NULL)
 	break;
       if (UUBUSYPOLL(ftell(datei),progress.fsize)) SPCANCEL();
       if (!IsLineEmpty (line)) {
@@ -1444,7 +1529,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       /*
        * see above
        */
-      if (FP_fgets (line, 255, datei) == NULL) {
+      if (_FP_fgets (line, 255, datei) == NULL) {
 	line[0] = '\012';
 	line[1] = '\0';
       }
@@ -1457,18 +1542,18 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 	ptr1 = ScanHeaderLine (datei, line);
 	if (ParseHeader (&sstate.envelope, ptr1) == NULL) {
 	  *errcode = UURET_NOMEM;
-	  FP_free (result);
+	  _FP_free (result);
 	  return NULL;
 	}
 
-	if (FP_fgets (line, 255, datei) == NULL)
+	if (_FP_fgets (line, 255, datei) == NULL)
 	  break;
 	line[255] = '\0';
       }
       /* skip empty lines */
       prevpos = ftell (datei);
       while (!feof (datei)) {
-	if (FP_fgets (line, 255, datei) == NULL)
+	if (_FP_fgets (line, 255, datei) == NULL)
 	  break;
 	if (UUBUSYPOLL(ftell(datei),progress.fsize)) SPCANCEL();
 	if (!IsLineEmpty (line)) {
@@ -1488,14 +1573,14 @@ ScanPart (FILE *datei, char *fname, int *errcode)
      * headers, don't be too picky about it.
      */
     if (sstate.envelope.ctype && sstate.envelope.mimevers==NULL  &&
-	FP_stristr (sstate.envelope.ctype, "multipart") != NULL &&
+	_FP_stristr (sstate.envelope.ctype, "multipart") != NULL &&
 	sstate.envelope.boundary != NULL) {
-      sstate.envelope.mimevers = FP_strdup ("1.0");
+      sstate.envelope.mimevers = _FP_strdup ("1.0");
       hcount = hlcount.afternl;
     }
     else if (sstate.envelope.mimevers==NULL && sstate.envelope.ctype &&
 	     sstate.envelope.fname && sstate.envelope.ctenc) {
-      sstate.envelope.mimevers = FP_strdup ("1.0");
+      sstate.envelope.mimevers = _FP_strdup ("1.0");
       hcount = hlcount.afternl;
     }
 
@@ -1508,13 +1593,13 @@ ScanPart (FILE *datei, char *fname, int *errcode)
     else if (sstate.envelope.mimevers != NULL) {
       /* this is a MIME file. check the Content-Type */
       sstate.ismime = 1;
-      if (FP_stristr (sstate.envelope.ctype, "multipart") != NULL) {
+      if (_FP_stristr (sstate.envelope.ctype, "multipart") != NULL) {
 	if (sstate.envelope.boundary == NULL) {
 	  UUMessage (uuscan_id, __LINE__, UUMSG_WARNING,
 		     uustring (S_MIME_NO_BOUNDARY));
 	  sstate.mimestate = MS_BODY;
-	  FP_free (sstate.envelope.ctype);
-	  sstate.envelope.ctype = FP_strdup ("text/plain");
+	  _FP_free (sstate.envelope.ctype);
+	  sstate.envelope.ctype = _FP_strdup ("text/plain");
 	}
 	else {
 	  sstate.mimestate = MS_PREAMBLE;
@@ -1527,7 +1612,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
   }
 
   if (feof (datei) || ferror (datei)) { /* oops */
-    FP_free (result);
+    _FP_free (result);
     return NULL;
   }
 
@@ -1549,7 +1634,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
     lcount = 0;
     
     while (!feof (datei)) {
-      if (FP_fgets (line, 255, datei) == NULL) {
+      if (_FP_fgets (line, 255, datei) == NULL) {
 	line[0] = '\0';
 	break;
       }
@@ -1576,7 +1661,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 	*errcode = UURET_CONT;
 	fseek (datei, preheaders, SEEK_SET);
       }
-      FP_free (result);
+      _FP_free (result);
       return NULL;
     }
     if (line[0] == '-' && line[1] == '-' &&
@@ -1604,20 +1689,20 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 	*errcode = UURET_CONT;
 	fseek (datei, preheaders, SEEK_SET);
       }
-      FP_free (result);
+      _FP_free (result);
       return NULL;
     }
     /* produce result if uu_usepreamble is set */
     if (uu_usepreamble && lcount) {
       sprintf (line, "%04d.txt", ++mimseqno);
-      result->subject  = FP_strdup (sstate.envelope.subject);
-      result->filename = FP_strdup (line);
-      result->origin   = FP_strdup (sstate.envelope.from);
-      result->mimeid   = FP_strdup (sstate.envelope.mimeid);
-      result->mimetype = FP_strdup ("text/plain");
+      result->subject  = _FP_strdup (sstate.envelope.subject);
+      result->filename = _FP_strdup (line);
+      result->origin   = _FP_strdup (sstate.envelope.from);
+      result->mimeid   = _FP_strdup (sstate.envelope.mimeid);
+      result->mimetype = _FP_strdup ("text/plain");
       result->mode     = 0644;
       result->uudet    = PT_ENCODED;	/* plain text */
-      result->sfname   = FP_strdup (fname);
+      result->sfname   = _FP_strdup (fname);
       result->flags    = FL_SINGLE | FL_PROPER;
       /* result->startpos set from above */
       result->length   = prevpos - result->startpos;
@@ -1638,7 +1723,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       *errcode = UURET_CONT;
 
     /* otherwise, just return NULL */
-    FP_free (result);
+    _FP_free (result);
     return NULL;
   }
 
@@ -1675,7 +1760,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
        * check if the epilogue is empty
        */
       while (!feof (datei) && !ferror (datei) && lcount<10 && res==0) {
-	if (FP_fgets (line, 255, datei) == NULL)
+	if (_FP_fgets (line, 255, datei) == NULL)
 	  break;
 	if (!IsLineEmpty (line))
 	  res++;
@@ -1683,14 +1768,14 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       }
       if (uu_usepreamble && res) {
 	sprintf (line, "%04d.txt", ++mimseqno);
-	result->subject  = FP_strdup (sstate.envelope.subject);
-	result->filename = FP_strdup (line);
-	result->origin   = FP_strdup (sstate.envelope.from);
-	result->mimeid   = FP_strdup (sstate.envelope.mimeid);
-	result->mimetype = FP_strdup ("text/plain");
+	result->subject  = _FP_strdup (sstate.envelope.subject);
+	result->filename = _FP_strdup (line);
+	result->origin   = _FP_strdup (sstate.envelope.from);
+	result->mimeid   = _FP_strdup (sstate.envelope.mimeid);
+	result->mimetype = _FP_strdup ("text/plain");
 	result->mode     = 0644;
 	result->uudet    = PT_ENCODED;	/* plain text */
-	result->sfname   = FP_strdup (fname);
+	result->sfname   = _FP_strdup (fname);
 	result->flags    = FL_SINGLE | FL_PROPER | FL_TOEND;
 	result->partno   = 1;
 	/* result->startpos set from above */
@@ -1703,7 +1788,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 
 	return result;
       }
-      FP_free (result);
+      _FP_free (result);
       return NULL;
     }
 
@@ -1711,7 +1796,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       blen = strlen (multistack[mssdepth-1].envelope.boundary);
 
     while (!feof (datei)) {
-      if (FP_fgets (line, 255, datei) == NULL) {
+      if (_FP_fgets (line, 255, datei) == NULL) {
 	line[0] = '\0';
 	break;
       }
@@ -1752,7 +1837,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       /* check for begin and encoded data only at outermost level */
       if (mssdepth == 0 && !uu_more_mime) {
 	if (strncmp      (line, "begin ",       6) == 0 ||
-	    FP_strnicmp (line, "<pre>begin ", 11) == 0) {
+	    _FP_strnicmp (line, "<pre>begin ", 11) == 0) {
 	  preenc  = prevpos;
 	  begflag = 1;
 	}
@@ -1795,7 +1880,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       /* restore previous state */
       mssdepth--;
       UUkillheaders (&sstate.envelope);
-      FP_free  (sstate.source);
+      _FP_free  (sstate.source);
       memcpy (&sstate, &(multistack[mssdepth]), sizeof (scanstate));
 
       ptr1 = line + 2 + strlen (sstate.envelope.boundary);
@@ -1822,14 +1907,14 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       while (mssdepth) {
 	mssdepth--;
 	UUkillheaders (&(multistack[mssdepth].envelope));
-	FP_free (multistack[mssdepth].source);
+	_FP_free (multistack[mssdepth].source);
       }
 
       if (!uu_fast_scanning) {
 	*errcode = UURET_CONT;
 	fseek (datei, preheaders, SEEK_SET);
       }
-      FP_free (result);
+      _FP_free (result);
       return NULL;
     }
     else if (IsKnownHeader (line)) {
@@ -1852,14 +1937,14 @@ ScanPart (FILE *datei, char *fname, int *errcode)
     /* produce result if uu_usepreamble is set */
     if (uu_usepreamble && res) {
       sprintf (line, "%04d.txt", ++mimseqno);
-      result->subject  = FP_strdup (sstate.envelope.subject);
-      result->filename = FP_strdup (line);
-      result->origin   = FP_strdup (sstate.envelope.from);
-      result->mimeid   = FP_strdup (sstate.envelope.mimeid);
-      result->mimetype = FP_strdup ("text/plain");
+      result->subject  = _FP_strdup (sstate.envelope.subject);
+      result->filename = _FP_strdup (line);
+      result->origin   = _FP_strdup (sstate.envelope.from);
+      result->mimeid   = _FP_strdup (sstate.envelope.mimeid);
+      result->mimetype = _FP_strdup ("text/plain");
       result->mode     = 0644;
       result->uudet    = PT_ENCODED;	/* plain text */
-      result->sfname   = FP_strdup (fname);
+      result->sfname   = _FP_strdup (fname);
       result->flags    = FL_SINGLE | FL_PROPER;
       result->partno   = 1;
       /* result->startpos set from above */
@@ -1873,7 +1958,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       return result;
     }
     /* otherwise, just return NULL */
-    FP_free (result);
+    _FP_free (result);
     return NULL;
   }
 
@@ -1897,11 +1982,11 @@ ScanPart (FILE *datei, char *fname, int *errcode)
      * Duplicate some data from outer envelope
      */
 
-    localenv.mimevers = FP_strdup (sstate.envelope.mimevers);
-    localenv.from     = FP_strdup (sstate.envelope.from);
-    localenv.subject  = FP_strdup (sstate.envelope.subject);
-    localenv.rcpt     = FP_strdup (sstate.envelope.rcpt);
-    localenv.date     = FP_strdup (sstate.envelope.date);
+    localenv.mimevers = _FP_strdup (sstate.envelope.mimevers);
+    localenv.from     = _FP_strdup (sstate.envelope.from);
+    localenv.subject  = _FP_strdup (sstate.envelope.subject);
+    localenv.rcpt     = _FP_strdup (sstate.envelope.rcpt);
+    localenv.date     = _FP_strdup (sstate.envelope.date);
 
     if ((sstate.envelope.mimevers != NULL && localenv.mimevers == NULL) ||
 	(sstate.envelope.from     != NULL && localenv.from     == NULL) ||
@@ -1912,14 +1997,14 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       while (mssdepth) {
 	mssdepth--;
 	UUkillheaders (&(multistack[mssdepth].envelope));
-	FP_free (multistack[mssdepth].source);
+	_FP_free (multistack[mssdepth].source);
       }
       sstate.isfolder = 0;
       sstate.ismime   = 0;
       
       UUkillheaders (&localenv);
       *errcode = UURET_NOMEM;
-      FP_free (result);
+      _FP_free (result);
       return NULL;
     }
     
@@ -1928,16 +2013,16 @@ ScanPart (FILE *datei, char *fname, int *errcode)
     lcount = 0;
     preheaders = prevpos;
     
-    if (FP_fgets (line, 255, datei) == NULL) {
+    if (_FP_fgets (line, 255, datei) == NULL) {
       sstate.isfolder = 0;
       sstate.ismime   = 0;
       while (mssdepth) {
 	mssdepth--;
 	UUkillheaders (&(multistack[mssdepth].envelope));
-	FP_free (multistack[mssdepth].source);
+	_FP_free (multistack[mssdepth].source);
       }
       UUkillheaders (&localenv);
-      FP_free (result);
+      _FP_free (result);
       return NULL;
     }
     line[255] = '\0';
@@ -1960,7 +2045,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 
       prevpos = ftell (datei);
 
-      if (FP_fgets (line, 255, datei) == NULL)
+      if (_FP_fgets (line, 255, datei) == NULL)
 	break;
       line[255] = '\0';
       lcount++;
@@ -1974,7 +2059,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       fseek (datei, prevpos, SEEK_SET);
     }
 
-    if (FP_stristr (localenv.ctype, "multipart") != NULL) {
+    if (_FP_stristr (localenv.ctype, "multipart") != NULL) {
       /* oh no, not again */
       if (mssdepth >= MSMAXDEPTH) {
 	/* Argh, what an isane message. Treat as plain text */
@@ -1990,7 +2075,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 	memcpy (&sstate.envelope,    &localenv, sizeof (headers));
 	memset (&localenv, 0, sizeof (headers));
 	sstate.mimestate = MS_PREAMBLE;
-	if ((sstate.source = FP_strdup (sstate.source)) == NULL)
+	if ((sstate.source = _FP_strdup (sstate.source)) == NULL)
 	  *errcode = UURET_NOMEM;
 
 	if (*errcode == UURET_OK)
@@ -1998,10 +2083,11 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 
 	mssdepth++;
 	/* need a restart */
-	FP_free (result);
+	_FP_free (result);
 	return NULL;
       }
     }
+
     /*
      * So this subpart is either plain text or something else. Check
      * the Content-Type and Content-Transfer-Encoding. If the latter
@@ -2014,17 +2100,24 @@ ScanPart (FILE *datei, char *fname, int *errcode)
      * This is done because users might `attach' a uuencoded file, which
      * would then be correctly typed as `text/plain'.
      */
-    if (FP_stristr (localenv.ctenc, "base64") != NULL)
+
+    if (_FP_stristr (localenv.ctenc, "base64") != NULL)
       result->uudet = B64ENCODED;
-    else if (FP_stristr (localenv.ctenc, "x-uue") != NULL)
+    else if (_FP_stristr (localenv.ctenc, "x-uue") != NULL) {
       result->uudet = UU_ENCODED;
-    else if (FP_stristr (localenv.ctenc, "quoted-printable") != NULL)
+      result->begin = result->end = 1;
+    }
+    else if (_FP_stristr (localenv.ctenc, "x-yenc") != NULL) {
+      result->uudet = YENC_ENCODED;
+      result->begin = result->end = 1;
+    }
+    else if (_FP_stristr (localenv.ctenc, "quoted-printable") != NULL)
       result->uudet = QP_ENCODED;
-    else if (FP_stristr (localenv.ctenc, "7bit") != NULL ||
-	     FP_stristr (localenv.ctenc, "8bit") != NULL)
+    else if (_FP_stristr (localenv.ctenc, "7bit") != NULL ||
+	     _FP_stristr (localenv.ctenc, "8bit") != NULL)
       result->uudet = PT_ENCODED;
-    else if (FP_stristr (localenv.ctype, "multipart") != NULL ||
-	     FP_stristr (localenv.ctype, "message")   != NULL)
+    else if (_FP_stristr (localenv.ctype, "multipart") != NULL ||
+	     _FP_stristr (localenv.ctype, "message")   != NULL)
       result->uudet = PT_ENCODED;
 
     /*
@@ -2045,7 +2138,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       lcount = 0;
       
       while (!feof (datei)) {
-	if (FP_fgets (line, 255, datei) == NULL) {
+	if (_FP_fgets (line, 255, datei) == NULL) {
 	  line[0] = '\0';
 	  break;
 	}
@@ -2064,9 +2157,9 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 	 * Content-Type: multipart/... boundary="same-boundary"
 	 */
 	if (line[0] == 'C' && line[1] == 'o' &&
-	    FP_strnicmp (line, "Content-Type:", 13) == 0) {
+	    _FP_strnicmp (line, "Content-Type:", 13) == 0) {
 	  ptr1 = ScanHeaderLine (datei, line);
-	  ptr2 = (ptr1)?FP_stristr(ptr1,"boundary"):NULL;
+	  ptr2 = (ptr1)?_FP_stristr(ptr1,"boundary"):NULL;
 	  ptr1 = (ptr2)?ParseValue(ptr2):NULL;
 	  if (ptr1 && strcmp (ptr1, sstate.envelope.boundary) == 0)
 	    break;
@@ -2095,7 +2188,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 	while (mssdepth) {
 	  mssdepth--;
 	  UUkillheaders (&(multistack[mssdepth].envelope));
-	  FP_free (multistack[mssdepth].source);
+	  _FP_free (multistack[mssdepth].source);
 	}
 	/*
 	 * Don't retry if uu_fast_scanning
@@ -2106,7 +2199,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 	  sstate.isfolder  = 0;
 	  sstate.ismime    = 0;
 	  sstate.mimestate = MS_BODY;
-	  FP_free (result);
+	  _FP_free (result);
 	  return NULL;
 	}
 
@@ -2150,22 +2243,22 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       /* or if the file is explicitely named */
       if (result->uudet == B64ENCODED || lcount) {
 	if (localenv.fname) {
-	  FP_free (result->filename);
-	  if ((result->filename = FP_strdup (localenv.fname)) == NULL)
+	  _FP_free (result->filename);
+	  if ((result->filename = _FP_strdup (localenv.fname)) == NULL)
 	    *errcode = UURET_NOMEM;
 	}
 	else if ((result->uudet==QP_ENCODED||result->uudet==PT_ENCODED) &&
 		 result->filename == NULL && uu_handletext) {
 	  sprintf (line, "%04d.txt", ++mimseqno);
-	  if ((result->filename = FP_strdup (line)) == NULL)
+	  if ((result->filename = _FP_strdup (line)) == NULL)
 	    *errcode = UURET_NOMEM;
 	}
-	result->subject  = FP_strdup (localenv.subject);
-	result->origin   = FP_strdup (localenv.from);
-	result->mimeid   = FP_strdup (localenv.mimeid);
-	result->mimetype = FP_strdup (localenv.ctype);
+	result->subject  = _FP_strdup (localenv.subject);
+	result->origin   = _FP_strdup (localenv.from);
+	result->mimeid   = _FP_strdup (localenv.mimeid);
+	result->mimetype = _FP_strdup (localenv.ctype);
 	result->mode     = 0644;
-	result->sfname   = FP_strdup (fname);
+	result->sfname   = _FP_strdup (fname);
 	result->flags    = FL_SINGLE | FL_PROPER;
 	result->partno   = 1;
 	/* result->uudet determined above */
@@ -2179,7 +2272,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       }
       else {
 	/* don't produce a result */
-	FP_free (result);
+	_FP_free (result);
 	result = NULL;
       }
       if (*errcode == UURET_OK)
@@ -2214,7 +2307,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
     prevpos = ftell  (datei);
 
     while (!feof (datei)) {
-      if (FP_fgets (line, 255, datei) == NULL) {
+      if (_FP_fgets (line, 255, datei) == NULL) {
 	line[0] = '\0';
 	break;
       }
@@ -2224,9 +2317,9 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 	  strncmp (line+2, sstate.envelope.boundary, blen) == 0)
 	break;
       if (line[0] == 'C' && line[1] == 'o' &&
-	  FP_strnicmp (line, "Content-Type:", 13) == 0) {
+	  _FP_strnicmp (line, "Content-Type:", 13) == 0) {
 	ptr1 = ScanHeaderLine (datei, line);
-	ptr2 = (ptr1)?FP_stristr(ptr1,"boundary"):NULL;
+	ptr2 = (ptr1)?_FP_stristr(ptr1,"boundary"):NULL;
 	ptr1 = (ptr2)?ParseValue(ptr2):NULL;
 	if (ptr1 && strcmp (ptr1, sstate.envelope.boundary) == 0)
 	  break;
@@ -2251,7 +2344,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       while (mssdepth) {
 	mssdepth--;
 	UUkillheaders (&(multistack[mssdepth].envelope));
-	FP_free (multistack[mssdepth].source);
+	_FP_free (multistack[mssdepth].source);
       }
 
       if (uu_fast_scanning) {
@@ -2259,7 +2352,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 	sstate.isfolder  = 0;
 	sstate.ismime    = 0;
 	sstate.mimestate = MS_BODY;
-	FP_free (result);
+	_FP_free (result);
 	return NULL;
       }
 
@@ -2308,7 +2401,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 
     if (sstate.ismime && sstate.mimestate == MS_SUBPART &&
         strcmp (localenv.mimevers, "1.0") == 0 &&
-	FP_stristr (localenv.ctype, "text") != NULL &&
+	_FP_stristr (localenv.ctype, "text") != NULL &&
 	!uu_desperate) {
       if (result->uudet == UU_ENCODED && !(result->begin || result->end)) {
 	result->uudet = 0;
@@ -2324,35 +2417,35 @@ ScanPart (FILE *datei, char *fname, int *errcode)
     }
 
     if (localenv.fname) {
-      FP_free (result->filename);
-      if ((result->filename = FP_strdup (localenv.fname)) == NULL)
+      _FP_free (result->filename);
+      if ((result->filename = _FP_strdup (localenv.fname)) == NULL)
 	*errcode = UURET_NOMEM;
     }
     else if ((result->uudet==QP_ENCODED || result->uudet==PT_ENCODED) &&
 	     result->filename==NULL && uu_handletext) {
       sprintf (line, "%04d.txt", ++mimseqno);
-      if ((result->filename = FP_strdup (line)) == NULL)
+      if ((result->filename = _FP_strdup (line)) == NULL)
 	*errcode = UURET_NOMEM;
     }
     else {
       /* assign a filename lateron */
     }
-    if (result->mimetype) FP_free (result->mimetype);
+    if (result->mimetype) _FP_free (result->mimetype);
     if (result->uudet) {
-      if (FP_stristr (localenv.ctype, "text") != NULL &&
+      if (_FP_stristr (localenv.ctype, "text") != NULL &&
 	  result->uudet != QP_ENCODED && result->uudet != PT_ENCODED)
 	result->mimetype = NULL; /* better don't set it */
       else
-	result->mimetype = FP_strdup (localenv.ctype);
+	result->mimetype = _FP_strdup (localenv.ctype);
     }
-    if (result->origin) FP_free  (result->origin);
-    result->origin  = FP_strdup  (localenv.from);
+    if (result->origin) _FP_free  (result->origin);
+    result->origin  = _FP_strdup  (localenv.from);
 
-    if (result->subject) FP_free (result->subject);
-    result->subject = FP_strdup  (localenv.subject);
+    if (result->subject) _FP_free (result->subject);
+    result->subject = _FP_strdup  (localenv.subject);
 
     if (result->sfname == NULL)
-      if ((result->sfname = FP_strdup (fname)) == NULL)
+      if ((result->sfname = _FP_strdup (fname)) == NULL)
 	*errcode = UURET_NOMEM;
 
     result->length = prevpos - result->startpos;
@@ -2384,8 +2477,8 @@ ScanPart (FILE *datei, char *fname, int *errcode)
    */
 
   if (sstate.isfolder && sstate.ismime && sstate.mimestate == MS_BODY &&
-      FP_stristr (sstate.envelope.ctype, "message") != NULL &&
-      FP_stristr (sstate.envelope.ctype, "partial") != NULL) {
+      _FP_stristr (sstate.envelope.ctype, "message") != NULL &&
+      _FP_stristr (sstate.envelope.ctype, "partial") != NULL) {
 
     result->startpos = ftell (datei);
 
@@ -2397,7 +2490,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       /* skip over blank lines first */
       prevpos = ftell (datei);
       while (!feof (datei)) {
-	if (FP_fgets (line, 255, datei) == NULL)
+	if (_FP_fgets (line, 255, datei) == NULL)
 	  break;
 	line[255] = '\0';
 	if (UUBUSYPOLL(ftell(datei),progress.fsize)) SPCANCEL();
@@ -2422,7 +2515,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 	if (ParseHeader (&localenv, ptr1) == NULL)
 	  *errcode = UURET_NOMEM;
 
-	if (FP_fgets (line, 255, datei) == NULL)
+	if (_FP_fgets (line, 255, datei) == NULL)
 	  break;
 	line[255] = '\0';
 	lcount++;
@@ -2432,36 +2525,42 @@ ScanPart (FILE *datei, char *fname, int *errcode)
        * Examine local header. We're mostly interested in the Content-Type
        * and the Content-Transfer-Encoding.
        */
-      if (FP_stristr (localenv.ctype, "multipart") != NULL) {
+      if (_FP_stristr (localenv.ctype, "multipart") != NULL) {
 	UUMessage (uuscan_id, __LINE__, UUMSG_WARNING,
 		   uustring (S_MIME_PART_MULTI));
       }
       if (localenv.subject)
-	result->subject  = FP_strdup (localenv.subject);
+	result->subject  = _FP_strdup (localenv.subject);
       else
-	result->subject  = FP_strdup (sstate.envelope.subject);
+	result->subject  = _FP_strdup (sstate.envelope.subject);
 
       if (localenv.from)
-	result->origin   = FP_strdup (localenv.from);
+	result->origin   = _FP_strdup (localenv.from);
       else
-	result->origin   = FP_strdup (sstate.envelope.from);
+	result->origin   = _FP_strdup (sstate.envelope.from);
 
       if (localenv.ctype)
-	result->mimetype = FP_strdup (localenv.ctype);
+	result->mimetype = _FP_strdup (localenv.ctype);
       else
-	result->mimetype = FP_strdup ("text/plain");
+	result->mimetype = _FP_strdup ("text/plain");
 
-      if (FP_stristr (localenv.ctenc, "quoted-printable") != NULL)
+      if (_FP_stristr (localenv.ctenc, "quoted-printable") != NULL)
 	result->uudet = QP_ENCODED;
-      else if (FP_stristr (localenv.ctenc, "base64") != NULL)
+      else if (_FP_stristr (localenv.ctenc, "base64") != NULL)
 	result->uudet = B64ENCODED;
-      else if (FP_stristr (localenv.ctenc, "x-uue") != NULL)
+      else if (_FP_stristr (localenv.ctenc, "x-uue") != NULL) {
 	result->uudet = UU_ENCODED;
-      else if (FP_stristr (localenv.ctenc, "7bit") != NULL ||
-	       FP_stristr (localenv.ctenc, "8bit") != NULL)
+	result->begin = result->end = 1;
+      }
+      else if (_FP_stristr (localenv.ctenc, "x-yenc") != NULL) {
+	result->uudet = YENC_ENCODED;
+	result->begin = result->end = 1;
+      }
+      else if (_FP_stristr (localenv.ctenc, "7bit") != NULL ||
+	       _FP_stristr (localenv.ctenc, "8bit") != NULL)
 	result->uudet = PT_ENCODED;
-      else if (FP_stristr (localenv.ctype, "multipart") != NULL ||
-	       FP_stristr (localenv.ctype, "message")   != NULL)
+      else if (_FP_stristr (localenv.ctype, "multipart") != NULL ||
+	       _FP_stristr (localenv.ctype, "message")   != NULL)
 	result->uudet = PT_ENCODED;
 
       /*
@@ -2498,14 +2597,14 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       hcount = lcount = 0;
       prevpos = ftell (datei);
 
-      if (FP_stristr (localenv.ctype, "message") != NULL &&
-	  FP_stristr (localenv.ctype, "rfc822")  != NULL) {
+      if (_FP_stristr (localenv.ctype, "message") != NULL &&
+	  _FP_stristr (localenv.ctype, "rfc822")  != NULL) {
 	/*
 	 * skip over empty lines and local header
 	 */
 	preheaders = ftell (datei);
 	while (!feof (datei)) {
-	  if (FP_fgets (line, 255, datei) == NULL)
+	  if (_FP_fgets (line, 255, datei) == NULL)
 	    break;
 	  line[255] = '\0';
 	  if (!IsLineEmpty (line)) {
@@ -2520,7 +2619,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 	  if (lcount > WAITHEADER && hcount < hlcount.afternl)
 	    break;
 
-	  if (FP_fgets (line, 255, datei) == NULL)
+	  if (_FP_fgets (line, 255, datei) == NULL)
 	    break;
 	  line[255] = '\0';
 	}
@@ -2534,7 +2633,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
        */
 
       while (!feof (datei)) {
-	if (FP_fgets (line, 255, datei) == NULL)
+	if (_FP_fgets (line, 255, datei) == NULL)
 	  break;
 	if (UUBUSYPOLL(ftell(datei),progress.fsize)) SPCANCEL();
 	if (ferror (datei))
@@ -2592,19 +2691,19 @@ ScanPart (FILE *datei, char *fname, int *errcode)
      * produce result
      */
     if (localenv.fname) {
-      FP_free (result->filename);
-      if ((result->filename = FP_strdup (localenv.fname)) == NULL)
+      _FP_free (result->filename);
+      if ((result->filename = _FP_strdup (localenv.fname)) == NULL)
 	*errcode = UURET_NOMEM;
     }
     else if (sstate.envelope.fname) {
-      FP_free (result->filename);
-      if ((result->filename = FP_strdup (sstate.envelope.fname)) == NULL)
+      _FP_free (result->filename);
+      if ((result->filename = _FP_strdup (sstate.envelope.fname)) == NULL)
 	*errcode = UURET_NOMEM;
     }
     else if ((result->uudet==QP_ENCODED || result->uudet==PT_ENCODED) &&
 	     result->filename == NULL) {
       sprintf (line, "%04d.txt", ++mimseqno);
-      if ((result->filename = FP_strdup (line)) == NULL)
+      if ((result->filename = _FP_strdup (line)) == NULL)
 	*errcode = UURET_NOMEM;
     }
     else {
@@ -2612,14 +2711,16 @@ ScanPart (FILE *datei, char *fname, int *errcode)
     }
     if (result->subject == NULL) {
       if (sstate.envelope.subject)
-	result->subject = FP_strdup (sstate.envelope.subject);
+	result->subject = _FP_strdup (sstate.envelope.subject);
     }
     result->partno = sstate.envelope.partno;
     result->maxpno = sstate.envelope.numparts;
     result->flags  = FL_PARTIAL | 
       ((res==1 || uu_fast_scanning) ? FL_PROPER : 0) |
 	((uu_fast_scanning) ? FL_TOEND : 0);
-    result->mimeid = FP_strdup (sstate.envelope.mimeid);
+    result->mimeid = _FP_strdup (sstate.envelope.mimeid);
+    if (result->partno == 1)
+      result->begin = 1;
 
     if (uu_fast_scanning)
       result->length = progress.fsize - result->startpos;
@@ -2627,7 +2728,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       result->length = prevpos - result->startpos;
 
     if (result->sfname == NULL)
-      result->sfname = FP_strdup (fname);
+      result->sfname = _FP_strdup (fname);
 
     if (result->mode == 0)
       result->mode = 0644;
@@ -2668,35 +2769,42 @@ ScanPart (FILE *datei, char *fname, int *errcode)
    * that we've had a Content-Disposition field, and we should probably
    * decode a plain-text segment with a filename.
    */
+
   if (sstate.isfolder && sstate.ismime &&
       sstate.mimestate == MS_BODY &&
-      (FP_stristr (sstate.envelope.ctenc, "quoted-printable") != NULL ||
-       FP_stristr (sstate.envelope.ctenc, "base64")           != NULL ||
-       FP_stristr (sstate.envelope.ctenc, "x-uue")            != NULL ||
-       FP_stristr (sstate.envelope.ctype, "message")          != NULL ||
+      (_FP_stristr (sstate.envelope.ctenc, "quoted-printable") != NULL ||
+       _FP_stristr (sstate.envelope.ctenc, "base64")           != NULL ||
+       _FP_stristr (sstate.envelope.ctenc, "x-uue")            != NULL ||
+       _FP_stristr (sstate.envelope.ctenc, "x-yenc")           != NULL ||
+       _FP_stristr (sstate.envelope.ctype, "message")          != NULL ||
        sstate.envelope.fname != NULL)) {
 
     if (sstate.envelope.subject)
-      result->subject = FP_strdup (sstate.envelope.subject);
+      result->subject = _FP_strdup (sstate.envelope.subject);
     if (sstate.envelope.from)
-      result->origin  = FP_strdup (sstate.envelope.from);
+      result->origin  = _FP_strdup (sstate.envelope.from);
 
     if (sstate.envelope.ctype)
-      result->mimetype = FP_strdup (sstate.envelope.ctype);
+      result->mimetype = _FP_strdup (sstate.envelope.ctype);
     else
-      result->mimetype = FP_strdup ("text/plain");
+      result->mimetype = _FP_strdup ("text/plain");
 
-    if (FP_stristr (sstate.envelope.ctenc, "quoted-printable") != NULL)
+    if (_FP_stristr (sstate.envelope.ctenc, "quoted-printable") != NULL)
       result->uudet = QP_ENCODED;
-    else if (FP_stristr (sstate.envelope.ctenc, "base64") != NULL)
+    else if (_FP_stristr (sstate.envelope.ctenc, "base64") != NULL)
       result->uudet = B64ENCODED;
-    else if (FP_stristr (sstate.envelope.ctenc, "x-uue") != NULL)
+    else if (_FP_stristr (sstate.envelope.ctenc, "x-uue") != NULL) {
       result->uudet = UU_ENCODED;
-    else if (FP_stristr (sstate.envelope.ctenc, "7bit") != NULL ||
-	     FP_stristr (sstate.envelope.ctenc, "8bit") != NULL)
+      result->begin = result->end = 1;
+    }
+    else if (_FP_stristr (sstate.envelope.ctenc, "x-yenc") != NULL) {
+      result->uudet = YENC_ENCODED;
+    }
+    else if (_FP_stristr (sstate.envelope.ctenc, "7bit") != NULL ||
+	     _FP_stristr (sstate.envelope.ctenc, "8bit") != NULL)
       result->uudet = PT_ENCODED;
-    else if (FP_stristr (sstate.envelope.ctype, "multipart") != NULL ||
-	     FP_stristr (sstate.envelope.ctype, "message")   != NULL ||
+    else if (_FP_stristr (sstate.envelope.ctype, "multipart") != NULL ||
+	     _FP_stristr (sstate.envelope.ctype, "message")   != NULL ||
 	     sstate.envelope.fname != NULL)
       result->uudet = PT_ENCODED;
 
@@ -2725,14 +2833,14 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       hcount = lcount = 0;
       prevpos = ftell (datei);
 
-      if (FP_stristr (sstate.envelope.ctype, "message") != NULL &&
-	  FP_stristr (sstate.envelope.ctype, "rfc822")  != NULL) {
+      if (_FP_stristr (sstate.envelope.ctype, "message") != NULL &&
+	  _FP_stristr (sstate.envelope.ctype, "rfc822")  != NULL) {
 	/*
 	 * skip over empty lines and local header
 	 */
 	preheaders = ftell (datei);
 	while (!feof (datei)) {
-	  if (FP_fgets (line, 255, datei) == NULL)
+	  if (_FP_fgets (line, 255, datei) == NULL)
 	    break;
 	  line[255] = '\0';
 	  if (!IsLineEmpty (line)) {
@@ -2747,7 +2855,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 	  if (lcount > WAITHEADER && hcount < hlcount.afternl)
 	    break;
 
-	  if (FP_fgets (line, 255, datei) == NULL)
+	  if (_FP_fgets (line, 255, datei) == NULL)
 	    break;
 	  line[255] = '\0';
 	}
@@ -2761,7 +2869,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
        */
 
       while (!feof (datei)) {
-	if (FP_fgets (line, 255, datei) == NULL)
+	if (_FP_fgets (line, 255, datei) == NULL)
 	  break;
 	if (UUBUSYPOLL(ftell(datei),progress.fsize)) SPCANCEL();
 	if (ferror (datei))
@@ -2817,14 +2925,14 @@ ScanPart (FILE *datei, char *fname, int *errcode)
      * produce result
      */
     if (sstate.envelope.fname) {
-      FP_free (result->filename);
-      if ((result->filename = FP_strdup (sstate.envelope.fname)) == NULL)
+      _FP_free (result->filename);
+      if ((result->filename = _FP_strdup (sstate.envelope.fname)) == NULL)
 	*errcode = UURET_NOMEM;
     }
     else if ((result->uudet==QP_ENCODED||result->uudet==PT_ENCODED) &&
 	     result->filename == NULL) {
       sprintf (line, "%04d.txt", ++mimseqno);
-      if ((result->filename = FP_strdup (line)) == NULL)
+      if ((result->filename = _FP_strdup (line)) == NULL)
 	*errcode = UURET_NOMEM;
     }
     else {
@@ -2832,11 +2940,11 @@ ScanPart (FILE *datei, char *fname, int *errcode)
     }
     if (result->subject == NULL) {
       if (sstate.envelope.subject)
-	result->subject = FP_strdup (sstate.envelope.subject);
+	result->subject = _FP_strdup (sstate.envelope.subject);
     }
     result->flags  = ((res==1||uu_fast_scanning)?FL_PROPER:0) |
       ((uu_fast_scanning) ? FL_TOEND : 0);
-    result->mimeid = FP_strdup (sstate.envelope.mimeid);
+    result->mimeid = _FP_strdup (sstate.envelope.mimeid);
 
     if (uu_fast_scanning)
       result->length = progress.fsize - result->startpos;
@@ -2844,7 +2952,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       result->length = prevpos - result->startpos;
 
     if (result->sfname == NULL)
-      result->sfname = FP_strdup (fname);
+      result->sfname = _FP_strdup (fname);
 
     if (result->mode == 0)
       result->mode = 0644;
@@ -2888,11 +2996,11 @@ ScanPart (FILE *datei, char *fname, int *errcode)
    */
 
   if ((sstate.envelope.ctype == NULL ||
-       FP_stristr (sstate.envelope.ctype, "multipart") != NULL) &&
+       _FP_stristr (sstate.envelope.ctype, "multipart") != NULL) &&
       !uu_more_mime) {
     prevpos = ftell (datei);
     while (!feof (datei)) {
-      if (FP_fgets (line, 255, datei) == NULL) {
+      if (_FP_fgets (line, 255, datei) == NULL) {
 	line[0] = '\0';
 	break;
       }
@@ -2902,10 +3010,10 @@ ScanPart (FILE *datei, char *fname, int *errcode)
     }
     if (line[0] == '-' && line[1] == '-' &&
 	!IsLineEmpty (line+2) && !feof (datei)) {
-      ptr1 = FP_strrstr (line+2, "--");
+      ptr1 = _FP_strrstr (line+2, "--");
       ptr2 = ScanHeaderLine (datei, NULL);
       if ((ptr1 == NULL || (*(ptr1+2) != '\012' && *(ptr1+2) != '\015')) &&
-	  ptr2 && FP_strnicmp (ptr2, "Content-", 8) == 0) {
+	  ptr2 && _FP_strnicmp (ptr2, "Content-", 8) == 0) {
 	/*
 	 * hmm, okay, let's do it!
 	 */
@@ -2919,9 +3027,9 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 	while (*ptr1 && !isspace(*ptr1))
 	  ptr1++;
 	*ptr1 = '\0';
-	
-        sstate.envelope.mimevers = FP_strdup ("1.0");
-	sstate.envelope.boundary = FP_strdup (line+2);
+
+	sstate.envelope.mimevers = _FP_strdup ("1.0");
+	sstate.envelope.boundary = _FP_strdup (line+2);
 	
 	/*
 	 * need restart
@@ -2929,7 +3037,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 	
 	fseek (datei, prevpos, SEEK_SET);
 	
-	FP_free (result);
+	_FP_free (result);
 	return NULL;
       }
     }
@@ -2943,12 +3051,12 @@ ScanPart (FILE *datei, char *fname, int *errcode)
    */
 
   if (sstate.envelope.subject)
-    result->subject = FP_strdup (sstate.envelope.subject);
+    result->subject = _FP_strdup (sstate.envelope.subject);
   if (sstate.envelope.from)
-    result->origin  = FP_strdup (sstate.envelope.from);
+    result->origin  = _FP_strdup (sstate.envelope.from);
 
   if (sstate.envelope.ctype)
-    result->mimetype = FP_strdup (sstate.envelope.ctype);
+    result->mimetype = _FP_strdup (sstate.envelope.ctype);
   
   if ((res=ScanData (datei, fname, errcode, NULL, 
 		     sstate.ismime, 1, result))==-1) {
@@ -2958,43 +3066,51 @@ ScanPart (FILE *datei, char *fname, int *errcode)
     UUkillfread   (result);
     return NULL;
   }
+
   /*
    * produce result
    */
+
   if (result->uudet == 0 && uu_handletext) {
     result->startpos = before;	/* display headers */
     result->uudet  = PT_ENCODED;
     result->partno = 1;
   }
 
-  if (sstate.envelope.fname) {
-    FP_free (result->filename);
-    if ((result->filename = FP_strdup (sstate.envelope.fname)) == NULL)
+  if (result->uudet == YENC_ENCODED && result->filename != NULL) {
+    /*
+     * prevent replacing the filename found on the =ybegin line
+     */
+  }
+  else if (sstate.envelope.fname) {
+    _FP_free (result->filename);
+    if ((result->filename = _FP_strdup (sstate.envelope.fname)) == NULL)
       *errcode = UURET_NOMEM;
   }
   else if ((result->uudet==QP_ENCODED||result->uudet==PT_ENCODED) &&
 	   result->filename == NULL) {
     sprintf (line, "%04d.txt", ++mimseqno);
-    if ((result->filename = FP_strdup (line)) == NULL)
+    if ((result->filename = _FP_strdup (line)) == NULL)
       *errcode = UURET_NOMEM;
   }
   else {
     /* assign a filename lateron */
   }
+
   if (result->subject == NULL) {
     if (sstate.envelope.subject)
-      result->subject = FP_strdup (sstate.envelope.subject);
+      result->subject = _FP_strdup (sstate.envelope.subject);
   }
 
   result->flags  = (result->uudet==PT_ENCODED)?FL_SINGLE:0;
-  result->mimeid = FP_strdup (sstate.envelope.mimeid);
+  result->mimeid = _FP_strdup (sstate.envelope.mimeid);
   result->length = ftell (datei) - result->startpos;
 
   if (result->mode == 0)
     result->mode = 0644;
 
   if (result->sfname == NULL)
-    result->sfname = FP_strdup (fname);
+    result->sfname = _FP_strdup (fname);
 
   if (res == 1) {
     /*
@@ -3027,7 +3143,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
   while (mssdepth) {
     mssdepth--;
     UUkillheaders (&(multistack[mssdepth].envelope));
-    FP_free (multistack[mssdepth].source);
+    _FP_free (multistack[mssdepth].source);
   }
 
   return NULL;

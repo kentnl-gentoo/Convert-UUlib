@@ -22,14 +22,14 @@
  * should behave exactly as their counterparts. There are also extensions
  * that aren't portable at all (like strirstr etc.).
  * The proper behaviour in a configure script is as follows:
- *    AC_CHECK_FUNC(strrchr,AC_DEFINE(strrchr,FP_strrchr))
+ *    AC_CHECK_FUNC(strrchr,AC_DEFINE(strrchr,_FP_strrchr))
  * This way, the (probably less efficient) replacements will only be used
  * where it is not provided by the default libraries. Be aware that this
  * does not work with replacements that just shadow wrong behaviour (like
- * FP_free) or provide extended functionality (FP_gets).
+ * _FP_free) or provide extended functionality (FP_gets).
  * The above is not used in the uuenview/uudeview configuration script,
  * since both only use the replacement functions in non-performance-cri-
- * tical sections (except for FP_tempnam and FP_strerror, where some
+ * tical sections (except for _FP_tempnam and FP_strerror, where some
  * functionality of the original would be lost).
  */
 
@@ -64,7 +64,7 @@ DllEntryPoint (HINSTANCE hInstance, DWORD seginfo,
 #endif
 #endif
 
-char * fptools_id = "$Id: fptools.c,v 1.2 2001/06/11 20:42:36 root Exp $";
+char * fptools_id = "$Id: fptools.c,v 1.5 2002/03/31 20:08:42 root Exp $";
 
 /*
  * some versions of free can't handle a NULL pointer properly
@@ -73,7 +73,7 @@ char * fptools_id = "$Id: fptools.c,v 1.2 2001/06/11 20:42:36 root Exp $";
  */
 
 void TOOLEXPORT
-FP_free (void *ptr)
+_FP_free (void *ptr)
 {
   if (ptr) free (ptr);
 }
@@ -83,7 +83,7 @@ FP_free (void *ptr)
  */
 
 char * TOOLEXPORT
-FP_strdup (char *string)
+_FP_strdup (char *string)
 {
   char *result;
 
@@ -104,7 +104,7 @@ FP_strdup (char *string)
  */
 
 char * TOOLEXPORT
-FP_strncpy (char *dest, char *src, int length)
+_FP_strncpy (char *dest, char *src, int length)
 {
   char *odest=dest;
   if (src == NULL || dest == NULL || length-- <= 0)
@@ -122,7 +122,7 @@ FP_strncpy (char *dest, char *src, int length)
  */
 
 void * TOOLEXPORT
-FP_memdup (void *ptr, int len)
+_FP_memdup (void *ptr, int len)
 {
   void *result;
 
@@ -141,7 +141,7 @@ FP_memdup (void *ptr, int len)
  */
 
 int TOOLEXPORT
-FP_stricmp (char *str1, char *str2)
+_FP_stricmp (char *str1, char *str2)
 {
   if (str1==NULL || str2==NULL)
     return -1;
@@ -156,7 +156,7 @@ FP_stricmp (char *str1, char *str2)
 }
 
 int TOOLEXPORT
-FP_strnicmp (char *str1, char *str2, int count)
+_FP_strnicmp (char *str1, char *str2, int count)
 {
   if (str1==NULL || str2==NULL)
     return -1;
@@ -176,7 +176,7 @@ FP_strnicmp (char *str1, char *str2, int count)
  */
 
 char * TOOLEXPORT
-FP_strstr (char *str1, char *str2)
+_FP_strstr (char *str1, char *str2)
 {
   char *ptr1, *ptr2;
 
@@ -199,7 +199,7 @@ FP_strstr (char *str1, char *str2)
 }
 
 char * TOOLEXPORT
-FP_strpbrk (char *str, char *accept)
+_FP_strpbrk (char *str, char *accept)
 {
   char *ptr;
 
@@ -221,7 +221,7 @@ FP_strpbrk (char *str, char *accept)
  */
 
 char * TOOLEXPORT
-FP_strtok (char *str1, char *str2)
+_FP_strtok (char *str1, char *str2)
 {
   static char *optr;
   char *ptr;
@@ -258,7 +258,7 @@ FP_strtok (char *str1, char *str2)
  */
 
 char * TOOLEXPORT
-FP_stristr (char *str1, char *str2)
+_FP_stristr (char *str1, char *str2)
 {
   char *ptr1, *ptr2;
 
@@ -285,7 +285,7 @@ FP_stristr (char *str1, char *str2)
  */
 
 char * TOOLEXPORT
-FP_strrstr (char *ptr, char *str)
+_FP_strrstr (char *ptr, char *str)
 {
   char *found=NULL, *new, *iter=ptr;
 
@@ -295,7 +295,7 @@ FP_strrstr (char *ptr, char *str)
   if (*str == '\0')
     return ptr;
 
-  while ((new = FP_strstr (iter, str)) != NULL) {
+  while ((new = _FP_strstr (iter, str)) != NULL) {
     found = new;
     iter  = new + 1;
   }
@@ -303,7 +303,7 @@ FP_strrstr (char *ptr, char *str)
 }
 
 char * TOOLEXPORT
-FP_strirstr (char *ptr, char *str)
+_FP_strirstr (char *ptr, char *str)
 {
   char *found=NULL, *iter=ptr, *new;
 
@@ -312,7 +312,7 @@ FP_strirstr (char *ptr, char *str)
   if (*str == '\0')
     return ptr;
 
-  while ((new = FP_stristr (iter, str)) != NULL) {
+  while ((new = _FP_stristr (iter, str)) != NULL) {
     found = new;
     iter  = new + 1;
   }
@@ -324,7 +324,7 @@ FP_strirstr (char *ptr, char *str)
  */
 
 char * TOOLEXPORT
-FP_stoupper (char *input)
+_FP_stoupper (char *input)
 {
   char *iter = input;
 
@@ -339,7 +339,7 @@ FP_stoupper (char *input)
 }
 
 char * TOOLEXPORT
-FP_stolower (char *input)
+_FP_stolower (char *input)
 {
   char *iter = input;
 
@@ -358,7 +358,7 @@ FP_stolower (char *input)
  */
 
 int TOOLEXPORT
-FP_strmatch (char *string, char *pattern)
+_FP_strmatch (char *string, char *pattern)
 {
   char *p1 = string, *p2 = pattern;
 
@@ -388,7 +388,7 @@ FP_strmatch (char *string, char *pattern)
 }
 
 char * TOOLEXPORT
-FP_strrchr (char *string, int tc)
+_FP_strrchr (char *string, int tc)
 {
   char *ptr;
 
@@ -412,16 +412,16 @@ FP_strrchr (char *string, int tc)
  */
 
 char * TOOLEXPORT
-FP_cutdir (char *filename)
+_FP_cutdir (char *filename)
 {
   char *ptr;
 
   if (filename == NULL)
     return NULL;
 
-  if ((ptr = FP_strrchr (filename, '/')) != NULL)
+  if ((ptr = _FP_strrchr (filename, '/')) != NULL)
     ptr++;
-  else if ((ptr = FP_strrchr (filename, '\\')) != NULL)
+  else if ((ptr = _FP_strrchr (filename, '\\')) != NULL)
     ptr++;
   else
     ptr = filename;
@@ -436,7 +436,7 @@ FP_cutdir (char *filename)
  */
 
 char * TOOLEXPORT
-FP_fgets (char *buf, int n, FILE *stream)
+_FP_fgets (char *buf, int n, FILE *stream)
 {
   char *obp = buf;
   int c;
@@ -491,7 +491,7 @@ FP_fgets (char *buf, int n, FILE *stream)
  */
 
 char * TOOLEXPORT
-FP_strerror (int errcode)
+_FP_strerror (int errcode)
 {
   static char number[8];
 
@@ -499,13 +499,14 @@ FP_strerror (int errcode)
 
   return number;
 }
-
+#ifndef HAVE_MKSTEMP
 /*
  * tempnam is not ANSI, but tmpnam is. Ignore the prefix here.
  */
 
 char * TOOLEXPORT
-FP_tempnam (char *dir, char *pfx)
+_FP_tempnam (char *dir, char *pfx)
 {
-  return FP_strdup (tmpnam (NULL));
+  return _FP_strdup (tmpnam (NULL));
 }
+#endif /* HAVE_MKSTEMP */

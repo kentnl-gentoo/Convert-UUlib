@@ -2,6 +2,9 @@ dnl	This file is an input file used by the GNU "autoconf" program to
 dnl	generate the file "configure", which tries to guess your system
 dnl	configuration so that no manual editing of the Makefile should be
 dnl	necessary
+dnl
+dnl $Id: configure.in,v 1.5 2002/03/31 20:04:29 root Exp $
+dnl
 
 AC_INIT(uulib.c)
 AC_PREREQ(2.9)
@@ -11,7 +14,7 @@ AC_CONFIG_HEADER(config.h)
 # package revision
 #
 VERSION=0.5
-PATCH=15
+PATCH=17
 
 AC_ARG_WITH(cc,,CC=$with_cc)
 AC_ARG_WITH(cflags,,CFLAGS=$with_cflags)
@@ -45,6 +48,7 @@ AC_CHECK_FUNC(tempnam,,AC_DEFINE(tempnam,FP_tempnam))
 
 AC_CHECK_FUNC(chmod,AC_DEFINE(HAVE_CHMOD))
 AC_CHECK_FUNC(umask,AC_DEFINE(HAVE_UMASK))
+AC_CHECK_FUNC(mkstemp,AC_DEFINE(HAVE_MKSTEMP))
 
 #
 # strerror might be internally defined. this would cause a

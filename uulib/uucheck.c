@@ -53,7 +53,7 @@
 #include <fptools.h>
 #include <uustring.h>
 
-char * uucheck_id = "$Id: uucheck.c,v 1.2 2001/06/11 20:42:36 root Exp $";
+char * uucheck_id = "$Id: uucheck.c,v 1.6 2002/03/31 21:42:37 root Exp $";
 
 /*
  * Arbitrary number. This is the maximum number of part numbers we
@@ -126,7 +126,7 @@ UUGetFileName (char *subject, char *ptonum, char *ptonend)
       (subject[0] == 'R' || subject[0] == 'r') &&
       (subject[1] == 'E' || subject[1] == 'e') &&
       (subject[2] == ':' || subject[2] == ' ')) {
-    return NULL;
+    return uu_FileNameCallback ? uu_FileNameCallback(uu_FNCBArg, subject, NULL) : NULL;
   }
 
 /*
@@ -134,14 +134,14 @@ UUGetFileName (char *subject, char *ptonum, char *ptonend)
  * a file named "Repost" :-)
  **/
 
-  if (FP_strnicmp (subject, "repost", 6) == 0)
+  if (_FP_strnicmp (subject, "repost", 6) == 0)
     subject += 6;
-  if (FP_strnicmp (subject, "re:", 3) == 0)
+  if (_FP_strnicmp (subject, "re:", 3) == 0)
     subject += 3;
 
   while (*subject == ' ' || *subject == ':') subject++;
 
-  part = FP_stristr (subject, "part");
+  part = _FP_stristr (subject, "part");
   if (part == subject) {
     subject += 4;
     while (*subject == ' ') subject++;
@@ -218,11 +218,13 @@ UUGetFileName (char *subject, char *ptonum, char *ptonend)
 
   if (length == 0) {
     ptr = subject;
-    while (*ptr && *ptr != 0x0a && *ptr != 0x0d && ptr != part) {
+    /* #warning another experimental change */
+    /*while (*ptr && *ptr != 0x0a && *ptr != 0x0d && ptr != part) {*/
+    while (*ptr && *ptr != 0x0a && *ptr != 0x0d) {
       iter  = ptr;
       count = length = alflag = 0;
       
-      if (FP_strnicmp (ptr, "ftp", 3) == 0) {
+      if (_FP_strnicmp (ptr, "ftp", 3) == 0) {
 	/* hey, that's an ftp address */
 	while (isalpha (*ptr) || isdigit (*ptr) || *ptr == '.')
 	  ptr++;
@@ -245,13 +247,24 @@ UUGetFileName (char *subject, char *ptonum, char *ptonend)
 	length = 0;
 	continue;
       }
-      if (*iter++ != '.' || count > 32 || alflag == 0) {
+
+      /* #warning multi-part change experimental, make pluggable */
+      /* if (*iter++ != '.' || count > 32 || alflag == 0) { */
+      if (*iter++ != '.' || count > 32) {
 	ptr    = iter;
 	length = 0;
 	continue;
       }
-      if (FP_strnicmp (iter, "edu", 3) == 0 || 
-	  FP_strnicmp (iter, "gov", 3) == 0) {
+
+      /* two consecutive dots don't look correct */
+      if (*iter == '.') {
+	ptr    = iter + 1;
+	length = 0;
+	continue;
+      }
+
+      if (_FP_strnicmp (iter, "edu", 3) == 0 || 
+	  _FP_strnicmp (iter, "gov", 3) == 0) {
 	/* hey, that's an ftp address */
 	while (isalpha (*iter) || isdigit (*iter) || *iter == '.')
 	  iter++;
@@ -355,7 +368,7 @@ UUGetFileName (char *subject, char *ptonum, char *ptonend)
   memcpy (result, ptr, length);
   result[length] = '\0';
     
-  return result;
+  return uu_FileNameCallback ? uu_FileNameCallback(uu_FNCBArg, subject, result) : result;
 }
 
 /*
@@ -427,7 +440,7 @@ UUGetPartNo (char *subject, char **where, char **whend)
       while (iter[count] == ' ' || iter[count] == '#' ||
 	     iter[count] == '/' || iter[count] == '\\')  count++;
       
-      if (FP_strnicmp (iter + count, "of", 2) == 0)
+      if (_FP_strnicmp (iter + count, "of", 2) == 0)
 	count += 2;
       
       while (iter[count] == ' ')    count++;
@@ -453,7 +466,7 @@ UUGetPartNo (char *subject, char **where, char **whend)
    */
 
   if (length == 0) {
-    if ((iter = FP_stristr (subject, "part ")) != NULL) {
+    if ((iter = _FP_stristr (subject, "part ")) != NULL) {
       iter += 5;
 
       while (isspace (*iter) || *iter == '.' || *iter == '-')
@@ -463,16 +476,16 @@ UUGetPartNo (char *subject, char **where, char **whend)
         length++;
 
       if (length == 0) {
-	if (FP_strnicmp (iter, "one", 3) == 0)        length = 1;
-	else if (FP_strnicmp (iter, "two", 3) == 0)   length = 2;
-	else if (FP_strnicmp (iter, "three", 5) == 0) length = 3;
-	else if (FP_strnicmp (iter, "four",  4) == 0) length = 4;
-	else if (FP_strnicmp (iter, "five",  4) == 0) length = 5;
-	else if (FP_strnicmp (iter, "six",   3) == 0) length = 6;
-	else if (FP_strnicmp (iter, "seven", 5) == 0) length = 7;
-	else if (FP_strnicmp (iter, "eight", 5) == 0) length = 8;
-	else if (FP_strnicmp (iter, "nine",  4) == 0) length = 9;
-	else if (FP_strnicmp (iter, "ten",   3) == 0) length = 10;
+	if (_FP_strnicmp (iter, "one", 3) == 0)        length = 1;
+	else if (_FP_strnicmp (iter, "two", 3) == 0)   length = 2;
+	else if (_FP_strnicmp (iter, "three", 5) == 0) length = 3;
+	else if (_FP_strnicmp (iter, "four",  4) == 0) length = 4;
+	else if (_FP_strnicmp (iter, "five",  4) == 0) length = 5;
+	else if (_FP_strnicmp (iter, "six",   3) == 0) length = 6;
+	else if (_FP_strnicmp (iter, "seven", 5) == 0) length = 7;
+	else if (_FP_strnicmp (iter, "eight", 5) == 0) length = 8;
+	else if (_FP_strnicmp (iter, "nine",  4) == 0) length = 9;
+	else if (_FP_strnicmp (iter, "ten",   3) == 0) length = 10;
 
 	if (length && (*whend = strchr (iter, ' '))) {
 	  *where = iter;
@@ -493,7 +506,7 @@ UUGetPartNo (char *subject, char **where, char **whend)
    */
 
   if (length == 0) {
-    if ((iter = FP_stristr (subject, "part")) != NULL) {
+    if ((iter = _FP_stristr (subject, "part")) != NULL) {
       iter += 4;
 
       while (isspace (*iter) || *iter == '.' || *iter == '-')
@@ -503,16 +516,16 @@ UUGetPartNo (char *subject, char **where, char **whend)
         length++;
 
       if (length == 0) {
-	if (FP_strnicmp (iter, "one", 3) == 0)        length = 1;
-	else if (FP_strnicmp (iter, "two", 3) == 0)   length = 2;
-	else if (FP_strnicmp (iter, "three", 5) == 0) length = 3;
-	else if (FP_strnicmp (iter, "four",  4) == 0) length = 4;
-	else if (FP_strnicmp (iter, "five",  4) == 0) length = 5;
-	else if (FP_strnicmp (iter, "six",   3) == 0) length = 6;
-	else if (FP_strnicmp (iter, "seven", 5) == 0) length = 7;
-	else if (FP_strnicmp (iter, "eight", 5) == 0) length = 8;
-	else if (FP_strnicmp (iter, "nine",  4) == 0) length = 9;
-	else if (FP_strnicmp (iter, "ten",   3) == 0) length = 10;
+	if (_FP_strnicmp (iter, "one", 3) == 0)        length = 1;
+	else if (_FP_strnicmp (iter, "two", 3) == 0)   length = 2;
+	else if (_FP_strnicmp (iter, "three", 5) == 0) length = 3;
+	else if (_FP_strnicmp (iter, "four",  4) == 0) length = 4;
+	else if (_FP_strnicmp (iter, "five",  4) == 0) length = 5;
+	else if (_FP_strnicmp (iter, "six",   3) == 0) length = 6;
+	else if (_FP_strnicmp (iter, "seven", 5) == 0) length = 7;
+	else if (_FP_strnicmp (iter, "eight", 5) == 0) length = 8;
+	else if (_FP_strnicmp (iter, "nine",  4) == 0) length = 9;
+	else if (_FP_strnicmp (iter, "ten",   3) == 0) length = 10;
 
 	if (length && (*whend = strchr (iter, ' '))) {
 	  *where = iter;
@@ -533,7 +546,7 @@ UUGetPartNo (char *subject, char **where, char **whend)
    */
 
   if (length == 0) {
-    if ((iter = FP_strirstr (subject, "of")) != NULL) {
+    if ((iter = _FP_strirstr (subject, "of")) != NULL) {
       while (iter>subject && isspace (*(iter-1)))
 	iter--;
       if (isdigit(*(iter-1))) {
@@ -632,19 +645,19 @@ UUGetPartNo (char *subject, char **where, char **whend)
     /*
      * some people use the strangest things, including spelling mistakes :-)
      */
-    if ((iter = FP_stristr (subject, "first")) != NULL)        length = 1;
-    else if ((iter = FP_stristr (subject, "second")) != NULL)  length = 2;
-    else if ((iter = FP_stristr (subject, "third")) != NULL)   length = 3;
-    else if ((iter = FP_stristr (subject, "forth")) != NULL)   length = 4;
-    else if ((iter = FP_stristr (subject, "fourth")) != NULL)  length = 4;
-    else if ((iter = FP_stristr (subject, "fifth")) != NULL)   length = 5;
-    else if ((iter = FP_stristr (subject, "sixth")) != NULL)   length = 6;
-    else if ((iter = FP_stristr (subject, "seventh")) != NULL) length = 7;
-    else if ((iter = FP_stristr (subject, "eigth")) != NULL)   length = 8;
-    else if ((iter = FP_stristr (subject, "eighth")) != NULL)  length = 8;
-    else if ((iter = FP_stristr (subject, "nineth")) != NULL)  length = 9;
-    else if ((iter = FP_stristr (subject, "ninth")) != NULL)   length = 9;
-    else if ((iter = FP_stristr (subject, "tenth")) != NULL)   length = 10;
+    if ((iter = _FP_stristr (subject, "first")) != NULL)        length = 1;
+    else if ((iter = _FP_stristr (subject, "second")) != NULL)  length = 2;
+    else if ((iter = _FP_stristr (subject, "third")) != NULL)   length = 3;
+    else if ((iter = _FP_stristr (subject, "forth")) != NULL)   length = 4;
+    else if ((iter = _FP_stristr (subject, "fourth")) != NULL)  length = 4;
+    else if ((iter = _FP_stristr (subject, "fifth")) != NULL)   length = 5;
+    else if ((iter = _FP_stristr (subject, "sixth")) != NULL)   length = 6;
+    else if ((iter = _FP_stristr (subject, "seventh")) != NULL) length = 7;
+    else if ((iter = _FP_stristr (subject, "eigth")) != NULL)   length = 8;
+    else if ((iter = _FP_stristr (subject, "eighth")) != NULL)  length = 8;
+    else if ((iter = _FP_stristr (subject, "nineth")) != NULL)  length = 9;
+    else if ((iter = _FP_stristr (subject, "ninth")) != NULL)   length = 9;
+    else if ((iter = _FP_stristr (subject, "tenth")) != NULL)   length = 10;
     else iter = NULL;
 
     if (length && iter && (*whend = strchr (iter, ' '))) {
@@ -661,7 +674,7 @@ UUGetPartNo (char *subject, char **where, char **whend)
   *where = iter;
 
   if (delim && delim[0]) {
-    if ((*whend=FP_stristr (iter, delim)) != NULL && (*whend - *where) < 12) {
+    if ((*whend=_FP_stristr (iter, delim)) != NULL && (*whend - *where) < 12) {
       ptr = (*whend += strlen (delim));
 
       while (*ptr == ' ')
@@ -717,7 +730,7 @@ UUPreProcessPart (fileread *data, int *ret)
   }
 
   if (data->filename != NULL) {
-    if ((result->filename = FP_strdup (data->filename)) == NULL) {
+    if ((result->filename = _FP_strdup (data->filename)) == NULL) {
       UUMessage (uucheck_id, __LINE__, UUMSG_ERROR,
 		 uustring (S_OUT_OF_MEMORY),
 		 strlen (data->filename)+1);
@@ -734,8 +747,8 @@ UUPreProcessPart (fileread *data, int *ret)
   else
     result->subfname = NULL;
 
-  result->mimeid   = FP_strdup (data->mimeid);
-  result->mimetype = FP_strdup (data->mimetype);
+  result->mimeid   = _FP_strdup (data->mimeid);
+  result->mimetype = _FP_strdup (data->mimetype);
 
   if (result->partno == -1 && 
       (data->uudet == PT_ENCODED || data->uudet == QP_ENCODED))
@@ -747,10 +760,10 @@ UUPreProcessPart (fileread *data, int *ret)
      */
     if (result->filename == NULL) {
       sprintf (temp, "%s.%03d", nofname, ++nofnum);
-      result->filename = FP_strdup (temp);
+      result->filename = _FP_strdup (temp);
     }
     if (result->subfname == NULL)
-      result->subfname = FP_strdup (result->filename);
+      result->subfname = _FP_strdup (result->filename);
 
     if (result->filename == NULL || 
 	result->subfname == NULL) {
@@ -777,10 +790,10 @@ UUPreProcessPart (fileread *data, int *ret)
      * in this case, it really _should_ have a filename somewhere
      */
     if (result->filename != NULL)
-      result->subfname = FP_strdup (result->filename);
+      result->subfname = _FP_strdup (result->filename);
     else { /* if not, escape to UNKNOWN. We need to fill subfname */
       sprintf (temp, "%s.%03d", nofname, ++nofnum);
-      result->subfname = FP_strdup (temp);
+      result->subfname = _FP_strdup (temp);
     }
     /*
      * in case the strdup failed
@@ -805,7 +818,7 @@ UUPreProcessPart (fileread *data, int *ret)
       lastvalid = 1;
       lastenc   = data->uudet;
       lastpart  = result->partno = 1;
-      FP_strncpy (uucheck_lastname, result->subfname, 256);
+      _FP_strncpy (uucheck_lastname, result->subfname, 256);
     }
     else
       result->partno = 1;
@@ -817,9 +830,9 @@ UUPreProcessPart (fileread *data, int *ret)
      * under the same id.
      */
     if (result->filename)
-      result->subfname = FP_strdup (result->filename);
+      result->subfname = _FP_strdup (result->filename);
     else
-      result->subfname = FP_strdup (result->mimeid);
+      result->subfname = _FP_strdup (result->mimeid);
   }
   else if (result->subfname == NULL && data->uudet) {
     /*
@@ -831,10 +844,10 @@ UUPreProcessPart (fileread *data, int *ret)
        * Assume it's the first part. I wonder why it's got no part number?
        */
       if (result->filename != NULL)
-        result->subfname = FP_strdup (result->filename);
+        result->subfname = _FP_strdup (result->filename);
       else { /* if not, escape to UNKNOWN. We need to fill subfname */
         sprintf (temp, "%s.%03d", nofname, ++nofnum);
-        result->subfname = FP_strdup (temp);
+        result->subfname = _FP_strdup (temp);
       }
       if (result->subfname == NULL) {
 	UUMessage (uucheck_id, __LINE__, UUMSG_ERROR,
@@ -847,8 +860,8 @@ UUPreProcessPart (fileread *data, int *ret)
       }
       lastvalid = 0;
     }
-    else if (lastvalid && data->uudet == lastenc) {
-      result->subfname = FP_strdup (uucheck_lastname);
+    else if (lastvalid && data->uudet == lastenc && result->partno == -1) {
+      result->subfname = _FP_strdup (uucheck_lastname);
       result->partno   = ++lastpart;
 
       /*
@@ -856,6 +869,9 @@ UUPreProcessPart (fileread *data, int *ret)
        */
       if (data->end || (data->partno && data->partno == data->maxpno))
 	lastvalid = 0;
+    }
+    else if (data->partno != -1 && result->filename) {
+      result->subfname = _FP_strdup (result->filename);
     }
     else { 
       /* 
@@ -898,7 +914,7 @@ UUPreProcessPart (fileread *data, int *ret)
      * if we have no end
      */
     if (!data->end) {
-      FP_strncpy (uucheck_lastname, result->subfname, 256);
+      _FP_strncpy (uucheck_lastname, result->subfname, 256);
       result->partno = lastpart = 1;
       lastenc = data->uudet;
       lastvalid = 1;
@@ -907,7 +923,7 @@ UUPreProcessPart (fileread *data, int *ret)
       result->partno = 1;
   }
   else if (result->partno == -1 && data->uudet) {
-    if (lastvalid && FP_stricmp (uucheck_lastname, result->subfname) == 0) {
+    if (lastvalid && _FP_stricmp (uucheck_lastname, result->subfname) == 0) {
       /*
        * if the subject filename is the same as last time, use part no
        * of lastvalid. If at end, invalidate lastvalid
@@ -947,9 +963,9 @@ UUPreProcessPart (fileread *data, int *ret)
  skipcheck:
 
   if (result->filename) {
-    if (*(ptr = FP_cutdir (result->filename))) {
-      p2 = FP_strdup (ptr);
-      FP_free (result->filename);
+    if (*(ptr = _FP_cutdir (result->filename))) {
+      p2 = _FP_strdup (ptr);
+      _FP_free (result->filename);
       result->filename = p2;
     }
   }
@@ -992,7 +1008,7 @@ UUInsertPartToList (uufile *data)
     if (data->data->flags & FL_SINGLE) {
       /* this space intentionally left blank */
     }
-    else if ((FP_stricmp (data->subfname, iter->subfname) == 0 ||
+    else if ((_FP_stricmp (data->subfname, iter->subfname) == 0 ||
          (data->mimeid && iter->mimeid &&
           strcmp (data->mimeid, iter->mimeid) == 0)) &&
 	!(iter->begin && data->data->begin) &&
@@ -1017,7 +1033,7 @@ UUInsertPartToList (uufile *data)
 	goto goahead;
 
       if (iter->filename == NULL && data->filename != NULL) {
-        if ((iter->filename = FP_strdup (data->filename)) == NULL)
+        if ((iter->filename = _FP_strdup (data->filename)) == NULL)
 	  return UURET_NOMEM;
       }
 
@@ -1062,8 +1078,8 @@ UUInsertPartToList (uufile *data)
       if (data->data->end)   iter->end   = (data->partno)?data->partno:1;
 
       if (data->mimetype) {
-	FP_free (iter->mimetype);
-	iter->mimetype = FP_strdup (data->mimetype);
+	_FP_free (iter->mimetype);
+	iter->mimetype = _FP_strdup (data->mimetype);
       }
 
       /*
@@ -1092,8 +1108,8 @@ UUInsertPartToList (uufile *data)
 	if (data->partno == fiter->partno) {
           if (fiter->data->subject == NULL)
             return UURET_NODATA;
-	  else if (FP_stristr (fiter->data->subject, "repost") != NULL &&
-		   FP_stristr (data->data->subject,  "repost") == NULL)
+	  else if (_FP_stristr (fiter->data->subject, "repost") != NULL &&
+		   _FP_stristr (data->data->subject,  "repost") == NULL)
 	    return UURET_NODATA;
           else if (fiter->data->uudet && !data->data->uudet)
             return UURET_NODATA;
@@ -1164,15 +1180,15 @@ UUInsertPartToList (uufile *data)
     return UURET_NOMEM;
   }
 
-  if ((unew->subfname = FP_strdup (data->subfname)) == NULL) {
-    FP_free (unew);
+  if ((unew->subfname = _FP_strdup (data->subfname)) == NULL) {
+    _FP_free (unew);
     return UURET_NOMEM;
   }
 
   if (data->filename != NULL) {
-    if ((unew->filename = FP_strdup (data->filename)) == NULL) {
-      FP_free (unew->subfname);
-      FP_free (unew);
+    if ((unew->filename = _FP_strdup (data->filename)) == NULL) {
+      _FP_free (unew->subfname);
+      _FP_free (unew);
       return UURET_NOMEM;
     }
   }
@@ -1180,10 +1196,10 @@ UUInsertPartToList (uufile *data)
     unew->filename = NULL;
 
   if (data->mimeid != NULL) {
-    if ((unew->mimeid = FP_strdup (data->mimeid)) == NULL) {
-      FP_free (unew->subfname);
-      FP_free (unew->filename);
-      FP_free (unew);
+    if ((unew->mimeid = _FP_strdup (data->mimeid)) == NULL) {
+      _FP_free (unew->subfname);
+      _FP_free (unew->filename);
+      _FP_free (unew);
       return UURET_NOMEM;
     }
   }
@@ -1191,11 +1207,11 @@ UUInsertPartToList (uufile *data)
     unew->mimeid = NULL;
 
   if (data->mimetype != NULL) {
-    if ((unew->mimetype = FP_strdup (data->mimetype)) == NULL) {
-      FP_free (unew->mimeid);
-      FP_free (unew->subfname);
-      FP_free (unew->filename);
-      FP_free (unew);
+    if ((unew->mimetype = _FP_strdup (data->mimetype)) == NULL) {
+      _FP_free (unew->mimeid);
+      _FP_free (unew->subfname);
+      _FP_free (unew->filename);
+      _FP_free (unew);
       return UURET_NOMEM;
     }
   }
@@ -1389,8 +1405,8 @@ UUCheckGlobalList (void)
      * Set the parts we have and/or missing
      */
 
-    FP_free (liter->haveparts);
-    FP_free (liter->misparts);
+    _FP_free (liter->haveparts);
+    _FP_free (liter->misparts);
 
     liter->haveparts = NULL;
     liter->misparts  = NULL;
@@ -1432,13 +1448,13 @@ UUCheckGlobalList (void)
       /*
        * Emergency backup if the file does not have a filename
        */
-      FP_free (liter->filename);
+      _FP_free (liter->filename);
       if (liter->subfname && liter->subfname[0] &&
-          FP_strpbrk (liter->subfname, "()[];: ") == NULL)
-        liter->filename = FP_strdup (liter->subfname);
+          _FP_strpbrk (liter->subfname, "()[];: ") == NULL)
+        liter->filename = _FP_strdup (liter->subfname);
       else {
         sprintf (uucheck_tempname, "%s.%03d", nofname, ++nofnum);
-        liter->filename = FP_strdup (uucheck_tempname);
+        liter->filename = _FP_strdup (uucheck_tempname);
       }
     }
     liter = liter->NEXT;

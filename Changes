@@ -1,5 +1,11 @@
 Revision history for Perl extension Convert::UUlib.
 
+0.21  Sun Mar 31 22:06:05 CEST 2002
+	- bumped uulib from 0.5.15 to 0.5.17 (adds some yEnc support, YENC_ENCODED).
+        - source-renamed FP_*-symbols to _FP_* again, but still define them
+          to be FP_* in the object file.
+        - new callback: SetFileNameCallback (actually documented ;)
+
 0.201 Sun Sep 16 03:43:38 CEST 2001
 	- fixed another segfault-bug in uulib, thanks to Lars Hecking who
           provides all the test files ;)

@@ -1,39 +1,245 @@
 NAME
+    Convert::UUlib - Perl interface to the uulib library (a.k.a.
+    uudeview/uuenview).
 
-	Convert::UUlib - Perl interface to the uulib library (as used in
-        uudeview/uuenview)
+SYNOPSIS
+      use Convert::UUlib;
 
-PROPAGANDA
+DESCRIPTION
+    Read the file uulibdoc.dvi.gz and the example-decoder source. Sorry -
+    more to come once people use me ;)
 
-        Convert::UUlib is a versatile and powerful decoder/encoder library
-        for a variety of encodings used in Usenet and Mail (uuencode,
-        xxencode, b64, binhex...).
+SMALL EXAMPLE DECODER
+    The following code excerpt is a minimal decoder program. It reads all
+    files given on the commandline and decodes any files in it.
 
-        The library contains a variety of heuristics to reliably decode
-        any files found in the input files, wether part of a single
-        mailfolder or spread over hundreds of files. Its two-pass
-        architecture makes it possible to decode hundreds of megabytes in
-        one sweep, without using much virtual memory.
+     use Convert::UUlib ':all';
+ 
+     LoadFile($_) for @ARGV;
+ 
+     for($i=0; $uu=GetFileListItem($i); $i++) {
+        $uu->decode if $uu->state & FILE_OK;
+     }
 
-        The encoding functions can create mime-compliant mails and
-        attachments (but this is just a side-effect, the MIME::-hierarchy
-        offers much better functionality).
+LARGE EXAMPLE DECODER
+    This is the file "example-decoder" from the distribution, put here
+    instead of more thorough documentation.
 
-        At the moment, the module documentation is 90% NON-existant,
-        however, the example source (example-decoder) and the original
-        uulib documentation (uulibdoc.dvi) should be useful starting
-        points. The included documentation is merely an enumeration of the
-        various constants and functions.
+     # decode all the files in the directory uusrc/ and copy
+     # the resulting files to uudst/
 
-EXAMPLE DECODER
+     use Convert::UUlib ':all';
 
-        The following example source reads all files given on the
-        commandline and decodes any encoded files in them.
+     sub namefilter {
+        my($path)=@_;
+        $path=~s/^.*[\/\\]//;
+        $path;
+     }
 
-        use Convert::UUlib ':all';
+     sub busycb {
+        my($action,$curfile,$partno,$numparts,$percent,$fsize)=@_;
+        $_[0]=straction($action);
+        print "busy_callback(",join(",",@_),")\n";
+        0;
+     }
 
-        LoadFile($_) for @ARGV;
+     SetOption (OPT_IGNMODE, 1);
+     SetOption (OPT_VERBOSE, 1);
 
-        for($i=0; $uu=GetFileListItem($i); $i++) {
-           $uu->decode if $uu->state & FILE_OK;
+     # show the three ways you can set callback functions
+     SetFNameFilter (\&namefilter);
+
+     SetBusyCallback ("busycb",333);
+
+     SetMsgCallback (sub {
+        my($msg,$level)=@_;
+        print uc(strmsglevel($_[1])),": $msg\n";
+     });
+
+     for(<uusrc/*>) {
+        my($retval,$count)=LoadFile ($_,$_,1);
+        print "file($_), status(",strerror($retval),") parts($count)\n";
+     }
+
+     SetOption (OPT_SAVEPATH, "uudst/");
+
+     $i=0;
+     while($uu=GetFileListItem($i)) {
+        $i++;
+        print "file nr. $i";
+        print " state ",$uu->state;
+        print " mode ",$uu->mode;
+        print " uudet ",strencoding($uu->uudet);
+        print " size ",$uu->size;
+        print " filename ",$uu->filename;
+        print " subfname ",$uu->subfname;
+        print " mimeid ",$uu->mimeid;
+        print " mimetype ",$uu->mimetype;
+        print "\n";
+
+        # print additional info about all parts
+        for($uu->parts) {
+           while(my($k,$v)=each(%$_)) {
+              print "$k > $v, ";
+           }
+           print "\n";
         }
+
+        $uu->decode_temp;
+        print " temporarily decoded to ",$uu->binfile,"\n";
+        $uu->remove_temp;
+
+        print strerror($uu->decode);
+        print " saved as uudst/",$uu->filename,"\n";
+     }
+
+     print "cleanup...\n";
+
+     CleanUp();
+
+Exported constants
+    Action code constants:
+
+      ACT_COPYING ACT_DECODING ACT_ENCODING
+      ACT_IDLE    ACT_SCANNING
+
+    File status flags:
+
+      FILE_DECODED FILE_ERROR  FILE_MISPART
+      FILE_NOBEGIN FILE_NODATA FILE_NOEND
+      FILE_OK      FILE_READ   FILE_TMPFILE
+
+    Message severity levels:
+
+      MSG_ERROR MSG_FATAL MSG_MESSAGE
+      MSG_NOTE  MSG_PANIC MSG_WARNING
+
+    Options:
+
+      OPT_BRACKPOL OPT_DEBUG     OPT_DESPERATE OPT_DUMBNESS
+      OPT_ENCEXT   OPT_ERRNO     OPT_FAST      OPT_IGNMODE
+      OPT_IGNREPLY OPT_OVERWRITE OPT_PREAMB    OPT_PROGRESS
+      OPT_SAVEPATH OPT_TINYB64   OPT_USETEXT   OPT_VERBOSE
+      OPT_VERSION  OPT_REMOVE    OPT_MOREMIME
+
+    Error/Result codes:
+
+      RET_CANCEL RET_CONT  RET_EXISTS RET_ILLVAL RET_IOERR
+      RET_NODATA RET_NOEND RET_NOMEM  RET_OK     RET_UNSUP
+
+    Encoding types:
+
+      B64ENCODED BH_ENCODED PT_ENCODED QP_ENCODED XX_ENCODED
+      UU_ENCODED YENC_ENCODED
+
+Exported functions
+    Initializing and cleanup (Initialize is automatically called when the
+    module is loaded and allocates quite a bit of memory. CleanUp releases
+    that again).
+
+      Initialize; # not normally necessary
+      CleanUp;    # could be called at the end to release memory
+
+    Setting and querying options:
+
+      $option = GetOption OPT_xxx;
+      SetOption OPT_xxx, opt-value;
+
+    Error and action values => stringified:
+
+      $msg = straction ACT_xxx;
+      $msg = strerror RET_xxx;
+
+    Setting various callbacks:
+
+      SetMsgCallback [callback-function];
+      SetBusyCallback [callback-function];
+      SetFileCallback [callback-function];
+      SetFNameFilter [callback-function];
+
+    Call the currently selected FNameFilter:
+
+      $file = FNameFilter $file;
+
+    Loading sourcefiles, optionally fuzzy merge and start decoding:
+
+      ($retval, $count) = LoadFile $fname, [$id, [$delflag]];
+      $retval = Smerge $pass;
+      $item = GetFileListItem $item_number;
+
+    The procedural interface is undocumented, use the following methods
+    instead:
+
+      $retval = $item->rename($newname);
+      $retval = $item->decode_temp;
+      $retval = $item->remove_temp;
+      $retval = $item->decode([$target_path]);
+      $retval = $item->info(callback-function);
+
+    Querying (and setting) item attributes:
+
+      $state    = $item->state;
+      $mode     = $item->mode([newmode]);
+      $uudet    = $item->uudet;
+      $size     = $item->size;
+      $filename = $item->filename([newfilename});
+      $subfname = $item->subfname;
+      $mimeid   = $item->mimeid;
+      $mimetype = $item->mimetype;
+      $binfile  = $item->binfile;
+
+    Totally undocumented and unsupported(!):
+
+      $parts = $item->parts;
+
+    Functions below not documented and not very well tested:
+
+      int     QuickDecode           () ;
+      int     EncodeMulti           () ;
+      int     EncodePartial () ;
+      int     EncodeToStream        () ;
+      int     EncodeToFile          () ;
+      int     E_PrepSingle          () ;
+      int     E_PrepPartial () ;
+
+  EXTENSION FUNCTIONS
+    Functions found in this module but not documented in the uulib
+    documentation:
+
+    SetFileNameCallback $cb
+        Sets (or queries) the FileNameCallback, which is called whenever the
+        decoding library can't find a filename and wants to extract a
+        filename from the subject line of a posting. The callback will be
+        called with two arguments, the subject line and the current
+        candidate for the filename. The latter argument can be "undef",
+        which means that no filename could be found (and likely no one
+        exists, so it is safe to also return "undef" in this case). If it
+        doesn't return anything (not even "undef"!), then nothing happens,
+        so this is a no-op callback:
+
+           sub cb {
+              return ();
+           }
+
+        If it returns "undef", then this indicates that no filename could be
+        found. In all other cases, the return value is taken to be the
+        filename.
+
+        This is a slightly more useful callback:
+
+          sub cb {
+             return unless $_[1]; # skip "Re:"-plies et al.
+             my ($subject, $filename) = @_;
+             # if we find some *.rar, take it
+             return $1 if $subject =~ /(\w+\.rar)/;
+             # otherwise just pass what we have
+             return ();
+          }
+
+AUTHOR
+    Marc Lehmann <pcg@goof.com>, the original uulib library was written by
+    Frank Pilhofer <fp@informatik.uni-frankfurt.de>.
+
+SEE ALSO
+    perl(1), uudeview homepage at http://www.uni-frankfurt.de/~fp/uudeview/.
+

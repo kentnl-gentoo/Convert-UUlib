@@ -50,7 +50,7 @@
 #include <uuint.h>
 #include <uustring.h>
 
-char * uustring_id = "$Id: uustring.c,v 1.2 2001/06/11 20:42:38 root Exp $";
+char * uustring_id = "$Id: uustring.c,v 1.3 2002/03/31 20:04:31 root Exp $";
 
 typedef struct {
   int code;
@@ -128,8 +128,8 @@ char *uuretcodes[] = {
  * Names of encoding types
  */
 
-char *codenames[7] = {
-  "", "UUdata", "Base64", "XXdata", "Binhex", "Text", "Text"
+char *codenames[8] = {
+  "", "UUdata", "Base64", "XXdata", "Binhex", "Text", "Text", "yEnc"
 };
 
 /*
