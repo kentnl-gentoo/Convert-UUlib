@@ -57,7 +57,7 @@
 #include <fptools.h>
 #include <uustring.h>
 
-char * uuscan_id = "$Id: uuscan.c,v 1.2 2001/06/11 20:42:38 root Exp $";
+char * uuscan_id = "$Id: uuscan.c,v 1.3 2001/08/07 13:38:38 root Exp $";
 
 /*
  * Header fields we recognize as such. See RFC822. We add "From ",
@@ -2306,9 +2306,9 @@ ScanPart (FILE *datei, char *fname, int *errcode)
      * it doesn't hold up, handle as plain text instead.
      */
 
-    if (strcmp (localenv.mimevers, "1.0") == 0 &&
+    if (sstate.ismime && sstate.mimestate == MS_SUBPART &&
+        strcmp (localenv.mimevers, "1.0") == 0 &&
 	FP_stristr (localenv.ctype, "text") != NULL &&
-	sstate.ismime && sstate.mimestate == MS_SUBPART &&
 	!uu_desperate) {
       if (result->uudet == UU_ENCODED && !(result->begin || result->end)) {
 	result->uudet = 0;
@@ -2920,6 +2920,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 	  ptr1++;
 	*ptr1 = '\0';
 	
+        sstate.envelope.mimevers = FP_strdup ("1.0");
 	sstate.envelope.boundary = FP_strdup (line+2);
 	
 	/*

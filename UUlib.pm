@@ -6,7 +6,7 @@ require Exporter;
 require DynaLoader;
 use AutoLoader;
 
-$VERSION = 0.2;
+$VERSION = 0.201;
 
 @ISA = qw(Exporter DynaLoader);
 

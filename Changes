@@ -1,7 +1,11 @@
 Revision history for Perl extension Convert::UUlib.
 
+0.201 Sun Sep 16 03:43:38 CEST 2001
+	- fixed another segfault-bug in uulib, thanks to Lars Hecking who
+          provides all the test files ;)
+
 0.2  Thu Jun 14 18:42:49 CEST 2001
-        - Frank Pilhofer is NOT dead! He is a live, kicking, and fixing
+        - Frank Pilhofer is NOT dead! He is alive, kicking, and fixing
           bugs in uulib now! Since his uulib and mine diverged quite
           a bit I am still in the process of merging his bugfixes
           into my version. So be aware that this might introduce new
