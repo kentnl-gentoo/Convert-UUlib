@@ -1,5 +1,13 @@
 Revision history for Perl extension Convert::UUlib.
 
+1.051 Thu Mar  3 18:00:52 CET 2005
+	- change of contact address.
+        - updated perl parts to GPLv2.
+
+1.05 Fri Feb 25 22:50:27 CET 2005
+        - fix a (likely exploitable) segfault problem, (tracked down
+          and/or reported by Mark Martinec and Robert Lewis).
+
 1.04 Tue Dec 28 15:08:44 CET 2004
 	- slightly improved subject filename extraction.
           Also see the filename callback in the example-decoder.

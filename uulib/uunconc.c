@@ -1312,7 +1312,7 @@ int
 UUDecode (uulist *data)
 {
   int state=BEGIN, part=-1, res=0, hb;
-  long rsize, dsize, numbytes;
+  unsigned long rsize, dsize, numbytes;
   FILE *datain, *dataout;
   unsigned char r[8];
   char *mode, *ntmp;

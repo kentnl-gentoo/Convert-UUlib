@@ -1976,8 +1976,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 	    break;
 	  }
 	  /* remember that XX can easily be mistaken as Base64 */
-	  if ((vflag == UU_ENCODED || vflag == XX_ENCODED ||
-	       vflag == B64ENCODED) && begflag) {
+	  if ((vflag == UU_ENCODED || vflag == XX_ENCODED || vflag == B64ENCODED) && begflag) {
 	    if (++ecount >= ELC_COUNT)
 	      break;
 	  }

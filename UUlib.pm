@@ -5,7 +5,7 @@ use Carp;
 require Exporter;
 require DynaLoader;
 
-$VERSION = "1.04";
+$VERSION = "1.051";
 
 @ISA = qw(Exporter DynaLoader);
 
@@ -536,7 +536,7 @@ instead of more thorough documentation.
 
 =head1 AUTHOR
 
-Marc Lehmann <pcg@goof.com>, the original uulib library was written
+Marc Lehmann <schmorp@schmorp.de>, the original uulib library was written
 by Frank Pilhofer <fp@informatik.uni-frankfurt.de>, and later heavily
 bugfixed by Marc Lehmann.
 

@@ -361,9 +361,9 @@ LARGE EXAMPLE DECODER
      CleanUp();
 
 AUTHOR
-    Marc Lehmann <pcg@goof.com>, the original uulib library was written by
-    Frank Pilhofer <fp@informatik.uni-frankfurt.de>, and later heavily
-    bugfixed by Marc Lehmann.
+    Marc Lehmann <schmorp@schmorp.de>, the original uulib library was
+    written by Frank Pilhofer <fp@informatik.uni-frankfurt.de>, and later
+    heavily bugfixed by Marc Lehmann.
 
 SEE ALSO
     perl(1), uudeview homepage at http://www.uni-frankfurt.de/~fp/uudeview/.
