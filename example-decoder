@@ -1,0 +1,76 @@
+#!/usr/bin/perl
+
+# decode all the files in the directory uusrc/ and copy
+# the resulting files to uudst/
+
+# remove this unless you are running directly from the source dir,
+# as this is only for testing
+use blib;
+
+use Convert::UUlib ':all';
+
+sub namefilter {
+   my($path)=@_;
+   $path=~s/^.*[\/\\]//;
+   $path;
+}
+
+sub busycb {
+   my($action,$curfile,$partno,$numparts,$percent,$fsize)=@_;
+   $_[0]=straction($action);
+   print "busy_callback(",join(",",@_),")\n";
+   0;
+}
+
+SetOption (OPT_IGNMODE, 1);
+SetOption (OPT_VERBOSE, 1);
+
+# show the three ways you can set callback functions
+SetFNameFilter (\&namefilter);
+
+SetBusyCallback ("busycb",333);
+
+SetMsgCallback (sub {
+   my($msg,$level)=@_;
+   print uc(strmsglevel($_[1])),": $msg\n";
+});
+
+for(<pt/*>) {
+   LoadFile ($_,$_,1);
+}
+
+SetOption (OPT_SAVEPATH, "uudst/");
+
+$i=0;
+while($uu=GetFileListItem($i)) {
+   $i++;
+   print "file nr. $i";
+   print " state ",$uu->state;
+   print " mode ",$uu->mode;
+   print " uudet ",strencoding($uu->uudet);
+   print " size ",$uu->size;
+   print " filename ",$uu->filename;
+   print " subfname ",$uu->subfname;
+   print " mimeid ",$uu->mimeid;
+   print " mimetype ",$uu->mimetype;
+   print "\n";
+
+   # print additional info about all parts
+   for($uu->parts) {
+      while(my($k,$v)=each(%$_)) {
+         print "$k > $v, ";
+      }
+      print "\n";
+   }
+
+   $uu->decode_temp;
+   print " temporarily decoded to ",$uu->binfile,"\n";
+   $uu->remove_temp;
+
+   print strerror($uu->decode);
+   print " saved as uudst/",$uu->filename,"\n";
+}
+
+print "cleanup...\n";
+
+CleanUp();
