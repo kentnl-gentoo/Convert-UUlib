@@ -1,35 +1,43 @@
 Revision history for Perl extension Convert::UUlib.
 
-0.11 Sun Jul 16 22:42:57 CEST 2000
+0.111 Fri May  4 22:29:09 CEST 2001
+        - heuristic to decode microsoft-rfc822-headers (microsoft uses
+          '\' as path seperator which is also the rfc822 quote character.
+          of course they could have quoted it, but it's microsoft, so
+          only the devil knows how they try to parse mime (they obviously
+          haven't read the standard AGAIN). in case you wonder, this fixes
+          the "c:my_documentssend.doc" "filename" problem.
+
+0.11  Sun Jul 16 22:42:57 CEST 2000
 	- fixed a bug in the file callback.
 
-0.10 Tue May  2 03:31:09 CEST 2000
+0.10  Tue May  2 03:31:09 CEST 2000
         - fixed one very longstanding bug that might have been the cause
           for the many mysterious segmentation faults. Hopefully.
         - improved documentation to the point that it slowly becomes useful
           as a (very quick) reference.
 
-0.07 Wed Nov 24 18:45:23 CET 1999
+0.07  Wed Nov 24 18:45:23 CET 1999
 	- removed END { CleanUp } from UUlib.pm, perl is too
           buggy to rely on this in the face of popen etc..
 
-0.06 Thu Jul 29 22:48:18 CEST 1999
+0.06  Thu Jul 29 22:48:18 CEST 1999
 	- Thierry Bezecourt had the very reasonable idea to include
           the example source in the manpage.
 
-0.05 Mon May 24 11:37:25 CEST 1999
+0.05  Mon May 24 11:37:25 CEST 1999
 	- LoadFile returns number of parts loaded.
 
-0.04 Mon May 10 22:02:31 CEST 1999
+0.04  Mon May 10 22:02:31 CEST 1999
 	- fixed a couple of portability problems.
         - UUEncodeToStream had a wrong definition.
         - added primitive testsuite.
         - added README.
 
-0.03 Sat May  8 22:40:01 CEST 1999
+0.03  Sat May  8 22:40:01 CEST 1999
 	- renamed it to Convert::UUlib.
 
-0.02 Fri May  7 01:26:19 CEST 1999
+0.02  Fri May  7 01:26:19 CEST 1999
 	- function names exportable (use :all-tag).
 	- made uulist-related functions methods.
         - the first fix from cpan-tester. *sigh* you people save the

@@ -296,7 +296,14 @@ ParseValue (char *attribute)
     /* quoted-string */
     attribute++;
     while (*attribute && *attribute != '"' && length < 255) {
-      if (*attribute == '\\')
+      if (*attribute == '\\'
+          && (attribute[1] == '"'
+              || attribute[1] == '\015'
+              || attribute[1] == '\\'))
+        /* we dequote only the three characters that MUST be quoted, since
+         * microsoft is obviously unable to correctly implement even mime headers:
+         * filename="c:\xxx". *sigh*
+         */
 	*ptr++ = *++attribute;
       else
 	*ptr++ = *attribute;
