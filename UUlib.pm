@@ -5,7 +5,7 @@ use Carp;
 require Exporter;
 require DynaLoader;
 
-$VERSION = "1.0";
+$VERSION = "1.01";
 
 @ISA = qw(Exporter DynaLoader);
 
@@ -263,8 +263,8 @@ See the C<OPT_xxx> constants above to see which options exist.
 
 Load the given file and scan it for encoded contents. Optionally tag it
 with the given id, and if C<$delflag> is true, delete the file after it
-is no longer necessary. If you are certain of the part number, you cna
-specify it as the lat argument.
+is no longer necessary. If you are certain of the part number, you can
+specify it as the last argument.
 
 A better (usually faster) way of doing this is using the C<SetFNameFilter>
 functionality.

@@ -1,5 +1,10 @@
 Revision history for Perl extension Convert::UUlib.
 
+1.01 Sun Feb  1 19:49:51 CET 2004
+	- make it compile with 5.005_03 (reported by Anton Berezin).
+        - very short files might not be detected because the header
+          parsing code might skip them.
+
 1.0  Thu Nov  6 14:32:08 CET 2003
 	- change bracket policy to give priority to (x/y) over (x),
           and use the last bracket found otherwise.

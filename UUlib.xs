@@ -383,10 +383,11 @@ UUFNameFilter (fname)
 	char *	fname
 
 void
-UULoadFile (fname, id = 0, delflag = 0, int partno = -1)
+UULoadFile (fname, id = 0, delflag = 0, partno = -1)
 	char *	fname
 	char *	id
 	int	delflag
+        int	partno
         PPCODE:
 	{	
 	        int count;

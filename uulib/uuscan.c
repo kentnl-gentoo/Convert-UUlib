@@ -620,8 +620,6 @@ ScanData (FILE *datei, char *fname, int *errcode,
   long yefilesize=0, yepartends=0;
   size_t dcc, bhopc;
 
-  blen = 0; preheaders = 0; /* calm down gcc */
-
   *errcode = UURET_OK;
   (void) UUDecodeLine (NULL, NULL, 0);          /* init */
   bhdsp = bhds2;
@@ -1473,8 +1471,6 @@ ScanPart (FILE *datei, char *fname, int *errcode)
   fileread *result;
   char *ptr1, *ptr2;
 
-  blen = 0; prevpos = 0; /* calm down gcc */
-
   (void) UUDecodeLine (NULL, NULL, 0);          /* init */
   if (datei == NULL || feof (datei)) {
     *errcode = UURET_OK;
@@ -1615,8 +1611,14 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 	break;
       }
 
-      if (_FP_fgets (line, 255, datei) == NULL)
-	break;
+      if (_FP_fgets (line, 255, datei) == NULL) {
+        /* If we are at eof without finding headers, there probably isn't */
+        if (hcount < hlcount.afternl) {
+          fseek (datei, prevpos, SEEK_SET);
+          line[0] = '\0';
+        }
+        break;
+      }
       line[255] = '\0';
     }
 
