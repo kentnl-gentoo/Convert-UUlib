@@ -3,7 +3,7 @@ dnl	generate the file "configure", which tries to guess your system
 dnl	configuration so that no manual editing of the Makefile should be
 dnl	necessary
 dnl
-dnl $Id: configure.in,v 1.5 2002/03/31 20:04:29 root Exp $
+dnl $Id: configure.in,v 1.6 2002/10/13 13:08:43 root Exp $
 dnl
 
 AC_INIT(uulib.c)
@@ -14,7 +14,7 @@ AC_CONFIG_HEADER(config.h)
 # package revision
 #
 VERSION=0.5
-PATCH=17
+PATCH=18
 
 AC_ARG_WITH(cc,,CC=$with_cc)
 AC_ARG_WITH(cflags,,CFLAGS=$with_cflags)

@@ -43,23 +43,23 @@ constant(char *name)
 	if (strEQ(name, "MSG_PANIC")) return UUMSG_PANIC;
 	if (strEQ(name, "MSG_WARNING")) return UUMSG_WARNING;
     case 'O':
-	if (strEQ(name, "OPT_BRACKPOL")) return UUOPT_BRACKPOL;
-	if (strEQ(name, "OPT_DEBUG")) return UUOPT_DEBUG;
-	if (strEQ(name, "OPT_DESPERATE")) return UUOPT_DESPERATE;
-	if (strEQ(name, "OPT_DUMBNESS")) return UUOPT_DUMBNESS;
-	if (strEQ(name, "OPT_ENCEXT")) return UUOPT_ENCEXT;
-	if (strEQ(name, "OPT_ERRNO")) return UUOPT_ERRNO;
+	if (strEQ(name, "OPT_VERSION")) return UUOPT_VERSION;
 	if (strEQ(name, "OPT_FAST")) return UUOPT_FAST;
-	if (strEQ(name, "OPT_IGNMODE")) return UUOPT_IGNMODE;
+	if (strEQ(name, "OPT_DUMBNESS")) return UUOPT_DUMBNESS;
+	if (strEQ(name, "OPT_BRACKPOL")) return UUOPT_BRACKPOL;
+	if (strEQ(name, "OPT_VERBOSE")) return UUOPT_VERBOSE;
+	if (strEQ(name, "OPT_DESPERATE")) return UUOPT_DESPERATE;
 	if (strEQ(name, "OPT_IGNREPLY")) return UUOPT_IGNREPLY;
 	if (strEQ(name, "OPT_OVERWRITE")) return UUOPT_OVERWRITE;
-	if (strEQ(name, "OPT_PREAMB")) return UUOPT_PREAMB;
-	if (strEQ(name, "OPT_PROGRESS")) return UUOPT_PROGRESS;
 	if (strEQ(name, "OPT_SAVEPATH")) return UUOPT_SAVEPATH;
-	if (strEQ(name, "OPT_TINYB64")) return UUOPT_TINYB64;
+	if (strEQ(name, "OPT_IGNMODE")) return UUOPT_IGNMODE;
+	if (strEQ(name, "OPT_DEBUG")) return UUOPT_DEBUG;
+	if (strEQ(name, "OPT_ERRNO")) return UUOPT_ERRNO;
+	if (strEQ(name, "OPT_PROGRESS")) return UUOPT_PROGRESS;
 	if (strEQ(name, "OPT_USETEXT")) return UUOPT_USETEXT;
-	if (strEQ(name, "OPT_VERBOSE")) return UUOPT_VERBOSE;
-	if (strEQ(name, "OPT_VERSION")) return UUOPT_VERSION;
+	if (strEQ(name, "OPT_PREAMB")) return UUOPT_PREAMB;
+	if (strEQ(name, "OPT_TINYB64")) return UUOPT_TINYB64;
+	if (strEQ(name, "OPT_ENCEXT")) return UUOPT_ENCEXT;
 	if (strEQ(name, "OPT_REMOVE")) return UUOPT_REMOVE;
 	if (strEQ(name, "OPT_MOREMIME")) return UUOPT_MOREMIME;
 	if (strEQ(name, "OPT_DOTDOT")) return UUOPT_DOTDOT;
@@ -75,7 +75,7 @@ constant(char *name)
 	if (strEQ(name, "RET_OK")) return UURET_OK;
 	if (strEQ(name, "RET_UNSUP")) return UURET_UNSUP;
     case 'B':
-	if (strEQ(name, "B64ENCODED")) return B64ENCODED;
+	if (strEQ(name, "B64_ENCODED")) return B64ENCODED;
 	if (strEQ(name, "BH_ENCODED")) return BH_ENCODED;
     case 'P':
 	if (strEQ(name, "PT_ENCODED")) return PT_ENCODED;

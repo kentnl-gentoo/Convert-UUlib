@@ -11,7 +11,7 @@
 #
 # ============================================================================
 #
-# $Id: Makefile.in,v 1.3 2002/03/31 20:04:29 root Exp $
+# $Id: Makefile.in,v 1.4 2002/10/13 13:08:42 root Exp $
 #
 # your make might need this
 #
@@ -41,7 +41,7 @@ VDEF	=	-DVERSION=\"$(VERSION)\" -DPATCH=\"$(PATCH)\"
 #
 
 UULIB_SOURCE	=	uulib.c uucheck.c uunconc.c uuutil.c uuencode.c \
-			uuscan.c uustring.c fptools.c
+			uuscan.c uustring.c fptools.c crc32.c
 UULIB_OBJ	=	${UULIB_SOURCE:.c=.o}
 
 #

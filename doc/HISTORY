@@ -1,5 +1,5 @@
 #
-# $Id: HISTORY,v 1.1 2001/06/12 09:56:11 root Exp $
+# $Id: HISTORY,v 1.2 2002/10/13 13:51:00 root Exp $
 #
 
 PROGRAM HISTORY
@@ -462,7 +462,7 @@ I start with patchlevel 42.
   mode)
 - Add -c option to autoclear input files from which anything was decoded.
   Use with care - UUDeview does not care about anything else in that file.
-- Add -h option for improved MIME compliance on MIME messages.
+- Add -z option for improved MIME compliance on MIME messages.
 - Improved encoding detection, it should now be less sensitive to data
   that looks both like uu and Base 64.
 - Add -r (Reply-To:) and -f (From:) options to uuenview
@@ -476,4 +476,22 @@ I start with patchlevel 42.
   used and no other mime type is appropriate.
 - Recognize a boundary when scanning a file in "freestyle" mode. This is
   similar to the AOL handling above.
+
+ 0.5.16 (26.08.2001)
+--------
+- fix handling of "x-uue" encoded MIME attachments
+- bug fix for file renaming
+
+ 0.5.17 (06.03.2002)
+--------
+- fix handling of quoted parameters
+- some support for yEnc encoding
+
+ 0.5.18 (02.04.2002)
+--------
+- fix for yEnc files in UUInfoFile
+- patch by Matthew Mueller:
+  - add CRC generation and checks for yEnc
+  - accept yEnc files where the tab character is not escaped
+  - improved error checking for yEnc files
 

@@ -64,7 +64,7 @@ DllEntryPoint (HINSTANCE hInstance, DWORD seginfo,
 #endif
 #endif
 
-char * fptools_id = "$Id: fptools.c,v 1.5 2002/03/31 20:08:42 root Exp $";
+char * fptools_id = "$Id: fptools.c,v 1.6 2002/08/19 23:25:36 root Exp $";
 
 /*
  * some versions of free can't handle a NULL pointer properly

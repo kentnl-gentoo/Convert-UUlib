@@ -57,7 +57,7 @@
 #include <fptools.h>
 #include <uustring.h>
 
-char * uuscan_id = "$Id: uuscan.c,v 1.5 2002/03/31 20:08:42 root Exp $";
+char * uuscan_id = "$Id: uuscan.c,v 1.6 2002/10/13 13:08:44 root Exp $";
 
 /*
  * Header fields we recognize as such. See RFC822. We add "From ",
@@ -865,7 +865,6 @@ ScanData (FILE *datei, char *fname, int *errcode,
      */
 
     if (strncmp (line, "=ybegin ", 8) == 0 &&
-	_FP_strstr (line, " size=") != NULL &&
 	_FP_strstr (line, " name=") != NULL) {
       if ((result->begin || result->end) && !uu_more_mime) {
 	fseek (datei, oldposition, SEEK_SET);
@@ -887,8 +886,13 @@ ScanData (FILE *datei, char *fname, int *errcode,
        * Determine size
        */
 
-      ptr = _FP_strstr (line, " size=") + 6;
-      yefilesize = atoi (ptr);
+      if ((ptr = _FP_strstr (line, " size=")) != NULL) {
+	ptr += 6;
+	yefilesize = atoi (ptr);
+      }
+      else {
+	yefilesize = -1;
+      }
 
       /*
        * check for multipart file and read =ypart line

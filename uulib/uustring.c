@@ -50,7 +50,7 @@
 #include <uuint.h>
 #include <uustring.h>
 
-char * uustring_id = "$Id: uustring.c,v 1.3 2002/03/31 20:04:31 root Exp $";
+char * uustring_id = "$Id: uustring.c,v 1.4 2002/10/13 13:08:44 root Exp $";
 
 typedef struct {
   int code;
@@ -86,6 +86,10 @@ static stringmap messages[] = {
   { S_DECODE_CANCEL,    "Decode operation canceled" },
   { S_ENCODE_CANCEL,    "Encode operation canceled" },
   { S_SCAN_CANCEL,      "Scanning canceled" },
+  { S_SIZE_MISMATCH,    "%s: Decoded size (%ld) does not match expected size (%ld)" },
+  { S_PSIZE_MISMATCH,   "%s part %d: Decoded size (%ld) does not match expected size (%ld)" },
+  { S_CRC_MISMATCH,     "CRC32 mismatch in %s. Decoded file probably corrupt." },
+  { S_PCRC_MISMATCH,    "PCRC32 mismatch in %s part %d. Decoded file probably corrupt." },
 
   /* informational messages */
   { S_LOADED_PART,      "Loaded from %s: '%s' (%s): %s part %d %s %s %s" },

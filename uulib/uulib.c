@@ -81,7 +81,7 @@
 #include <fptools.h>
 #include <uustring.h>
 
-char * uulib_id = "$Id: uulib.c,v 1.10 2002/04/06 02:28:35 root Exp $";
+char * uulib_id = "$Id: uulib.c,v 1.11 2002/10/13 13:08:44 root Exp $";
 
 #ifdef SYSTEM_WINDLL
 BOOL _export WINAPI 
@@ -1134,6 +1134,9 @@ UUInfoFile (uulist *thefile, void *opaque,
       break;
     else if ((thefile->uudet == UU_ENCODED || thefile->uudet == XX_ENCODED) &&
 	     strncmp (uugen_inbuffer, "begin ", 6) == 0)
+      break;
+    else if (thefile->uudet == YENC_ENCODED &&
+	     strncmp (uugen_inbuffer, "=ybegin ", 8) == 0)
       break;
 
     if ((*func) (opaque, uugen_inbuffer))

@@ -1,5 +1,15 @@
 Revision history for Perl extension Convert::UUlib.
 
+0.3   Sun Oct 13 15:12:11 CEST 2002
+	- updated to uulib 0.5.18. As expected, some but not all of my bugfixes
+          have went into uulib, sdo the number of differences decreased a bit
+          again.
+        - I found out that the library is being sold commercially by Frank
+          Pilhofer, disregarding the GPL and ignoring the rights of the people
+          who sent in patches :(
+        - vastly more useful documentation in the .pm file.
+        - much smaller distribution filesize ;)
+
 0.213 Sat Jul 27 21:16:30 CEST 2002
 	- fixed another buffer overflow, also added a santity check to fgets.
 
@@ -9,9 +19,8 @@ Revision history for Perl extension Convert::UUlib.
         - increased linelength to 1195.
 
 0.211 Fri Apr  5 23:56:46 CEST 2002
-	- *sigh*. new version of uulib, new braindamaged buffer overflows.
-          I would not use this code in a virus-scanner, despite my efforts
-          to fix uulib. Diffs like "line length 256 => 300" should have
+	- *sigh*. new version of uulib, new braindamaged buffer overflows
+          fixed. Diffs like "line length 256 => 300" should have
           alerted me...
 
 0.21  Sun Mar 31 22:06:05 CEST 2002

@@ -964,7 +964,7 @@ ac_config_headers="$ac_config_headers config.h"
 # package revision
 #
 VERSION=0.5
-PATCH=17
+PATCH=18
 
 # Check whether --with-cc or --without-cc was given.
 if test "${with_cc+set}" = set; then

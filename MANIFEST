@@ -11,7 +11,6 @@ typemap
 example-decoder
 t/cb.t
 doc/library.pdf
-doc/encodings.pdf
 doc/HISTORY
 uulib/Makefile.in
 uulib/acconfig.h
@@ -19,6 +18,8 @@ uulib/aclocal.m4
 uulib/config.h.in
 uulib/configure
 uulib/configure.in
+uulib/crc32.c
+uulib/crc32.h
 uulib/fptools.c
 uulib/fptools.h
 uulib/uucheck.c

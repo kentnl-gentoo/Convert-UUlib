@@ -49,12 +49,13 @@
 #include <errno.h>
 #endif
 
+#include <crc32.h>
 #include <uudeview.h>
 #include <uuint.h>
 #include <fptools.h>
 #include <uustring.h>
 
-char * uunconc_id = "$Id: uunconc.c,v 1.9 2002/04/06 02:28:35 root Exp $";
+char * uunconc_id = "$Id: uunconc.c,v 1.11 2002/10/13 13:08:44 root Exp $";
 
 /* for braindead systems */
 #ifndef SEEK_SET
@@ -905,11 +906,15 @@ UUDecodePart (FILE *datain, FILE *dataout, int *state,
   int warning=0, vlc=0, lc[2], hadct=0;
   int tc=0, tf=0, vflag, haddata=0, haddh=0;
   long yefilesize=0, yepartends=0;
+  crc32_t yepartcrc=crc32(0L, Z_NULL, 0);
+  static crc32_t yefilecrc=0;
   static int bhflag=0;
   size_t count=0;
+  size_t yepartsize=0;
   char *ptr;
 
   if (datain == NULL || dataout == NULL) {
+    yefilecrc = crc32(0L, Z_NULL, 0);
     bhflag = 0;
     return UURET_OK;
   }
@@ -1038,12 +1043,16 @@ UUDecodePart (FILE *datain, FILE *dataout, int *state,
       }
       else if (method == YENC_ENCODED &&
 	       strncmp (line, "=ybegin ", 8) == 0 &&
-	       _FP_strstr (line, " size=") != NULL &&
 	       _FP_strstr (line, " name=") != NULL) {
 	*state = DATA;
 
-	ptr = _FP_strstr (line, " size=") + 6;
-	yefilesize = atoi (ptr);
+	if ((ptr = _FP_strstr (line, " size=")) != NULL) {
+	  ptr += 6;
+	  yefilesize = atoi (ptr);
+	}
+	else {
+	  yefilesize = -1;
+	}
 
 	if (_FP_strstr (line, " part=") != NULL) {
 	  if (_FP_fgets (line, 1200 - 5, datain) == NULL) {
@@ -1076,6 +1085,35 @@ UUDecodePart (FILE *datain, FILE *dataout, int *state,
 
     if (*state == DATA && method == YENC_ENCODED &&
 	strncmp (line, "=yend ", 6) == 0) {
+      if ((ptr = _FP_strstr (line, " pcrc32=")) != NULL) {
+	crc32_t pcrc32 = strtoul (ptr + 8, NULL, 16);
+	if (pcrc32 != yepartcrc) {
+	  UUMessage (uunconc_id, __LINE__, UUMSG_WARNING,
+		     uustring (S_PCRC_MISMATCH), progress.curfile, progress.partno);
+	}
+      }
+      if ((ptr = _FP_strstr (line, " crc32=")) != NULL)
+      {
+	crc32_t fcrc32 = strtoul (ptr + 7, NULL, 16);
+	if (fcrc32 != yefilecrc) {
+	  UUMessage (uunconc_id, __LINE__, UUMSG_WARNING,
+		     uustring (S_CRC_MISMATCH), progress.curfile);
+	}
+      }
+      if ((ptr = _FP_strstr (line, " size=")) != NULL)
+      {
+	size_t size = atol(ptr + 6);
+	if (size != yepartsize && yefilesize != -1) {
+	  if (size != yefilesize)
+	    UUMessage (uunconc_id, __LINE__, UUMSG_WARNING,
+		       uustring (S_PSIZE_MISMATCH), progress.curfile,
+		       progress.partno, yepartsize, size);
+	  else
+	    UUMessage (uunconc_id, __LINE__, UUMSG_WARNING,
+		       uustring (S_SIZE_MISMATCH), progress.curfile,
+		       yepartsize, size);
+	}
+      }
       if (yepartends == 0 || yepartends >= yefilesize) {
 	*state = DONE;
       }
@@ -1103,6 +1141,12 @@ UUDecodePart (FILE *datain, FILE *dataout, int *state,
       if (vflag == method) {
 	if (tf) {
 	  count  = UUDecodeLine (line, oline, method);
+	  if (method == YENC_ENCODED) {
+	    if (yepartends)
+	      yepartcrc = crc32(yepartcrc, oline, count);
+	    yefilecrc = crc32(yefilecrc, oline, count);
+	    yepartsize += count;
+	  }
 	  vlc++; lc[1]++;
 	}
 	else if (tc == 3) {

@@ -21,7 +21,7 @@
  * This include file features all the definitions that should
  * be externally visible. This isn't much.
  *
- * $Id: uudeview.h,v 1.4 2002/04/06 01:53:30 root Exp $
+ * $Id: uudeview.h,v 1.5 2002/10/13 13:08:43 root Exp $
  */
 
 #ifndef _ANSI_ARGS_
@@ -230,7 +230,8 @@ int	UUEXPORT UUEncodeMulti		_ANSI_ARGS_((FILE *, FILE *,
 int	UUEXPORT UUEncodePartial	_ANSI_ARGS_((FILE *, FILE *,
 						     char *, int,
 						     char *, char *,
-						     int, int, long));
+						     int, int, long,
+						     unsigned long*));
 int	UUEXPORT UUEncodeToStream	_ANSI_ARGS_((FILE *, FILE *,
 						     char *, int,
 						     char *, int));
