@@ -1,11 +1,12 @@
 package Convert::UUlib;
 
 use Carp;
-use vars qw($VERSION @ISA @EXPORT @EXPORT_OK $AUTOLOAD);
 
 require Exporter;
 require DynaLoader;
 use AutoLoader;
+
+$VERSION = '0.06';
 
 @ISA = qw(Exporter DynaLoader);
 
@@ -43,7 +44,6 @@ use AutoLoader;
 @EXPORT = @_consts;
 @EXPORT_OK = @_funcs;
 %EXPORT_TAGS = (all => [@_consts,@_funcs], constants => \@_consts);
-$VERSION = '0.05';
 
 bootstrap Convert::UUlib $VERSION;
 
@@ -100,6 +100,96 @@ Convert::UUlib - Perl interface to the uulib library (a.k.a. uudeview/uuenview).
 
 Read the file uulibdoc.dvi.gz and the example-decoder source. Sorry - more
 to come once people use me ;)
+
+=head1 SMALL EXAMPLE DECODER
+
+The following code excerpt is a minimal decoder program. It reads all
+files given on the commandline and decodes any files in it.
+
+ use Convert::UUlib ':all';
+ 
+ LoadFile($_) for @ARGV;
+ 
+ for($i=0; $uu=GetFileListItem($i); $i++) {
+    $uu->decode if $uu->state & FILE_OK;
+ }
+
+=head1 LARGE EXAMPLE DECODER
+
+This is the file C<example-decoder> from the distribution, put here
+instead of more thorough documentation.
+
+ # decode all the files in the directory uusrc/ and copy
+ # the resulting files to uudst/
+
+ use Convert::UUlib ':all';
+
+ sub namefilter {
+    my($path)=@_;
+    $path=~s/^.*[\/\\]//;
+    $path;
+ }
+
+ sub busycb {
+    my($action,$curfile,$partno,$numparts,$percent,$fsize)=@_;
+    $_[0]=straction($action);
+    print "busy_callback(",join(",",@_),")\n";
+    0;
+ }
+
+ SetOption (OPT_IGNMODE, 1);
+ SetOption (OPT_VERBOSE, 1);
+
+ # show the three ways you can set callback functions
+ SetFNameFilter (\&namefilter);
+
+ SetBusyCallback ("busycb",333);
+
+ SetMsgCallback (sub {
+    my($msg,$level)=@_;
+    print uc(strmsglevel($_[1])),": $msg\n";
+ });
+
+ for(<uusrc/*>) {
+    my($retval,$count)=LoadFile ($_,$_,1);
+    print "file($_), status(",strerror($retval),") parts($count)\n";
+ }
+
+ SetOption (OPT_SAVEPATH, "uudst/");
+
+ $i=0;
+ while($uu=GetFileListItem($i)) {
+    $i++;
+    print "file nr. $i";
+    print " state ",$uu->state;
+    print " mode ",$uu->mode;
+    print " uudet ",strencoding($uu->uudet);
+    print " size ",$uu->size;
+    print " filename ",$uu->filename;
+    print " subfname ",$uu->subfname;
+    print " mimeid ",$uu->mimeid;
+    print " mimetype ",$uu->mimetype;
+    print "\n";
+
+    # print additional info about all parts
+    for($uu->parts) {
+       while(my($k,$v)=each(%$_)) {
+          print "$k > $v, ";
+       }
+       print "\n";
+    }
+
+    $uu->decode_temp;
+    print " temporarily decoded to ",$uu->binfile,"\n";
+    $uu->remove_temp;
+
+    print strerror($uu->decode);
+    print " saved as uudst/",$uu->filename,"\n";
+ }
+
+ print "cleanup...\n";
+
+ CleanUp();
 
 =head1 Exported constants
 

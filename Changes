@@ -1,5 +1,9 @@
 Revision history for Perl extension Convert::UUlib.
 
+0.06 Thu Jul 29 22:48:18 CEST 1999
+	- Thierry Bezecourt had the very reasonable idea to include
+          the example source in the manpage.
+
 0.05 Mon May 24 11:37:25 CEST 1999
 	- LoadFile returns number of parts loaded.
 
