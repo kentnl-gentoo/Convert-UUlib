@@ -81,7 +81,7 @@
 #include <fptools.h>
 #include <uustring.h>
 
-char * uulib_id = "$Id: uulib.c,v 1.7 2002/03/31 21:42:37 root Exp $";
+char * uulib_id = "$Id: uulib.c,v 1.8 2002/04/05 21:56:57 root Exp $";
 
 #ifdef SYSTEM_WINDLL
 BOOL _export WINAPI 
@@ -228,14 +228,14 @@ typedef struct {
 } allomap;
 
 static allomap toallocate[] = {
-  { &uugen_fnbuffer,    1024 },  /* generic filename buffer */
+  { &uugen_fnbuffer,    4096 },  /* generic filename buffer */
   { &uugen_inbuffer,    1024 },  /* generic input data buffer */
   { &uucheck_lastname,   256 },	 /* from uucheck.c */
   { &uucheck_tempname,   256 },
   { &uuestr_itemp,       256 },  /* from uuencode.c:UUEncodeStream() */
   { &uuestr_otemp,      1024 },
   { &uulib_msgstring,   1024 },  /* from uulib.c:UUMessage() */
-  { &uuncdl_fulline,     300 },  /* from uunconc.c:UUDecodeLine() */
+  { &uuncdl_fulline,    1200 },  /* from uunconc.c:UUDecodeLine() */
   { &uuncdp_oline,      1200 },  /* from uunconc.c:UUDecodePart() */
   { &uunconc_UUxlat,     256 * sizeof (int) },  /* from uunconc.c:toplevel */
   { &uunconc_UUxlen,      64 * sizeof (int) },
@@ -926,7 +926,7 @@ UUDecodeFile (uulist *thefile, char *destname)
   if (destname)
     strcpy (uugen_fnbuffer, destname);
   else {
-    sprintf (uugen_fnbuffer, "%s%s",
+    sprintf (uugen_fnbuffer, "%.1024s%.3071s",
 	     (uusavepath)?uusavepath:"",
 	     UUFNameFilter ((thefile->filename)?
 			    thefile->filename:"unknown.xxx"));

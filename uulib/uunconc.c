@@ -54,7 +54,7 @@
 #include <fptools.h>
 #include <uustring.h>
 
-char * uunconc_id = "$Id: uunconc.c,v 1.6 2002/03/31 22:11:58 root Exp $";
+char * uunconc_id = "$Id: uunconc.c,v 1.7 2002/04/05 21:56:57 root Exp $";
 
 /* for braindead systems */
 #ifndef SEEK_SET
@@ -649,7 +649,9 @@ UUDecodeLine (char *s, char *d, int method)
   }
   else if (method == B64ENCODED) {
     if (leftover) {
-      strcpy (uuncdl_fulline+leftover, s);
+      strncpy (uuncdl_fulline+leftover, s, 1200 - leftover);
+      uuncdl_fulline[1200 - 1] = 0;
+
       leftover = 0;
       s        = uuncdl_fulline;
     }
@@ -679,7 +681,8 @@ UUDecodeLine (char *s, char *d, int method)
   }
   else if (method == BH_ENCODED) {
     if (leftover) {
-      strcpy (uuncdl_fulline+leftover, s);
+      strncpy (uuncdl_fulline+leftover, s, 1200 - leftover);
+      uuncdl_fulline[1200 - 1] = 0;
       leftover = 0;
       s        = uuncdl_fulline;
     }
