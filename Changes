@@ -1,5 +1,10 @@
 Revision history for Perl extension Convert::UUlib.
 
+0.212 Sat Apr  6 03:52:13 CEST 2002
+        - fix yEnc decoding support.
+        - new option OPT_DOTDOT, that makes uulib unescape dot-escaping.
+        - increased linelength to 1195.
+
 0.211 Fri Apr  5 23:56:46 CEST 2002
 	- *sigh*. new version of uulib, new braindamaged buffer overflows.
           I would not use this code in a virus-scanner, despite my efforts

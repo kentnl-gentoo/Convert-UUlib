@@ -62,6 +62,7 @@ constant(char *name)
 	if (strEQ(name, "OPT_VERSION")) return UUOPT_VERSION;
 	if (strEQ(name, "OPT_REMOVE")) return UUOPT_REMOVE;
 	if (strEQ(name, "OPT_MOREMIME")) return UUOPT_MOREMIME;
+	if (strEQ(name, "OPT_DOTDOT")) return UUOPT_DOTDOT;
     case 'R':
 	if (strEQ(name, "RET_CANCEL")) return UURET_CANCEL;
 	if (strEQ(name, "RET_CONT")) return UURET_CONT;

@@ -21,7 +21,7 @@
  * This include file features all the definitions that should
  * be externally visible. This isn't much.
  *
- * $Id: uudeview.h,v 1.3 2002/03/31 21:42:37 root Exp $
+ * $Id: uudeview.h,v 1.4 2002/04/06 01:53:30 root Exp $
  */
 
 #ifndef _ANSI_ARGS_
@@ -107,6 +107,7 @@
 #define UUOPT_ENCEXT	(19)	/* extension for single-part encoded files */
 #define UUOPT_REMOVE    (20)    /* remove input files after decoding */
 #define UUOPT_MOREMIME  (21)    /* strict MIME adherence */
+#define UUOPT_DOTDOT	(22)	/* .. unescaping has not yet been done on input files */
 
 /*
  * Code for the "action" in the progress structure

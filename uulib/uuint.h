@@ -22,7 +22,7 @@
  * of UUDeview. It should not be included from other packages. Subject to
  * change without notice. Do not depend on anything here.
  *
- * $Id: uuint.h,v 1.4 2002/03/31 21:42:37 root Exp $
+ * $Id: uuint.h,v 1.5 2002/04/06 01:53:30 root Exp $
  */
 
 /*
@@ -199,6 +199,7 @@ extern int uu_handletext;
 extern int uu_tinyb64;
 extern int uu_remove_input;
 extern int uu_more_mime;
+extern int uu_dotdot;
 
 extern char *uusavepath;
 extern char *uuencodeext;

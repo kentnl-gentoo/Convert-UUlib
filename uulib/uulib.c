@@ -81,7 +81,7 @@
 #include <fptools.h>
 #include <uustring.h>
 
-char * uulib_id = "$Id: uulib.c,v 1.8 2002/04/05 21:56:57 root Exp $";
+char * uulib_id = "$Id: uulib.c,v 1.10 2002/04/06 02:28:35 root Exp $";
 
 #ifdef SYSTEM_WINDLL
 BOOL _export WINAPI 
@@ -145,6 +145,7 @@ int uu_usepreamble = 0;		/* do we want Mime preambles/epilogues      */
 int uu_tinyb64 = 0;		/* detect short B64 outside of MIME         */
 int uu_remove_input = 0;        /* remove input files after decoding        */
 int uu_more_mime = 0;           /* strictly adhere to MIME headers          */
+int uu_dotdot = 0;		/* dot-unescaping has not yet been done     */
 
 headercount hlcount = {
   3,			        /* restarting after a MIME body             */
@@ -236,13 +237,13 @@ static allomap toallocate[] = {
   { &uuestr_otemp,      1024 },
   { &uulib_msgstring,   1024 },  /* from uulib.c:UUMessage() */
   { &uuncdl_fulline,    1200 },  /* from uunconc.c:UUDecodeLine() */
-  { &uuncdp_oline,      1200 },  /* from uunconc.c:UUDecodePart() */
+  { &uuncdp_oline,      3600 },  /* from uunconc.c:UUDecodePart() */
   { &uunconc_UUxlat,     256 * sizeof (int) },  /* from uunconc.c:toplevel */
   { &uunconc_UUxlen,      64 * sizeof (int) },
   { &uunconc_B64xlat,    256 * sizeof (int) },
   { &uunconc_XXxlat,     256 * sizeof (int) },
   { &uunconc_BHxlat,     256 * sizeof (int) },
-  { &uunconc_save,     3*300 },  /* from uunconc.c:decoding buffer */
+  { &uunconc_save,    3*1200 },  /* from uunconc.c:decoding buffer */
   { &uuscan_shlline,    1024 },  /* from uuscan.c:ScanHeaderLine() */
   { &uuscan_pvvalue,     300 },  /* from uuscan.c:ParseValue() */
   { &uuscan_phtext,      300 },  /* from uuscan.c:ParseHeader() */
@@ -499,6 +500,10 @@ UUGetOption (int option, int *ivalue, char *cvalue, int clength)
     if (ivalue) *ivalue = uu_more_mime;
     result = uu_more_mime;
     break;
+  case UUOPT_DOTDOT:
+    if (ivalue) *ivalue = uu_dotdot;
+    result = uu_dotdot;
+    break;
   default:
     return -1;
   }
@@ -558,6 +563,9 @@ UUSetOption (int option, int ivalue, char *cvalue)
     break;
   case UUOPT_MOREMIME:
     uu_more_mime = ivalue;
+    break;
+  case UUOPT_DOTDOT:
+    uu_dotdot = ivalue;
     break;
   default:
     return UURET_ILLVAL;

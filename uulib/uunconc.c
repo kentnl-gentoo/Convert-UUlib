@@ -54,7 +54,7 @@
 #include <fptools.h>
 #include <uustring.h>
 
-char * uunconc_id = "$Id: uunconc.c,v 1.7 2002/04/05 21:56:57 root Exp $";
+char * uunconc_id = "$Id: uunconc.c,v 1.9 2002/04/06 02:28:35 root Exp $";
 
 /* for braindead systems */
 #ifndef SEEK_SET
@@ -139,8 +139,8 @@ UUInitConc (void)
   BHxlat  = (int *) uunconc_BHxlat;
 
   save[0] = uunconc_save;
-  save[1] = uunconc_save + 256;
-  save[2] = uunconc_save + 512;
+  save[1] = uunconc_save + 1200;
+  save[2] = uunconc_save + 2400;
 
   /* prepare decoding translation table */
   for(i = 0; i < 256; i++)
@@ -649,8 +649,7 @@ UUDecodeLine (char *s, char *d, int method)
   }
   else if (method == B64ENCODED) {
     if (leftover) {
-      strncpy (uuncdl_fulline+leftover, s, 1200 - leftover);
-      uuncdl_fulline[1200 - 1] = 0;
+      strcpy (uuncdl_fulline + leftover, s);
 
       leftover = 0;
       s        = uuncdl_fulline;
@@ -681,8 +680,8 @@ UUDecodeLine (char *s, char *d, int method)
   }
   else if (method == BH_ENCODED) {
     if (leftover) {
-      strncpy (uuncdl_fulline+leftover, s, 1200 - leftover);
-      uuncdl_fulline[1200 - 1] = 0;
+      strcpy (uuncdl_fulline + leftover, s);
+
       leftover = 0;
       s        = uuncdl_fulline;
     }
@@ -720,7 +719,7 @@ UUDecodeLine (char *s, char *d, int method)
 	  s++;
 	}
       }
-      else if (*s == '\t' || *s == '\n' || *s == '\r') {
+      else if (*s == '\n' || *s == '\r') {
 	s++; /* ignore */
       }
       else {
@@ -902,7 +901,7 @@ UUDecodePart (FILE *datain, FILE *dataout, int *state,
 	      long maxpos, int method, int flags,
 	      char *boundary)
 {
-  char *line=uugen_fnbuffer, *oline=uuncdp_oline;
+  char *line, *oline=uuncdp_oline;
   int warning=0, vlc=0, lc[2], hadct=0;
   int tc=0, tf=0, vflag, haddata=0, haddh=0;
   long yefilesize=0, yepartends=0;
@@ -938,8 +937,12 @@ UUDecodePart (FILE *datain, FILE *dataout, int *state,
   while (!feof (datain) && *state != DONE && 
 	 (ftell(datain)<maxpos || flags&FL_TOEND || maxpos==-1 ||
 	  (!(flags&FL_PROPER) && uu_fast_scanning))) {
-    if (_FP_fgets (line, 299, datain) == NULL)
+    if (_FP_fgets ((line = uugen_fnbuffer), 1200 - 5, datain) == NULL)
       break;
+
+    /* optionally skip .. */
+    if (*line == '.' && uu_dotdot)
+      line++;
 
     if (ferror (datain)) {
       UUMessage (uunconc_id, __LINE__, UUMSG_ERROR,
@@ -980,8 +983,8 @@ UUDecodePart (FILE *datain, FILE *dataout, int *state,
      * try to make sense of data
      */
 
-    line[299] = '\0'; /* For Safety of string functions */
-    count     =  0;
+    line[1200 - 1] = '\0'; /* For Safety of string functions */
+    count          =  0;
 
     if (boundary && line[0]=='-' && line[1]=='-' &&
 	strncmp (line+2, boundary, strlen (boundary)) == 0) {
@@ -1043,7 +1046,7 @@ UUDecodePart (FILE *datain, FILE *dataout, int *state,
 	yefilesize = atoi (ptr);
 
 	if (_FP_strstr (line, " part=") != NULL) {
-	  if (_FP_fgets (line, 299, datain) == NULL) {
+	  if (_FP_fgets (line, 1200 - 5, datain) == NULL) {
 	    break;
 	  }
 
@@ -1125,7 +1128,7 @@ UUDecodePart (FILE *datain, FILE *dataout, int *state,
 	  lc[1] = 3;
 	}
 	else {
-	  _FP_strncpy (save[tc++], line, 256);
+	  _FP_strncpy (save[tc++], line, 1200);
 	}
 
 	if (method == UU_ENCODED)
