@@ -16,6 +16,8 @@ extern "C" {
 typedef unsigned long crc32_t;
 #define Z_NULL  0
 
+#define crc32 uulib_crc32
+
 crc32_t crc32 _ANSI_ARGS_((crc32_t crc, const unsigned char *buf, unsigned int len));
 /*
      Update a running crc with the bytes buf[0..len-1] and return the updated

@@ -1,5 +1,9 @@
 Revision history for Perl extension Convert::UUlib.
 
+1.02 Sun Apr 18 16:47:26 CEST 2004
+        - renamed crc32 to uulib_crc32, to work around yet another
+          shortcoming in this oh-so-outdated macosx.
+
 1.01 Sun Feb  1 19:49:51 CET 2004
 	- make it compile with 5.005_03 (reported by Anton Berezin).
         - very short files might not be detected because the header
