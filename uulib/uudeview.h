@@ -21,7 +21,7 @@
  * This include file features all the definitions that should
  * be externally visible. This isn't much.
  *
- * $Id: uudeview.h,v 1.5 2002/10/13 13:08:43 root Exp $
+ * $Id$
  */
 
 #ifndef _ANSI_ARGS_
@@ -210,6 +210,7 @@ int	UUEXPORT UUSetFileNameCallback	_ANSI_ARGS_((void *,
 								 char *, char *)));
 char *	UUEXPORT UUFNameFilter		_ANSI_ARGS_((char *));
 int	UUEXPORT UULoadFile		_ANSI_ARGS_((char *, char *, int, int *));
+int	UUEXPORT UULoadFileWithPartNo	_ANSI_ARGS_((char *, char *, int, int, int *));
 uulist *UUEXPORT UUGetFileListItem	_ANSI_ARGS_((int));
 int	UUEXPORT UURenameFile		_ANSI_ARGS_((uulist *, char *));
 int	UUEXPORT UUDecodeToTemp		_ANSI_ARGS_((uulist *));

@@ -5,7 +5,7 @@ use Carp;
 require Exporter;
 require DynaLoader;
 
-$VERSION = 0.31;
+$VERSION = "1.0";
 
 @ISA = qw(Exporter DynaLoader);
 
@@ -153,9 +153,9 @@ this document and especially the non-trivial decoder program at the end.
   OPT_PREAMB	handle Mime preambles/epilogues
   OPT_TINYB64	detect short B64 outside of Mime
   OPT_ENCEXT	extension for single-part encoded files
-  OPT_REMOVE	remove input files after decoding
+  OPT_REMOVE	remove input files after decoding (dangerous)
   OPT_MOREMIME	strict MIME adherence
-  OPT_DOTDOT	.. unescaping has not yet been done on input files
+  OPT_DOTDOT	".."-unescaping has not yet been done on input files
 
 =head2 Result/Error codes
 
@@ -204,6 +204,9 @@ this document and especially the non-trivial decoder program at the end.
 Initialize is automatically called when the module is loaded and allocates
 quite a small amount of memory for todays machines ;) CleanUp releases that
 again.
+
+On my machine, a fairly complete decode with DBI backend needs about 10MB
+RSS to decode 20000 files.
 
 =over 4
 
@@ -256,11 +259,15 @@ See the C<OPT_xxx> constants above to see which options exist.
 
 =over 4
 
-=item ($retval, $count) = LoadFile $fname, [$id, [$delflag]]
+=item ($retval, $count) = LoadFile $fname, [$id, [$delflag, [$partno]]]
 
 Load the given file and scan it for encoded contents. Optionally tag it
-with the given id, and if C<$delflag> is true, delete the file after it is
-no longer necessary.
+with the given id, and if C<$delflag> is true, delete the file after it
+is no longer necessary. If you are certain of the part number, you cna
+specify it as the lat argument.
+
+A better (usually faster) way of doing this is using the C<SetFNameFilter>
+functionality.
 
 =item $retval = Smerge $pass
 

@@ -54,7 +54,7 @@
 #include <fptools.h>
 #include <uustring.h>
 
-char * uuutil_id = "$Id: uuutil.c,v 1.4 2002/03/31 20:08:43 root Exp $";
+char * uuutil_id = "$Id$";
 
 /*
  * Parts with different known extensions will not be merged by SPMS.

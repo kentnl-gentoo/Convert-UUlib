@@ -64,7 +64,7 @@ DllEntryPoint (HINSTANCE hInstance, DWORD seginfo,
 #endif
 #endif
 
-char * fptools_id = "$Id: fptools.c,v 1.6 2002/08/19 23:25:36 root Exp $";
+char * fptools_id = "$Id$";
 
 /*
  * some versions of free can't handle a NULL pointer properly
@@ -392,7 +392,7 @@ _FP_strrchr (char *string, int tc)
 {
   char *ptr;
 
-  if (string == NULL)
+  if (string == NULL || !*string)
     return NULL;
 
   ptr = string + strlen (string) - 1;

@@ -53,7 +53,7 @@
 #include <fptools.h>
 #include <uustring.h>
 
-char * uucheck_id = "$Id: uucheck.c,v 1.6 2002/03/31 21:42:37 root Exp $";
+char * uucheck_id = "$Id$";
 
 /*
  * Arbitrary number. This is the maximum number of part numbers we
@@ -407,36 +407,42 @@ UUGetPartNo (char *subject, char **where, char **whend)
   /*
    * First try numbers in () or [] (or vice versa, according to bracket
    * policy)
+   * For multiple occurences, give priority to the bracket with a slash
+   * or the last one, whichever is "found" first.
    */
 
   for (bpc=0, length=0; brackchr[uu_bracket_policy][bpc]; bpc+=2) {
-    ptr = subject;
-    while ((iter = strchr (ptr, brackchr[uu_bracket_policy][bpc])) != NULL) {
-      count = length = 0; iter++;
+    iter = subject;
+    length = 0;
+    while ((iter = strchr (iter, brackchr[uu_bracket_policy][bpc])) != NULL) {
+      int plength;
+
+      count = 0; iter++;
 
       while (*iter == ' ' || *iter == '#')
 	iter++;
 
       if (!isdigit (*iter)) {
-	ptr = iter;
 	continue;
       }
       while (isdigit (iter[count]))
 	count++;
-      length = count;
       
-      if (iter[count] == '\0' || iter[count+1] == '\0') {
-	iter  += count;
-	length = 0;
+      if (iter[count] == '\0') {
+	iter += count;
 	break;
       }
+
+      plength = count;
+
       if (iter[count] == brackchr[uu_bracket_policy][bpc+1]) {
 	*where  = iter;
 	bdel[0] = brackchr[uu_bracket_policy][bpc+1];
 	delim   = bdel;
-	break;
+        length  = plength;
+	continue;
       }
-      
+
       while (iter[count] == ' ' || iter[count] == '#' ||
 	     iter[count] == '/' || iter[count] == '\\')  count++;
       
@@ -451,14 +457,15 @@ UUGetPartNo (char *subject, char **where, char **whend)
 	*where  = iter;
 	bdel[0] = brackchr[uu_bracket_policy][bpc+1];
 	delim   = bdel;
+        length  = plength;
 	break;
       }
-      
-      length = 0;
-      ptr    = iter;
     }
     if (length)
-      break;
+      {
+        iter = *where; /* strange control flow, but less changes == less hassle */
+        break;
+      }
   }
 
   /*
@@ -789,7 +796,7 @@ UUPreProcessPart (fileread *data, int *ret)
     /*
      * in this case, it really _should_ have a filename somewhere
      */
-    if (result->filename != NULL)
+    if (result->filename != NULL && *result->filename)
       result->subfname = _FP_strdup (result->filename);
     else { /* if not, escape to UNKNOWN. We need to fill subfname */
       sprintf (temp, "%s.%03d", nofname, ++nofnum);
@@ -843,7 +850,7 @@ UUPreProcessPart (fileread *data, int *ret)
       /*
        * Assume it's the first part. I wonder why it's got no part number?
        */
-      if (result->filename != NULL)
+      if (result->filename != NULL && *result->filename)
         result->subfname = _FP_strdup (result->filename);
       else { /* if not, escape to UNKNOWN. We need to fill subfname */
         sprintf (temp, "%s.%03d", nofname, ++nofnum);
@@ -990,13 +997,13 @@ UUInsertPartToList (uufile *data)
 
   /*
    * Part belongs together, if
-   * (a) The file name received from the subject lines match _or_
-   *     the MIME-IDs match,
-   * (b) Not both parts have a begin line
-   * (c) Not both parts have an end line
-   * (d) Both parts don't have different MIME-IDs
-   * (e) Both parts don't encode different files
-   * (f) The other part wants to stay alone (FL_SINGLE)
+   * (1) The MIME-IDs match, or
+   * (2) The file name received from the subject lines match, and
+   *     (a) Not both parts have a begin line
+   *     (b) Not both parts have an end line
+   *     (c) Both parts don't have different MIME-IDs
+   *     (d) Both parts don't encode different files
+   *     (e) The other part wants to stay alone (FL_SINGLE)
    */
 
   /*
@@ -1008,29 +1015,33 @@ UUInsertPartToList (uufile *data)
     if (data->data->flags & FL_SINGLE) {
       /* this space intentionally left blank */
     }
-    else if ((_FP_stricmp (data->subfname, iter->subfname) == 0 ||
-         (data->mimeid && iter->mimeid &&
-          strcmp (data->mimeid, iter->mimeid) == 0)) &&
-	!(iter->begin && data->data->begin) &&
-	!(iter->end   && data->data->end) &&
-	!(data->mimeid && iter->mimeid &&
-	  strcmp (data->mimeid, iter->mimeid) != 0) &&
-	!(data->filename && iter->filename &&
-	  strcmp (data->filename, iter->filename) != 0) &&
-	!(iter->flags & FL_SINGLE)) {
+    else if ((data->mimeid && iter->mimeid &&
+	      strcmp (data->mimeid, iter->mimeid) == 0) ||
+	     (_FP_stricmp (data->subfname, iter->subfname) == 0 &&
+	      !(iter->begin && data->data->begin) &&
+	      !(iter->end   && data->data->end) &&
+	      !(data->mimeid && iter->mimeid &&
+		strcmp (data->mimeid, iter->mimeid) != 0) &&
+	      !(data->filename && iter->filename &&
+		strcmp (data->filename, iter->filename) != 0) &&
+	      !(iter->flags & FL_SINGLE))) {
 
       /*
-       * if we already have this part, don't try to insert it
+       * Don't insert a part that is already there.
+       *
+       * Also don't add a part beyond the "end" marker (unless we
+       * have a mimeid, which screws up the marker).
        */
 
-      for (fiter=iter->thisfile;
-	   fiter && (data->partno>fiter->partno) && !fiter->data->end;
-	   fiter=fiter->NEXT)
-	/* empty loop */ ;
-      if (fiter && 
-	  (data->partno==fiter->partno || 
-	   (data->partno > fiter->partno && fiter->data->end)))
-	goto goahead;
+      for (fiter=iter->thisfile; fiter; fiter=fiter->NEXT) {
+	if (data->partno == fiter->partno)
+	  goto goahead;
+	if (!iter->mimeid) {
+	  if (data->partno > fiter->partno && fiter->data->end) {
+	    goto goahead;
+	  }
+	}
+      }
 
       if (iter->filename == NULL && data->filename != NULL) {
         if ((iter->filename = _FP_strdup (data->filename)) == NULL)

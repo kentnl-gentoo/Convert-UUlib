@@ -57,7 +57,7 @@
 #endif
 #endif
 
-char * uuencode_id = "$Id: uuencode.c,v 1.5 2002/10/13 13:08:43 root Exp $";
+char * uuencode_id = "$Id$";
 
 #if 0
 /*

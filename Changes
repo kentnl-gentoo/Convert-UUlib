@@ -1,15 +1,21 @@
 Revision history for Perl extension Convert::UUlib.
 
+1.0  Thu Nov  6 14:32:08 CET 2003
+	- change bracket policy to give priority to (x/y) over (x),
+          and use the last bracket found otherwise.
+        - part numbers at the end of the subject are now recognized.
+        - updated to uulib-0.5.19. Differences and bugfixes kept.
+
 0.31 Wed Oct 16 01:22:34 CEST 2002
 	- no internal code changes.
 	- much better documentation, now considered "useful".
         - removed the procedural interface.
-        - fought the wish to perl-5.8'ify and thus simply the code :().
+        - fought the wish to perl-5.8'ify and thus simplify the code :().
         - stress-tested version 0.3 against 70000 data postings since sunday.
 
 0.3   Sun Oct 13 15:12:11 CEST 2002
 	- updated to uulib 0.5.18. As expected, some but not all of my bugfixes
-          have went into uulib, sdo the number of differences decreased a bit
+          have went into uulib, so the number of differences decreased a bit
           again.
         - I found out that the library is being sold commercially by Frank
           Pilhofer, disregarding the GPL and ignoring the rights of the people

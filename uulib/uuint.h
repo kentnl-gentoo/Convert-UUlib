@@ -22,7 +22,7 @@
  * of UUDeview. It should not be included from other packages. Subject to
  * change without notice. Do not depend on anything here.
  *
- * $Id: uuint.h,v 1.5 2002/04/06 01:53:30 root Exp $
+ * $Id$
  */
 
 /*
@@ -243,7 +243,7 @@ extern char *uugen_fnbuffer, *uugen_inbuffer;
 extern char *uucheck_lastname, *uucheck_tempname;
 extern char *uuestr_itemp, *uuestr_otemp;
 extern char *uulib_msgstring, *uuncdl_fulline;
-extern char *uuncdp_oline, *uuscan_shlline;
+extern char *uuncdp_oline, *uuscan_shlline, *uuscan_shlline2;
 extern char *uuscan_pvvalue, *uuscan_phtext;
 extern char *uuscan_sdline, *uuscan_sdbhds1;
 extern char *uuscan_sdbhds2, *uuscan_spline;
@@ -305,11 +305,13 @@ size_t		UUbhwrite		(char *, size_t, size_t, FILE *);
 
 int		UURepairData		(FILE *, char *, int, int *);
 
-void 		UUInitConc		(void);
-int 		UUValidData		(char *, int, int *);
-size_t 		UUDecodeLine		(char *, char *, int);
-int		UUDecodePart		(FILE *, FILE *, int *, long, int, int, char *);
-int 		UUDecode 		(uulist *);
+void 		UUInitConc		_ANSI_ARGS_((void));
+int 		UUValidData		_ANSI_ARGS_((char *, int, int *));
+size_t 		UUDecodeLine		_ANSI_ARGS_((char *, char *, int));
+int		UUDecodeField		_ANSI_ARGS_((char *, char *, int));
+int		UUDecodePart		_ANSI_ARGS_((FILE *, FILE *, int *,
+						     long, int, int, char *));
+int 		UUDecode 		_ANSI_ARGS_((uulist *));
 
 /*
  * Message retrieval from uustring.c

@@ -97,10 +97,10 @@ uu_msg_callback (void *cb, char *msg, int level)
 {
   dSP;
   
-  ENTER; SAVETMPS; PUSHMARK(SP); EXTEND(SP,2);
+  ENTER; SAVETMPS; PUSHMARK (SP); EXTEND (SP, 2);
 
-  PUSHs(sv_2mortal(newSVpv(msg,0)));
-  PUSHs(sv_2mortal(newSViv(level)));
+  PUSHs (sv_2mortal (newSVpv (msg, 0)));
+  PUSHs (sv_2mortal (newSViv (level)));
 
   PUTBACK; (void) perl_call_sv ((SV *)cb, G_VOID|G_DISCARD); SPAGAIN;
   PUTBACK; FREETMPS; LEAVE;
@@ -113,14 +113,14 @@ uu_busy_callback (void *cb, uuprogress *uup)
   int count;
   int retval;
   
-  ENTER; SAVETMPS; PUSHMARK(SP); EXTEND(SP,6);
+  ENTER; SAVETMPS; PUSHMARK (SP); EXTEND (SP, 6);
 
-  PUSHs(sv_2mortal(newSViv(uup->action)));
-  PUSHs(sv_2mortal(newSVpv(uup->curfile,0)));
-  PUSHs(sv_2mortal(newSViv(uup->partno)));
-  PUSHs(sv_2mortal(newSViv(uup->numparts)));
-  PUSHs(sv_2mortal(newSViv(uup->fsize)));
-  PUSHs(sv_2mortal(newSViv(uup->percent)));
+  PUSHs (sv_2mortal (newSViv (uup->action)));
+  PUSHs (sv_2mortal (newSVpv (uup->curfile, 0)));
+  PUSHs (sv_2mortal (newSViv (uup->partno)));
+  PUSHs (sv_2mortal (newSViv (uup->numparts)));
+  PUSHs (sv_2mortal (newSViv (uup->fsize)));
+  PUSHs (sv_2mortal (newSViv (uup->percent)));
 
   PUTBACK; count = perl_call_sv ((SV *)cb, G_SCALAR); SPAGAIN;
 
@@ -141,9 +141,9 @@ uu_fnamefilter_callback (void *cb, char *fname)
   int count;
   static char *str;
   
-  ENTER; SAVETMPS; PUSHMARK(SP); EXTEND(SP,1);
+  ENTER; SAVETMPS; PUSHMARK (SP); EXTEND (SP, 1);
 
-  PUSHs(sv_2mortal(newSVpv(fname,0)));
+  PUSHs (sv_2mortal (newSVpv (fname, 0)));
 
   PUTBACK; count = perl_call_sv ((SV *)cb, G_SCALAR); SPAGAIN;
 
@@ -166,11 +166,11 @@ uu_file_callback (void *cb, char *id, char *fname, int retrieve)
   SV *xfname = newSVpv ("", 0);
   STRLEN dc;
   
-  ENTER; SAVETMPS; PUSHMARK(SP); EXTEND(SP,3);
+  ENTER; SAVETMPS; PUSHMARK (SP); EXTEND (SP, 3);
 
-  PUSHs(sv_2mortal(newSVpv(id,0)));
-  PUSHs(sv_2mortal(xfname));
-  PUSHs(sv_2mortal(newSViv(retrieve)));
+  PUSHs (sv_2mortal (newSVpv (id, 0)));
+  PUSHs (sv_2mortal (xfname));
+  PUSHs (sv_2mortal (newSViv (retrieve)));
 
   PUTBACK; count = perl_call_sv ((SV *)cb, G_SCALAR); SPAGAIN;
 
@@ -383,7 +383,7 @@ UUFNameFilter (fname)
 	char *	fname
 
 void
-UULoadFile (fname, id = 0, delflag = 0)
+UULoadFile (fname, id = 0, delflag = 0, int partno = -1)
 	char *	fname
 	char *	id
 	int	delflag
@@ -391,9 +391,9 @@ UULoadFile (fname, id = 0, delflag = 0)
 	{	
 	        int count;
                 
-	        XPUSHs(sv_2mortal(newSViv(UULoadFile (fname, id, delflag, &count))));
+	        XPUSHs (sv_2mortal (newSViv (UULoadFileWithPartNo (fname, id, delflag, partno, &count))));
                 if (GIMME_V == G_ARRAY)
-                  XPUSHs(sv_2mortal(newSViv(count)));
+                  XPUSHs (sv_2mortal (newSViv (count)));
 	}
 
 int

@@ -4,7 +4,7 @@ sub MY::postamble {
     my $postamble =<<'END';
 
 uulib/Makefile:
-	cd uulib && ./configure --with-cc="$(CC)" --with-cflags="$(CFLAGS) $(CCCDLFLAGS) $(OPTIMIZE)"
+	cd uulib && CC="$(CC)" CFLAGS="$(OPTIMIZE) $(CFLAGS) $(CCCDLFLAGS)" ./configure
 
 clean::
 	-cd uulib && make distclean

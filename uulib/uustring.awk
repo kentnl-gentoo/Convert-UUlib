@@ -1,6 +1,6 @@
 #! /usr/bin/awk
 #
-# $Id: uustring.awk,v 1.2 2002/03/31 20:04:31 root Exp $
+# $Id$
 #
 # Extract definitions for string codes from uustring.c into uustring.h
 # Does this script require GAWK?

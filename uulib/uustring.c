@@ -50,7 +50,7 @@
 #include <uuint.h>
 #include <uustring.h>
 
-char * uustring_id = "$Id: uustring.c,v 1.4 2002/10/13 13:08:44 root Exp $";
+char * uustring_id = "$Id$";
 
 typedef struct {
   int code;

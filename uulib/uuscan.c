@@ -57,7 +57,7 @@
 #include <fptools.h>
 #include <uustring.h>
 
-char * uuscan_id = "$Id: uuscan.c,v 1.6 2002/10/13 13:08:44 root Exp $";
+char * uuscan_id = "$Id$";
 
 /*
  * Header fields we recognize as such. See RFC822. We add "From ",
@@ -119,6 +119,7 @@ scanstate sstate;
  */
 
 char *uuscan_shlline;
+char *uuscan_shlline2;
 char *uuscan_pvvalue;
 char *uuscan_phtext;
 char *uuscan_sdline;
@@ -145,6 +146,20 @@ IsLineEmpty (char *data)
 }
 
 /*
+ * Is this a header line? A header line has alphanumeric characters
+ * followed by a colon.
+ */
+
+static int
+IsHeaderLine (char *data)
+{
+  if (data == NULL) return 0;
+  if (*data == ':') return 0;
+  while (*data && isalnum (*data)) data++;
+  return (*data == ':') ? 1 : 0;
+}
+
+/*
  * Scans a potentially folded header line from the input file. If
  * initial is non-NULL, it is the first line of the header, useful
  * if the calling function just coincidentally noticed that this is
@@ -157,6 +172,7 @@ static char *
 ScanHeaderLine (FILE *datei, char *initial)
 {
   char *ptr=uuscan_shlline;
+  char *ptr2, *p1, *p2, *p3;
   int llength, c;
   long curpos;
   int hadcr;
@@ -251,12 +267,75 @@ ScanHeaderLine (FILE *datei, char *initial)
       ptr--; llength--;
     }
   }
+
   *ptr = '\0';
 
   if (llength == 0)
     return NULL;
 
-  return uuscan_shlline;
+  /*
+   * Now that we've read the header line, we can RFC 1522-decode it
+   */
+
+  ptr = uuscan_shlline;
+  ptr2 = uuscan_shlline2;
+
+  while (*ptr) {
+    /*
+     * Look for =? magic
+     */
+
+    if (*ptr == '=' && *(ptr+1) == '?') {
+      /*
+       * Let p1 point to the charset, look for next question mark
+       */
+
+      p1 = p2 = ptr+2;
+
+      while (*p2 && *p2 != '?') {
+	p2++;
+      }
+
+      if (*p2 == '?' &&
+	  (*(p2+1) == 'q' || *(p2+1) == 'Q' ||
+	   *(p2+1) == 'b' || *(p2+1) == 'B') &&
+	  *(p2+2) == '?') {
+	/*
+	 * Let p2 point to the encoding, look for ?= magic
+	 */
+
+	p2++;
+	p3=p2+2;
+
+	while (*p3 && (*p3 != '?' || *(p3+1) != '=')) {
+	  p3++;
+	}
+
+	if (*p3 == '?' && *(p3+1) == '=') {
+	  /*
+	   * Alright, we've found an RFC 1522 header field
+	   */
+	  if (*p2 == 'q' || *p2 == 'Q') {
+	    c = UUDecodeField (p2+2, ptr2, QP_ENCODED);
+	  }
+	  else if (*p2 == 'b' || *p2 == 'B') {
+	    c = UUDecodeField (p2+2, ptr2, B64ENCODED);
+	  }
+	  if (c >= 0) {
+	    ptr2 += c;
+	    ptr = p3+2;
+	    continue;
+	  }
+	}
+      }
+    }
+
+    *ptr2++ = *ptr++;
+  }
+
+  *ptr2 = 0;
+
+  return uuscan_shlline2;
 }
 
 /*
@@ -308,15 +387,21 @@ ParseValue (char *attribute)
   }
   else {
     /* tspecials from RFC1521 */
+    /*
+     * Note - exclude '[', ']' and ';' on popular request; these are
+     * used in some Content-Type fields by the Klez virus, and people
+     * who feed their virus scanners with the output of UUDeview would
+     * like to catch it!
+     */
 
     while (*attribute && !isspace (*attribute) &&
 	   *attribute != '(' && *attribute != ')' &&
 	   *attribute != '<' && *attribute != '>' &&
 	   *attribute != '@' && *attribute != ',' &&
-	   *attribute != ';' && *attribute != ':' &&
+	   /* *attribute != ';' && */ *attribute != ':' &&
 	   *attribute != '\\' &&*attribute != '"' &&
-	   *attribute != '/' && *attribute != '[' &&
-	   *attribute != ']' && *attribute != '?' &&
+	   *attribute != '/' && /* *attribute != '[' &&
+	   *attribute != ']' && */ *attribute != '?' &&
 	   *attribute != '=' && length < 255)
       *ptr++ = *attribute++;
 
@@ -525,7 +610,7 @@ ScanData (FILE *datei, char *fname, int *errcode,
 {
   char *line=uuscan_sdline, *bhds1=uuscan_sdbhds1, *bhds2=uuscan_sdbhds2;
   static char *ptr, *p2, *p3=NULL, *bhdsp, bhl;
-  int isb64[10], isuue[10], isxxe[10], isbhx[10], iscnt;
+  int islen[10], isb64[10], isuue[10], isxxe[10], isbhx[10], iscnt;
   int cbb64, cbuue, cbxxe, cbbhx;
   int bhflag=0, vflag, haddh=0, hadct=0;
   int bhrpc=0, bhnf=0, c, hcount, lcount, blen=0;
@@ -549,6 +634,7 @@ ScanData (FILE *datei, char *fname, int *errcode,
 
   for (iscnt=0; iscnt<10; iscnt++) {
     isb64[iscnt] = isuue[iscnt] = isxxe[iscnt] = isbhx[iscnt] = 0;
+    islen[iscnt] = -1;
   }
 
   iscnt = 0;
@@ -866,7 +952,7 @@ ScanData (FILE *datei, char *fname, int *errcode,
 
     if (strncmp (line, "=ybegin ", 8) == 0 &&
 	_FP_strstr (line, " name=") != NULL) {
-      if ((result->begin || result->end) && !uu_more_mime) {
+      if ((result->begin || result->end || result->uudet) && !uu_more_mime) {
 	fseek (datei, oldposition, SEEK_SET);
 	break;
       }
@@ -939,8 +1025,11 @@ ScanData (FILE *datei, char *fname, int *errcode,
       if (yepartends == 0 || yepartends >= yefilesize) {
 	result->end = 1;
       }
+#if 0
       if (!uu_more_mime)
 	break;
+#endif
+      continue;
     }
 
     /*
@@ -959,6 +1048,7 @@ ScanData (FILE *datei, char *fname, int *errcode,
        * Check data against all possible encodings
        */
 
+      islen[iscnt%10] = strlen(line);
       isb64[iscnt%10] = (UUValidData (line, B64ENCODED, &bhflag)==B64ENCODED);
       isuue[iscnt%10] = (UUValidData (line, UU_ENCODED, &bhflag)==UU_ENCODED);
       isxxe[iscnt%10] = (UUValidData (line, XX_ENCODED, &bhflag)==XX_ENCODED);
@@ -1043,15 +1133,31 @@ ScanData (FILE *datei, char *fname, int *errcode,
 	 * for the other. Uuencoded data is rather easily mistaken for
 	 * Base 64. If the data matches more than one encoding, we need to
 	 * scan further.
+	 *
+	 * Since text can also rather easily be mistaken for UUencoded
+	 * data if it just happens to have 4 lines in a row that have the
+	 * correct first character for the length of the line, we also add
+	 * a check that the first 3 lines must be the same length, and the
+	 * 4th line must be less than or equal to that length. (since
+	 * uuencoders use the same length for all lines except the last,
+	 * this shouldn't increase the minimum size of UUdata we can
+	 * detect, as it would if we tested all 4 lines for being the same
+	 * length.)  - Matthew Mueller, 20030109
 	 */
 
 	if (iscnt > 3) {
 	  cbb64 = (isb64[(iscnt-1)%10] && isb64[(iscnt-2)%10] &&
 		   isb64[(iscnt-3)%10] && isb64[(iscnt-4)%10]);
 	  cbuue = (isuue[(iscnt-1)%10] && isuue[(iscnt-2)%10] &&
-		   isuue[(iscnt-3)%10] && isuue[(iscnt-4)%10]);
+		   isuue[(iscnt-3)%10] && isuue[(iscnt-4)%10] &&
+		   islen[(iscnt-1)%10] <= islen[(iscnt-2)%10] &&
+		   islen[(iscnt-2)%10] == islen[(iscnt-3)%10] &&
+		   islen[(iscnt-3)%10] == islen[(iscnt-4)%10]);
 	  cbxxe = (isxxe[(iscnt-1)%10] && isxxe[(iscnt-2)%10] &&
-		   isxxe[(iscnt-3)%10] && isxxe[(iscnt-4)%10]);
+		   isxxe[(iscnt-3)%10] && isxxe[(iscnt-4)%10] &&
+		   islen[(iscnt-1)%10] <= islen[(iscnt-2)%10] &&
+		   islen[(iscnt-2)%10] == islen[(iscnt-3)%10] &&
+		   islen[(iscnt-3)%10] == islen[(iscnt-4)%10]);
 	  cbbhx = (isbhx[(iscnt-1)%10] && isbhx[(iscnt-2)%10] &&
 		   isbhx[(iscnt-3)%10] && isbhx[(iscnt-4)%10]);
 	}
@@ -1415,9 +1521,9 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       if (UUBUSYPOLL(ftell(datei),progress.fsize)) SPCANCEL();
       if (_FP_fgets (line, 255, datei) == NULL)
 	break;
+      line[255] = '\0';
       if (!IsLineEmpty (line)) {
 	fseek (datei, preheaders, SEEK_SET);
-	line[255] = '\0';
 	break;
       }
       preheaders = ftell (datei);
@@ -1450,6 +1556,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       _FP_free (multistack[mssdepth].source);
     }
 
+    prevpos = ftell (datei);
     if (_FP_fgets (line, 255, datei) == NULL) {
       _FP_free (result);
       return NULL;
@@ -1489,37 +1596,46 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       if (IsKnownHeader (line))
 	hcount++;
       if (UUBUSYPOLL(ftell(datei),progress.fsize)) SPCANCEL();
-      ptr1 = ScanHeaderLine (datei, line);
-      if (ParseHeader (&sstate.envelope, ptr1) == NULL) {
-	*errcode = UURET_NOMEM;
-	_FP_free (result);
-	return NULL;
+      if (IsHeaderLine (line)) {
+	ptr1 = ScanHeaderLine (datei, line);
+	if (ParseHeader (&sstate.envelope, ptr1) == NULL) {
+	  *errcode = UURET_NOMEM;
+	  _FP_free (result);
+	  return NULL;
+	}
       }
       /*
        * if we've read too many lines without finding headers, then
        * this probably isn't a mail folder after all
        */
       lcount++;
-      if (lcount > WAITHEADER && hcount < hlcount.afternl)
+      if (lcount > WAITHEADER && hcount < hlcount.afternl) {
+	fseek (datei, prevpos, SEEK_SET);
+	line[0] = '\0';
 	break;
+      }
 
       if (_FP_fgets (line, 255, datei) == NULL)
 	break;
       line[255] = '\0';
     }
+
     /* skip empty lines */
     prevpos = ftell (datei);
-    while (!feof (datei)) {
-      if (_FP_fgets (line, 255, datei) == NULL)
-	break;
-      if (UUBUSYPOLL(ftell(datei),progress.fsize)) SPCANCEL();
-      if (!IsLineEmpty (line)) {
-	fseek (datei, prevpos, SEEK_SET);
-	line[255] = '\0';
-	break;
+    if (IsLineEmpty (line)) {
+      while (!feof (datei)) {
+	if (_FP_fgets (line, 255, datei) == NULL)
+	  break;
+	if (UUBUSYPOLL(ftell(datei),progress.fsize)) SPCANCEL();
+	if (!IsLineEmpty (line)) {
+	  fseek (datei, prevpos, SEEK_SET);
+	  line[255] = '\0';
+	  break;
+	}
+	prevpos = ftell (datei);
       }
-      prevpos = ftell (datei);
     }
+
     /*
      * If we don't have all valid MIME headers yet, but the following
      * line is a MIME header, accept it anyway.
@@ -1588,13 +1704,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       hcount = hlcount.afternl;
     }
 
-    if (hcount < hlcount.afternl) {
-      /* not a folder after all */
-      fseek (datei, preheaders, SEEK_SET);
-      sstate.isfolder = 0;
-      sstate.ismime   = 0;
-    }
-    else if (sstate.envelope.mimevers != NULL) {
+    if (sstate.envelope.mimevers != NULL) {
       /* this is a MIME file. check the Content-Type */
       sstate.ismime = 1;
       if (_FP_stristr (sstate.envelope.ctype, "multipart") != NULL) {
@@ -1612,6 +1722,12 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       else {
 	sstate.mimestate = MS_BODY;	/* just a `simple' message */
       }
+    }
+    else {
+      /* not a folder after all */
+      fseek (datei, prevpos, SEEK_SET);
+      sstate.isfolder = 0;
+      sstate.ismime   = 0;
     }
   }
 

@@ -34,3 +34,4 @@ uulib/uustring.c
 uulib/uustring.h
 uulib/uuutil.c
 
+META.yml                                Module meta-data (added by MakeMaker)

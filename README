@@ -54,9 +54,9 @@ EXPORTED CONSTANTS
       OPT_PREAMB    handle Mime preambles/epilogues
       OPT_TINYB64   detect short B64 outside of Mime
       OPT_ENCEXT    extension for single-part encoded files
-      OPT_REMOVE    remove input files after decoding
+      OPT_REMOVE    remove input files after decoding (dangerous)
       OPT_MOREMIME  strict MIME adherence
-      OPT_DOTDOT    .. unescaping has not yet been done on input files
+      OPT_DOTDOT    ".."-unescaping has not yet been done on input files
 
   Result/Error codes
       RET_OK        everything went fine
@@ -101,6 +101,9 @@ EXPORTED FUNCTIONS
     allocates quite a small amount of memory for todays machines ;) CleanUp
     releases that again.
 
+    On my machine, a fairly complete decode with DBI backend needs about
+    10MB RSS to decode 20000 files.
+
     Initialize
         Not normally necessary, (re-)initializes the library.
 
@@ -124,10 +127,14 @@ EXPORTED FUNCTIONS
     $file = FNameFilter $file
 
   Loading sourcefiles, optionally fuzzy merge and start decoding
-    ($retval, $count) = LoadFile $fname, [$id, [$delflag]]
+    ($retval, $count) = LoadFile $fname, [$id, [$delflag, [$partno]]]
         Load the given file and scan it for encoded contents. Optionally tag
         it with the given id, and if $delflag is true, delete the file after
-        it is no longer necessary.
+        it is no longer necessary. If you are certain of the part number,
+        you cna specify it as the lat argument.
+
+        A better (usually faster) way of doing this is using the
+        "SetFNameFilter" functionality.
 
     $retval = Smerge $pass
         If you are desperate, try to call "Smerge" with increasing $pass

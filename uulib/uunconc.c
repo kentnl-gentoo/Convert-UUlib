@@ -55,7 +55,7 @@
 #include <fptools.h>
 #include <uustring.h>
 
-char * uunconc_id = "$Id: uunconc.c,v 1.11 2002/10/13 13:08:44 root Exp $";
+char * uunconc_id = "$Id$";
 
 /* for braindead systems */
 #ifndef SEEK_SET
@@ -542,6 +542,8 @@ UURepairData (FILE *datei, char *line, int encoding, int *bhflag)
 
   while (vflag == 0 && nflag && safety--) {
     if (nflag == 1) {		/* need next line to repair */
+      if (strlen (line) > 250)
+	break;
       ptr = line + strlen (line);
       while (ptr>line && (*(ptr-1)=='\015' || *(ptr-1)=='\012'))
 	ptr--;
@@ -895,6 +897,69 @@ UUDecodePT (FILE *datain, FILE *dataout, int *state,
     }
   }
   return UURET_OK;
+}
+
+/*
+ * Decode a single field using method. For the moment, this supports
+ * Base64 and Quoted Printable only, to support RFC 1522 header decoding.
+ * Quit when seeing the RFC 1522 ?= end marker.
+ */
+
+int
+UUDecodeField (char *s, char *d, int method)
+{
+  int z1, z2, z3, z4;
+  int count=0;
+
+  if (method == B64ENCODED) {
+    while ((z1 = B64xlat[ACAST(*s)]) != -1) {
+      if ((z2 = B64xlat[ACAST(*(s+1))]) == -1) break;
+      if ((z3 = B64xlat[ACAST(*(s+2))]) == -1) break;
+      if ((z4 = B64xlat[ACAST(*(s+3))]) == -1) break;
+
+      d[count++] = (z1 << 2) | (z2 >> 4);
+      d[count++] = (z2 << 4) | (z3 >> 2);
+      d[count++] = (z3 << 6) | (z4);
+
+      s+=4;
+    }
+    if (z1 != -1 && z2 != -1 && *(s+2) == '=') {
+      d[count++] = (z1 << 2) | (z2 >> 4);
+      s+=2;
+    }
+    else if (z1 != -1 && z2 != -1 && z3 != -1 && *(s+3) == '=') {
+      d[count++] = (z1 << 2) | (z2 >> 4);
+      d[count++] = (z2 << 4) | (z3 >> 2);
+      s+=3;
+    }
+  }
+  else if (method == QP_ENCODED) {
+    while (*s && (*s != '?' || *(s+1) != '=')) {
+      while (*s && *s != '=' && (*s != '?' || *(s+1) != '=')) {
+	d[count++] = *s++;
+      }
+      if (*s == '=') {
+	if (isxdigit (*(s+1)) && isxdigit (*(s+2))) {
+	  d[count]  = (isdigit (*(s+1)) ? (*(s+1)-'0') : (tolower (*(s+1))-'a'+10)) << 4;
+	  d[count] |= (isdigit (*(s+2)) ? (*(s+2)-'0') : (tolower (*(s+2))-'a'+10));
+	  count++;
+	  s+=3;
+	}
+	else if (*(s+1) == '\012' || *(s+1) == '\015') {
+	  s+=2;
+	}
+	else {
+	  d[count++] = *s++;
+	}
+      }
+    }
+  }
+  else {
+    return -1;
+  }
+
+  d[count] = '\0';
+  return count;
 }
 
 int
@@ -1377,7 +1442,7 @@ UUDecode (uulist *data)
 
   iter = data->thisfile;
   while (iter) {
-    if (part != -1 && iter->partno != part+1)
+    if (part != -1 && iter->partno != part+1 && !uu_desperate)
       break;
     else
       part = iter->partno;
@@ -1441,7 +1506,12 @@ UUDecode (uulist *data)
        data->uudet == PT_ENCODED))
     state = DONE; /* assume we're done */
 
-  fclose (dataout);
+  if (fclose (dataout)) {
+    UUMessage (uunconc_id, __LINE__, UUMSG_ERROR,
+	       uustring (S_WR_ERR_TEMP),
+	       strerror (uu_errno = errno));
+    res = UURET_IOERR;
+  }
 
   if (res != UURET_OK || (state != DONE && !uu_desperate)) {
     unlink (data->binfile);
@@ -1612,7 +1682,14 @@ UUDecode (uulist *data)
      */
 
     fclose (datain);
-    fclose (dataout);
+    if (fclose (dataout)) {
+      UUMessage (uunconc_id, __LINE__, UUMSG_ERROR,
+		 uustring (S_WR_ERR_TARGET),
+		 ntmp, strerror (uu_errno = errno));
+      unlink (ntmp);
+      free   (ntmp);
+      return UURET_IOERR;
+    }
 
     if (unlink (data->binfile)) {
       UUMessage (uunconc_id, __LINE__, UUMSG_WARNING,

@@ -81,7 +81,7 @@
 #include <fptools.h>
 #include <uustring.h>
 
-char * uulib_id = "$Id: uulib.c,v 1.11 2002/10/13 13:08:44 root Exp $";
+char * uulib_id = "$Id$";
 
 #ifdef SYSTEM_WINDLL
 BOOL _export WINAPI 
@@ -245,6 +245,7 @@ static allomap toallocate[] = {
   { &uunconc_BHxlat,     256 * sizeof (int) },
   { &uunconc_save,    3*1200 },  /* from uunconc.c:decoding buffer */
   { &uuscan_shlline,    1024 },  /* from uuscan.c:ScanHeaderLine() */
+  { &uuscan_shlline2,   1024 },  /* from uuscan.c:ScanHeaderLine() */
   { &uuscan_pvvalue,     300 },  /* from uuscan.c:ParseValue() */
   { &uuscan_phtext,      300 },  /* from uuscan.c:ParseHeader() */
   { &uuscan_sdline,      300 },  /* from uuscan.c:ScanData() */
@@ -675,7 +676,13 @@ UUFNameFilter (char *fname)
 int UUEXPORT
 UULoadFile (char *filename, char *fileid, int delflag, int *partcount)
 {
-  int res, sr;
+  return UULoadFileWithPartNo(filename, fileid, delflag, -1, partcount);
+}
+
+int UUEXPORT
+UULoadFileWithPartNo (char *filename, char *fileid, int delflag, int partno, int *partcount)
+{
+  int res, sr, count=0;
   struct stat finfo;
   fileread *loaded;
   uufile *fload;
@@ -774,6 +781,9 @@ UULoadFile (char *filename, char *fileid, int delflag, int *partcount)
       return UURET_IOERR;
     }
 
+    if (partno != -1)
+      loaded->partno = partno;
+
     if ((loaded->uudet == QP_ENCODED || loaded->uudet == PT_ENCODED) &&
 	(loaded->filename == NULL || *(loaded->filename) == '\0') &&
 	!uu_handletext && (loaded->flags&FL_PARTIAL)==0) {
@@ -854,6 +864,15 @@ UULoadFile (char *filename, char *fileid, int delflag, int *partcount)
 
     if (uu_fast_scanning && sr != UURET_CONT)
       break;
+  }
+  if (ferror (datei)) {
+    UUMessage (uulib_id, __LINE__, UUMSG_ERROR,
+	       uustring (S_READ_ERROR), filename,
+	       strerror (uu_errno = errno));
+    UUCheckGlobalList ();
+    progress.action = 0;
+    fclose (datei);
+    return UURET_IOERR;
   }
   fclose (datei);
 
@@ -1043,8 +1062,14 @@ UUDecodeFile (uulist *thefile, char *destname)
     }
   }
 
-  fclose (target);
   fclose (source);
+  if (fclose (target)) {
+    UUMessage (uulib_id, __LINE__, UUMSG_ERROR,
+	       uustring (S_WR_ERR_TARGET),
+	       uugen_fnbuffer, strerror (uu_errno = errno));
+    unlink (uugen_fnbuffer);
+    return UURET_IOERR;
+  }
 
   /*
    * after a successful decoding run, we delete the temporary file

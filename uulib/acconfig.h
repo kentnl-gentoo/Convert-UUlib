@@ -1,7 +1,7 @@
 
 /*
  * needed for auto configuration
- * $Id: acconfig.h,v 1.5 2002/03/31 20:08:42 root Exp $
+ * $Id$
  */
 
 /*
