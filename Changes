@@ -1,5 +1,8 @@
 Revision history for Perl extension Convert::UUlib.
 
+0.213 Sat Jul 27 21:16:30 CEST 2002
+	- fixed another buffer overflow, also added a santity check to fgets.
+
 0.212 Sat Apr  6 03:52:13 CEST 2002
         - fix yEnc decoding support.
         - new option OPT_DOTDOT, that makes uulib unescape dot-escaping.

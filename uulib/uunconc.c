@@ -544,7 +544,7 @@ UURepairData (FILE *datei, char *line, int encoding, int *bhflag)
       ptr = line + strlen (line);
       while (ptr>line && (*(ptr-1)=='\015' || *(ptr-1)=='\012'))
 	ptr--;
-      if (_FP_fgets (ptr, 255-(ptr-line), datei) == NULL)
+      if (_FP_fgets (ptr, 299-(ptr-line), datei) == NULL)
 	break;
     }
     else {			/* don't need next line to repair */
@@ -748,7 +748,7 @@ UUDecodeQP (FILE *datain, FILE *dataout, int *state,
   while (!feof (datain) && 
 	 (ftell(datain)<maxpos || flags&FL_TOEND ||
 	  (!(flags&FL_PROPER) && uu_fast_scanning))) {
-    if (_FP_fgets (line, 255, datain) == NULL)
+    if (_FP_fgets (line, 1023, datain) == NULL)
       break;
     if (ferror (datain)) {
       UUMessage (uunconc_id, __LINE__, UUMSG_ERROR,
@@ -845,7 +845,7 @@ UUDecodePT (FILE *datain, FILE *dataout, int *state,
   while (!feof (datain) && 
 	 (ftell(datain)<maxpos || flags&FL_TOEND ||
 	  (!(flags&FL_PROPER) && uu_fast_scanning))) {
-    if (_FP_fgets (line, 255, datain) == NULL)
+    if (_FP_fgets (line, 1023, datain) == NULL)
       break;
     if (ferror (datain)) {
       UUMessage (uunconc_id, __LINE__, UUMSG_ERROR,

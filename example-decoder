@@ -45,6 +45,8 @@ SetFileNameCallback sub {
    # - filename.par (04/55)
    return $1 if /- "?(\S+\.\S+?)"? (:yenc )?\(\d+\/\d+\)/i;
 
+   return $1 if /No\.[ 0-9]+ (\S+\....) (?:\d+ bytes )?\[/;
+
    # otherwise just pass what we have
    return ();
 };
@@ -79,12 +81,16 @@ while($uu=GetFileListItem($i)) {
       print "\n";
    }
 
-   print strerror($uu->decode_temp)."\n";
-   print " temporarily decoded to ",$uu->binfile,"\n";
-   $uu->remove_temp;
+   if ($uu->state & FILE_OK) {
+      print strerror($uu->decode_temp)."\n";
+      print " temporarily decoded to ",$uu->binfile,"\n";
+      $uu->remove_temp;
 
-   print strerror($uu->decode)."\n";
-   print " saved as uudst/",$uu->filename,"\n";
+      print strerror($uu->decode)."\n";
+      print " saved as uudst/",$uu->filename,"\n";
+   } else {
+      print "file NOT ok, not decoding\n";
+   }
 }
 
 print "cleanup...\n";

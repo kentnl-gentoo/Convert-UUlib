@@ -441,6 +441,10 @@ _FP_fgets (char *buf, int n, FILE *stream)
   char *obp = buf;
   int c;
 
+  /* shield against buffer overflows caused by "255 - bytes_left"-kind of bugs when bytes_left > 255 */
+  if (n <= 0)
+    return NULL;
+
   if (feof (stream))
     return NULL;
 
