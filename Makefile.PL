@@ -9,7 +9,9 @@ uulib/Makefile:
 clean::
 	-cd uulib && make distclean
 
-$(MYEXTLIB): uulib/Makefile uulib/uulib.c
+force:
+
+$(MYEXTLIB): uulib/Makefile uulib/uulib.c force
 	cd uulib && $(MAKE) all
 
 END

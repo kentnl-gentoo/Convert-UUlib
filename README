@@ -16,17 +16,19 @@ PROPAGANDA
         one sweep, without using much virtual memory.
 
         The encoding functions can create mime-compliant mails and
-        attachments.
+        attachments (but this is just a side-effect, the MIME::-hierarchy
+        offers much better functionality).
 
-        At the moment, the module documentation is 100% NON-existant,
+        At the moment, the module documentation is 90% NON-existant,
         however, the example source (example-decoder) and the original
-        uulib documentation (uulibdoc.dvi) should be a useful starting
-        point.
+        uulib documentation (uulibdoc.dvi) should be useful starting
+        points. The included documentation is merely an enumeration of the
+        various constants and functions.
 
 EXAMPLE DECODER
 
         The following example source reads all files given on the
-        commandline and decodes any files in it.
+        commandline and decodes any encoded files in them.
 
         use Convert::UUlib ':all';
 

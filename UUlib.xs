@@ -154,17 +154,21 @@ static int uu_file_callback (void *cb, char *id, char *fname, int retrieve)
   dSP;
   int count;
   int retval;
+  SV *xfname = newSVpv ("", 0);
+  STRLEN dc;
   
   ENTER; SAVETMPS; PUSHMARK(SP); EXTEND(SP,3);
 
   PUSHs(sv_2mortal(newSVpv(id,0)));
-  PUSHs(sv_2mortal(newSVpv(fname,0)));
+  PUSHs(sv_2mortal(xfname));
   PUSHs(sv_2mortal(newSViv(retrieve)));
 
   PUTBACK; count = perl_call_sv ((SV *)cb, G_SCALAR); SPAGAIN;
 
   if (count != 1)
     croak ("filecallback perl callback returned more than one argument");
+
+  strcpy (fname, SvPV (xfname, dc));
 
   retval = POPi;
 

@@ -6,7 +6,7 @@ require Exporter;
 require DynaLoader;
 use AutoLoader;
 
-$VERSION = '0.06';
+$VERSION = 0.11;
 
 @ISA = qw(Exporter DynaLoader);
 
@@ -47,7 +47,10 @@ $VERSION = '0.06';
 
 bootstrap Convert::UUlib $VERSION;
 
-Initialize(); END { CleanUp() }
+Initialize();
+
+# not when < 5.005_6x
+# END { CleanUp() }
 
 for (@_consts) {
    my $constant = constant($_);
@@ -195,96 +198,100 @@ instead of more thorough documentation.
 
 Action code constants:
 
-  ACT_COPYING
-  ACT_DECODING
-  ACT_ENCODING
-  ACT_IDLE
-  ACT_SCANNING
+  ACT_COPYING ACT_DECODING ACT_ENCODING
+  ACT_IDLE    ACT_SCANNING
 
 File status flags:
 
-  FILE_DECODED
-  FILE_ERROR
-  FILE_MISPART
-  FILE_NOBEGIN
-  FILE_NODATA
-  FILE_NOEND
-  FILE_OK
-  FILE_READ
-  FILE_TMPFILE
+  FILE_DECODED FILE_ERROR  FILE_MISPART
+  FILE_NOBEGIN FILE_NODATA FILE_NOEND
+  FILE_OK      FILE_READ   FILE_TMPFILE
 
 Message severity levels:
 
-  MSG_ERROR
-  MSG_FATAL
-  MSG_MESSAGE
-  MSG_NOTE
-  MSG_PANIC
-  MSG_WARNING
+  MSG_ERROR MSG_FATAL MSG_MESSAGE
+  MSG_NOTE  MSG_PANIC MSG_WARNING
 
 Options:
 
-  OPT_BRACKPOL
-  OPT_DEBUG
-  OPT_DESPERATE
-  OPT_DUMBNESS
-  OPT_ENCEXT
-  OPT_ERRNO
-  OPT_FAST
-  OPT_IGNMODE
-  OPT_IGNREPLY
-  OPT_OVERWRITE
-  OPT_PREAMB
-  OPT_PROGRESS
-  OPT_SAVEPATH
-  OPT_TINYB64
-  OPT_USETEXT
-  OPT_VERBOSE
+  OPT_BRACKPOL OPT_DEBUG     OPT_DESPERATE OPT_DUMBNESS
+  OPT_ENCEXT   OPT_ERRNO     OPT_FAST      OPT_IGNMODE
+  OPT_IGNREPLY OPT_OVERWRITE OPT_PREAMB    OPT_PROGRESS
+  OPT_SAVEPATH OPT_TINYB64   OPT_USETEXT   OPT_VERBOSE
   OPT_VERSION
 
 Error/Result codes:
 
-  RET_CANCEL
-  RET_CONT
-  RET_EXISTS
-  RET_ILLVAL
-  RET_IOERR
-  RET_NODATA
-  RET_NOEND
-  RET_NOMEM
-  RET_OK
-  RET_UNSUP
+  RET_CANCEL RET_CONT  RET_EXISTS RET_ILLVAL RET_IOERR
+  RET_NODATA RET_NOEND RET_NOMEM  RET_OK     RET_UNSUP
 
 Encoding types:
 
-  B64ENCODED
-  BH_ENCODED
-  PT_ENCODED
-  QP_ENCODED
-  XX_ENCODED
-  UU_ENCODED
-
+  B64ENCODED BH_ENCODED PT_ENCODED
+  QP_ENCODED XX_ENCODED UU_ENCODED
 
 =head1 Exported functions
 
-  int	  Initialize		() ;
-  int	  GetOption		() ;
-  int	  SetOption		() ;
-  char *	  strerror		() ;
-  int	  SetMsgCallback	() ;
-  int	  SetBusyCallback	() ;
-  int	  SetFileCallback	() ;
-  int	  SetFNameFilter	() ;
-  char *	  FNameFilter		() ;
-  int	  LoadFile		() ;
-  uulist *   GetFileListItem	() ;
-  int	  RenameFile		() ;
-  int	  DecodeToTemp		() ;
-  int	  RemoveTemp		() ;
-  int	  DecodeFile		() ;
-  int	  InfoFile		() ;
-  int	  Smerge		() ;
-  int	  CleanUp		() ;
+Initializing and cleanup (Initialize is automatically called when the
+module is loaded and allocates quite a bit of memory. CleanUp releases
+that again).
+
+  Initialize; # not normally necessary
+  CleanUp;    # could be called at the end to release memory
+
+Setting and querying options:
+
+  $option = GetOption OPT_xxx;
+  SetOption OPT_xxx, opt-value;
+
+Error and action values => stringified:
+
+  $msg = straction ACT_xxx;
+  $msg = strerror RET_xxx;
+
+Setting various callbacks:
+
+  SetMsgCallback [callback-function];
+  SetBusyCallback [callback-function];
+  SetFileCallback [callback-function];
+  SetFNameFilter [callback-function];
+
+Call the currently selected FNameFilter:
+
+  $file = FNameFilter $file;
+
+Loading sourcefiles, optionally fuzzy merge and start decoding:
+
+  ($retval, $count) = LoadFile $fname, [$id, [$delflag]];
+  $retval = Smerge $pass;
+  $item = GetFileListItem $item_number;
+
+The procedural interface is undocumented, use the following methods instead:
+
+  $retval = $item->rename($newname);
+  $retval = $item->decode_temp;
+  $retval = $item->remove_temp;
+  $retval = $item->decode([$target_path]);
+  $retval = $item->info(callback-function);
+
+Querying (and setting) item attributes:
+
+  $state    = $item->state;
+  $mode     = $item->mode([newmode]);
+  $uudet    = $item->uudet;
+  $size     = $item->size;
+  $filename = $item->filename([newfilename});
+  $subfname = $item->subfname;
+  $mimeid   = $item->mimeid;
+  $mimetype = $item->mimetype;
+  $binfile  = $item->binfile;
+
+Totally undocumented and unsupported(!):
+
+  $parts = $item->parts;
+
+Functions below not documented and not very well tested:
+
   int	  QuickDecode		() ;
   int	  EncodeMulti		() ;
   int	  EncodePartial	() ;
@@ -293,10 +300,10 @@ Encoding types:
   int	  E_PrepSingle		() ;
   int	  E_PrepPartial	() ;
 
-
 =head1 AUTHOR
 
-Marc Lehmann <pcg@goof.com>, the uulib library was written by Frank Pilhofer <fp@informatik.uni-frankfurt.de>.
+Marc Lehmann <pcg@goof.com>, the original uulib library was written by
+Frank Pilhofer <fp@informatik.uni-frankfurt.de>.
 
 =head1 SEE ALSO
 

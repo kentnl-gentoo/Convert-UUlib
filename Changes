@@ -1,5 +1,18 @@
 Revision history for Perl extension Convert::UUlib.
 
+0.11 Sun Jul 16 22:42:57 CEST 2000
+	- fixed a bug in the file callback.
+
+0.10 Tue May  2 03:31:09 CEST 2000
+        - fixed one very longstanding bug that might have been the cause
+          for the many mysterious segmentation faults. Hopefully.
+        - improved documentation to the point that it slowly becomes useful
+          as a (very quick) reference.
+
+0.07 Wed Nov 24 18:45:23 CET 1999
+	- removed END { CleanUp } from UUlib.pm, perl is too
+          buggy to rely on this in the face of popen etc..
+
 0.06 Thu Jul 29 22:48:18 CEST 1999
 	- Thierry Bezecourt had the very reasonable idea to include
           the example source in the manpage.
@@ -20,7 +33,7 @@ Revision history for Perl extension Convert::UUlib.
 	- function names exportable (use :all-tag).
 	- made uulist-related functions methods.
         - the first fix from cpan-tester. *sigh* you people save the
-          world, continously.
+          world, continuously.
 
 0.01  Thu May  6 14:30:44 1999
 	- original version; created by h2xs 1.19

@@ -231,8 +231,8 @@ static allomap toallocate[] = {
   { &uuestr_itemp,       256 },  /* from uuencode.c:UUEncodeStream() */
   { &uuestr_otemp,       256 },
   { &uulib_msgstring,   1024 },  /* from uulib.c:UUMessage() */
-  { &uuncdl_fulline,     256 },  /* from uunconc.c:UUDecodeLine() */
-  { &uuncdp_oline,       512 },  /* from uunconc.c:UUDecodePart() */
+  { &uuncdl_fulline,   256+4 },  /* from uunconc.c:UUDecodeLine(). +4 is for leftover parts */
+  { &uuncdp_oline,     4*257 },  /* from uunconc.c:UUDecodePart() */
   { &uunconc_UUxlat,     256 * sizeof (int) },  /* from uunconc.c:toplevel */
   { &uunconc_UUxlen,      64 * sizeof (int) },
   { &uunconc_B64xlat,    256 * sizeof (int) },
