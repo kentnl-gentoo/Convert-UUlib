@@ -1,3 +1,4 @@
+README
 Changes
 MANIFEST
 COPYING.Artistic
@@ -6,12 +7,11 @@ COPYING
 Makefile.PL
 UUlib.pm
 UUlib.xs
-test.pl
 typemap
 example-decoder
+t/cb.t
 uulibdoc.dvi
 uulib/Makefile.in
-uulib/README
 uulib/acconfig.h
 uulib/aclocal.m4
 uulib/config.h.in
@@ -20,7 +20,7 @@ uulib/configure.in
 uulib/fptools.c
 uulib/fptools.h
 uulib/uucheck.c
-uulib/uudeview.h
+uulib/uulib.h
 uulib/uuencode.c
 uulib/uuint.h
 uulib/uulib.c

@@ -3,7 +3,7 @@
 #include "XSUB.h"
 
 #include "uulib/fptools.h"
-#include "uulib/uudeview.h"
+#include "uulib/uulib.h"
 #include "uulib/uuint.h"
 
 static int
@@ -24,9 +24,6 @@ constant(char *name)
 	if (strEQ(name, "ACT_ENCODING")) return UUACT_ENCODING;
 	if (strEQ(name, "ACT_IDLE")) return UUACT_IDLE;
 	if (strEQ(name, "ACT_SCANNING")) return UUACT_SCANNING;
-    case 'B':
-	if (strEQ(name, "B64ENCODED")) return B64ENCODED;
-	if (strEQ(name, "BH_ENCODED")) return BH_ENCODED;
     case 'F':
 	if (strEQ(name, "FILE_DECODED")) return UUFILE_DECODED;
 	if (strEQ(name, "FILE_ERROR")) return UUFILE_ERROR;
@@ -63,10 +60,6 @@ constant(char *name)
 	if (strEQ(name, "OPT_USETEXT")) return UUOPT_USETEXT;
 	if (strEQ(name, "OPT_VERBOSE")) return UUOPT_VERBOSE;
 	if (strEQ(name, "OPT_VERSION")) return UUOPT_VERSION;
-    case 'P':
-	if (strEQ(name, "PT_ENCODED")) return PT_ENCODED;
-    case 'Q':
-	if (strEQ(name, "QP_ENCODED")) return QP_ENCODED;
     case 'R':
 	if (strEQ(name, "RET_CANCEL")) return UURET_CANCEL;
 	if (strEQ(name, "RET_CONT")) return UURET_CONT;
@@ -78,6 +71,13 @@ constant(char *name)
 	if (strEQ(name, "RET_NOMEM")) return UURET_NOMEM;
 	if (strEQ(name, "RET_OK")) return UURET_OK;
 	if (strEQ(name, "RET_UNSUP")) return UURET_UNSUP;
+    case 'B':
+	if (strEQ(name, "B64ENCODED")) return B64ENCODED;
+	if (strEQ(name, "BH_ENCODED")) return BH_ENCODED;
+    case 'P':
+	if (strEQ(name, "PT_ENCODED")) return PT_ENCODED;
+    case 'Q':
+	if (strEQ(name, "QP_ENCODED")) return QP_ENCODED;
     case 'U':
 	if (strEQ(name, "UU_ENCODED")) return UU_ENCODED;
     case 'X':
@@ -142,7 +142,7 @@ static char *uu_fnamefilter_callback (void *cb, char *fname)
   if (count != 1)
     croak ("fnamefilter perl callback returned more than one argument");
 
-  _FP_free(str); str = _FP_strdup (POPp);
+  FP_free(str); str = FP_strdup (POPp);
 
   PUTBACK; FREETMPS; LEAVE;
 
@@ -227,27 +227,23 @@ constant(name)
 void
 UUInitialize()
 	CODE:
-	{
-                if (!uu_initialized)
-                  {
-                    int retval;
-                    
-                    if ((retval = UUInitialize ()) != UURET_OK)
-                      croak ("unable to initialize uudeview library (%s)", UUstrerror (retval));
-
-                    uu_initialized = 1;
-                  }
-	}
+        if (!uu_initialized)
+          {
+            int retval;
+            
+            if ((retval = UUInitialize ()) != UURET_OK)
+              croak ("unable to initialize uudeview library (%s)", UUstrerror (retval));
+ 
+            uu_initialized = 1;
+          }
 
 void
 UUCleanUp()
 	CODE:
-	{
-        	if (uu_initialized)
-                   UUCleanUp ();
+       	if (uu_initialized)
+          UUCleanUp ();
 
-                uu_initialized = 0; 
-	}
+        uu_initialized = 0; 
 
 SV *
 UUGetOption(opt)
@@ -320,11 +316,19 @@ char *
 UUFNameFilter(fname)
 	char *	fname
 
-int
+void
 UULoadFile(fname,id=0,delflag=0)
 	char *	fname
 	char *	id
 	int	delflag
+        PPCODE:
+	{	
+	        int count;
+                
+	        XPUSHs(sv_2mortal(newSViv(UULoadFile (fname, id, delflag, &count))));
+                if (GIMME_V == G_ARRAY)
+                  XPUSHs(sv_2mortal(newSViv(count)));
+	}
 
 int
 UUSmerge(pass)
@@ -360,13 +364,12 @@ UUEncodePartial(outfile,infile,infname,encoding,outfname,mimetype,filemode,partn
 	long	linperfile
 
 int
-UUEncodeToStream(outfile,infile,infname,encoding,outfname,mimetype,filemode)
+UUEncodeToStream(outfile,infile,infname,encoding,outfname,filemode)
 	FILE *	outfile
 	FILE *	infile
 	char *	infname
 	int	encoding
 	char *	outfname
-	char *	mimetype
 	int	filemode
 
 int
@@ -490,8 +493,8 @@ filename(li,newfilename=0)
         CODE:
         if (newfilename)
 	  {
-            _FP_free (li->filename);
-	    li->filename = _FP_strdup (newfilename);
+            FP_free (li->filename);
+	    li->filename = FP_strdup (newfilename);
           }
         RETVAL = li->filename;
         OUTPUT:

@@ -3,10 +3,6 @@
 # decode all the files in the directory uusrc/ and copy
 # the resulting files to uudst/
 
-# remove this unless you are running directly from the source dir,
-# as this is only for testing
-use blib;
-
 use Convert::UUlib ':all';
 
 sub namefilter {
@@ -35,8 +31,9 @@ SetMsgCallback (sub {
    print uc(strmsglevel($_[1])),": $msg\n";
 });
 
-for(<pt/*>) {
-   LoadFile ($_,$_,1);
+for(<uusrc/*>) {
+   my($retval,$count)=LoadFile ($_,$_,1);
+   print "file($_), status(",strerror($retval),") parts($count)\n";
 }
 
 SetOption (OPT_SAVEPATH, "uudst/");

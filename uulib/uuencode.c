@@ -42,7 +42,7 @@
 #include <errno.h>
 #endif
 
-#include <uudeview.h>
+#include <uulib.h>
 #include <uuint.h>
 #include <fptools.h>
 #include <uustring.h>
@@ -235,8 +235,8 @@ char *uuestr_otemp;
 static int 
 UUEncodeStream (FILE *outfile, FILE *infile, int encoding, long linperfile)
 {
-  unsigned char *itemp = (char *) uuestr_itemp;
-  unsigned char *otemp = (char *) uuestr_otemp;
+  uchar *itemp = (uchar *) uuestr_itemp;
+  uchar *otemp = (uchar *) uuestr_otemp;
   unsigned char *optr, *table, *tptr;
   int index, count;
   long line=0;
@@ -409,7 +409,7 @@ UUEncodeMulti (FILE *outfile, FILE *infile, char *infname, int encoding,
   if (progress.fsize <= 0)
     progress.fsize = -1;
 
-  _FP_strncpy (progress.curfile, (outfname)?outfname:infname, 256);
+  FP_strncpy (progress.curfile, (outfname)?outfname:infname, 256);
 
   progress.partno   = 1;
   progress.numparts = 1;
@@ -424,8 +424,8 @@ UUEncodeMulti (FILE *outfile, FILE *infile, char *infname, int encoding,
    */
 
   if (mimetype == NULL) {
-    if ((ptr = _FP_strrchr ((outfname)?outfname:infname, '.'))) {
-      while (miter->extension && _FP_stricmp (ptr+1, miter->extension) != 0)
+    if ((ptr = FP_strrchr ((outfname)?outfname:infname, '.'))) {
+      while (miter->extension && FP_stricmp (ptr+1, miter->extension) != 0)
 	miter++;
       mimetype = miter->mimetype;
     }
@@ -553,7 +553,7 @@ UUEncodePartial (FILE *outfile, FILE *infile,
       theifile = infile;
     }
 
-    _FP_strncpy (progress.curfile, (outfname)?outfname:infname, 256);
+    FP_strncpy (progress.curfile, (outfname)?outfname:infname, 256);
 
     progress.totsize  = (thesize>0) ? thesize : -1;
     progress.partno   = 1;
@@ -568,8 +568,8 @@ UUEncodePartial (FILE *outfile, FILE *infile,
      */
 
     if (mimetype == NULL) {
-      if ((ptr = _FP_strrchr ((outfname)?outfname:infname, '.'))) {
-	while (miter->extension && _FP_stricmp (ptr+1, miter->extension) != 0)
+      if ((ptr = FP_strrchr ((outfname)?outfname:infname, '.'))) {
+	while (miter->extension && FP_stricmp (ptr+1, miter->extension) != 0)
 	  miter++;
 	mimetype = miter->mimetype;
       }
@@ -722,7 +722,7 @@ UUEncodeToStream (FILE *outfile, FILE *infile,
   if (progress.fsize <= 0)
     progress.fsize = -1;
 
-  _FP_strncpy (progress.curfile, (outfname)?outfname:infname, 256);
+  FP_strncpy (progress.curfile, (outfname)?outfname:infname, 256);
 
   progress.partno   = 1;
   progress.numparts = 1;
@@ -830,7 +830,7 @@ UUEncodeToFile (FILE *infile, char *infname, int encoding,
    * there.
    */
 
-  optr = _FP_strrchr (oname, '.');
+  optr = FP_strrchr (oname, '.');
   if (optr==NULL || strchr (optr, '/')!=NULL || strchr (optr, '\\')!=NULL) {
     optr = oname + strlen (oname);
     *optr++ = '.';
@@ -849,14 +849,14 @@ UUEncodeToFile (FILE *infile, char *infname, int encoding,
       UUMessage (uuencode_id, __LINE__, UUMSG_ERROR,
 		 uustring (S_NOT_STAT_FILE),
 		 infname, strerror (uu_errno=errno));
-      _FP_free (oname);
+      FP_free (oname);
       return UURET_IOERR;
     }
     if ((theifile = fopen (infname, "rb")) == NULL) {
       UUMessage (uuencode_id, __LINE__, UUMSG_ERROR,
 		 uustring (S_NOT_OPEN_FILE),
 		 infname, strerror (uu_errno=errno));
-      _FP_free (oname);
+      FP_free (oname);
       return UURET_IOERR;
     }
     if (linperfile <= 0)
@@ -888,7 +888,7 @@ UUEncodeToFile (FILE *infile, char *infname, int encoding,
     theifile = infile;
   }
 
-  _FP_strncpy (progress.curfile, (outfname)?outfname:infname, 256);
+  FP_strncpy (progress.curfile, (outfname)?outfname:infname, 256);
 
   progress.totsize  = (progress.totsize<=0) ? -1 : progress.totsize;
   progress.numparts = numparts;
@@ -978,7 +978,7 @@ UUEncodeToFile (FILE *infile, char *infname, int encoding,
       progress.action = 0;
       fclose (outfile);
       unlink (oname);
-      _FP_free (oname);
+      FP_free (oname);
       return res;
     }
     if (feof (theifile) &&
@@ -996,7 +996,7 @@ UUEncodeToFile (FILE *infile, char *infname, int encoding,
   }
   if (infile==NULL) fclose (theifile);
   progress.action = 0;
-  _FP_free (oname);
+  FP_free (oname);
   return UURET_OK;
 }
 
@@ -1028,8 +1028,8 @@ UUE_PrepSingle (FILE *outfile, FILE *infile,
   oname = UUFNameFilter ((outfname)?outfname:infname);
   len   = ((subject)?strlen(subject):0) + strlen(oname) + 40;
 
-  if ((ptr = _FP_strrchr (oname, '.'))) {
-    while (miter->extension && _FP_stricmp (ptr+1, miter->extension) != 0)
+  if ((ptr = FP_strrchr (oname, '.'))) {
+    while (miter->extension && FP_stricmp (ptr+1, miter->extension) != 0)
       miter++;
     mimetype = miter->mimetype;
   }
@@ -1069,7 +1069,7 @@ UUE_PrepSingle (FILE *outfile, FILE *infile,
   res = UUEncodeToStream (outfile, infile, infname, encoding,
 			  outfname, filemode);
   
-  _FP_free (subline);
+  FP_free (subline);
   return res;
 }
 
@@ -1212,7 +1212,7 @@ UUE_PrepPartial (FILE *outfile, FILE *infile,
 			 (outfname)?outfname:infname, NULL,
 			 themode, partno, linperfile);
 
-  _FP_free (subline);
+  FP_free (subline);
 
   if (infile==NULL) {
     if (res != UURET_OK) {

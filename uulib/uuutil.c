@@ -49,7 +49,7 @@
 #include <errno.h>
 #endif
 
-#include <uudeview.h>
+#include <uulib.h>
 #include <uuint.h>
 #include <fptools.h>
 #include <uustring.h>
@@ -73,8 +73,8 @@ static char *knownexts[] = {
  * forward declarations of local functions
  */
 
-static int	UUSMPKnownExt		_ANSI_ARGS_((char *filename));
-static uulist *	UU_smparts_r		_ANSI_ARGS_((uulist *, int));
+static int	UUSMPKnownExt		(char *filename);
+static uulist *	UU_smparts_r		(uulist *, int);
 
 /*
  * mallocable areas
@@ -90,13 +90,13 @@ void
 UUkillfread (fileread *data)
 {
   if (data != NULL) {
-    _FP_free (data->subject);
-    _FP_free (data->filename);
-    _FP_free (data->origin);
-    _FP_free (data->mimeid);
-    _FP_free (data->mimetype);
-    _FP_free (data->sfname);
-    _FP_free (data);
+    FP_free (data->subject);
+    FP_free (data->filename);
+    FP_free (data->origin);
+    FP_free (data->mimeid);
+    FP_free (data->mimetype);
+    FP_free (data->sfname);
+    FP_free (data);
   }
 }
 
@@ -106,14 +106,14 @@ UUkillfile (uufile *data)
   uufile *next;
 
   while (data) {
-    _FP_free    (data->filename);
-    _FP_free    (data->subfname);
-    _FP_free    (data->mimeid);
-    _FP_free    (data->mimetype);
+    FP_free    (data->filename);
+    FP_free    (data->subfname);
+    FP_free    (data->mimeid);
+    FP_free    (data->mimetype);
     UUkillfread (data->data);
 
     next = data->NEXT;
-    _FP_free  (data);
+    FP_free  (data);
     data = next;
   }
 }
@@ -130,17 +130,17 @@ UUkilllist (uulist *data)
 		   uustring (S_TMP_NOT_REMOVED),
 		   data->binfile, strerror (errno));
 
-    _FP_free   (data->filename);
-    _FP_free   (data->subfname);
-    _FP_free   (data->mimeid);
-    _FP_free   (data->mimetype);
-    _FP_free   (data->binfile);
+    FP_free   (data->filename);
+    FP_free   (data->subfname);
+    FP_free   (data->mimeid);
+    FP_free   (data->mimetype);
+    FP_free   (data->binfile);
     UUkillfile (data->thisfile);
-    _FP_free   (data->haveparts);
-    _FP_free   (data->misparts);
+    FP_free   (data->haveparts);
+    FP_free   (data->misparts);
 
     next = data->NEXT;
-    _FP_free (data);
+    FP_free (data);
     data = next;
   }
 }
@@ -153,16 +153,16 @@ void
 UUkillheaders (headers *data)
 {
   if (data != NULL) {
-    _FP_free (data->from);
-    _FP_free (data->subject);
-    _FP_free (data->rcpt);
-    _FP_free (data->date);
-    _FP_free (data->mimevers);
-    _FP_free (data->ctype);
-    _FP_free (data->ctenc);
-    _FP_free (data->fname);
-    _FP_free (data->boundary);
-    _FP_free (data->mimeid);
+    FP_free (data->from);
+    FP_free (data->subject);
+    FP_free (data->rcpt);
+    FP_free (data->date);
+    FP_free (data->mimevers);
+    FP_free (data->ctype);
+    FP_free (data->ctenc);
+    FP_free (data->fname);
+    FP_free (data->boundary);
+    FP_free (data->mimeid);
     memset   (data, 0, sizeof (headers));
   }
 }
@@ -175,7 +175,7 @@ UUkillheaders (headers *data)
 static int
 UUSMPKnownExt (char *filename)
 {
-  char **eiter = knownexts, *ptr=_FP_strrchr(filename, '.');
+  char **eiter = knownexts, *ptr=FP_strrchr(filename, '.');
   int count=0, where=0;
 
   if (ptr == NULL)
@@ -183,7 +183,7 @@ UUSMPKnownExt (char *filename)
   ptr++;
 
   while (*eiter) {
-    if (_FP_stricmp (ptr, (**eiter=='@')?*eiter+1:*eiter) == 0)
+    if (FP_stricmp (ptr, (**eiter=='@')?*eiter+1:*eiter) == 0)
       return where;
     else
       eiter++;
@@ -383,7 +383,7 @@ UU_smparts_r (uulist *addit, int pass)
     fiter = addit->thisfile;
 
     if (iter->filename == NULL && addit->filename != NULL)
-      iter->filename = _FP_strdup (addit->filename);
+      iter->filename = FP_strdup (addit->filename);
 
     if (addit->begin) iter->begin = 1;
     if (addit->end)   iter->end   = 1;

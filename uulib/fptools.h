@@ -14,16 +14,11 @@
  * $Id: fptools.h,v 1.2 1996/09/10 18:48:01 fp Exp $
  */
 
-#ifndef __FPTOOLS_H__
-#define __FPTOOLS_H__
+#ifndef FPTOOLS_H__
+#define FPTOOLS_H__
 
-#ifndef _ANSI_ARGS_
-#ifdef PROTOTYPES
-#define _ANSI_ARGS_(c)	c
-#else
-#define _ANSI_ARGS_(c)	()
-#endif
-#endif
+typedef signed char schar;
+typedef unsigned char uchar;
 
 #ifndef TOOLEXPORT
 #define TOOLEXPORT
@@ -33,27 +28,26 @@
 extern "C" {
 #endif
 
-void	TOOLEXPORT	_FP_free	_ANSI_ARGS_((void *));
-char *	TOOLEXPORT	_FP_strdup	_ANSI_ARGS_((char *));
-char *	TOOLEXPORT	_FP_strncpy	_ANSI_ARGS_((char *, char *, int));
-void *	TOOLEXPORT	_FP_memdup	_ANSI_ARGS_((void *, int));
-int 	TOOLEXPORT	_FP_stricmp	_ANSI_ARGS_((char *, char *));
-int 	TOOLEXPORT	_FP_strnicmp	_ANSI_ARGS_((char *, char *, int));
-char *	TOOLEXPORT	_FP_strrstr	_ANSI_ARGS_((char *, char *));
-char *	TOOLEXPORT	_FP_stoupper	_ANSI_ARGS_((char *));
-char *	TOOLEXPORT	_FP_stolower	_ANSI_ARGS_((char *));
-int 	TOOLEXPORT	_FP_strmatch	_ANSI_ARGS_((char *, char *));
-char *	TOOLEXPORT	_FP_strstr	_ANSI_ARGS_((char *, char *));
-char *	TOOLEXPORT	_FP_stristr	_ANSI_ARGS_((char *, char *));
-char *	TOOLEXPORT	_FP_strirstr	_ANSI_ARGS_((char *, char *));
-char *	TOOLEXPORT	_FP_strrchr	_ANSI_ARGS_((char *, int));
-char *	TOOLEXPORT	_FP_fgets	_ANSI_ARGS_((char *, int, FILE *));
-char *	TOOLEXPORT	_FP_strpbrk	_ANSI_ARGS_((char *, char *));
-char *	TOOLEXPORT	_FP_strtok	_ANSI_ARGS_((char *, char *));
-char *	TOOLEXPORT	_FP_cutdir	_ANSI_ARGS_((char *));
-char *	TOOLEXPORT	_FP_strerror	_ANSI_ARGS_((int));
-#define _FP_tempnam x_FP_tempnam
-char *	TOOLEXPORT	_FP_tempnam	_ANSI_ARGS_((char *, char *));
+void	TOOLEXPORT	FP_free		(void *);
+char *	TOOLEXPORT	FP_strdup	(char *);
+char *	TOOLEXPORT	FP_strncpy	(char *, char *, int);
+void *	TOOLEXPORT	FP_memdup	(void *, int);
+int 	TOOLEXPORT	FP_stricmp	(char *, char *);
+int 	TOOLEXPORT	FP_strnicmp	(char *, char *, int);
+char *	TOOLEXPORT	FP_strrstr	(char *, char *);
+char *	TOOLEXPORT	FP_stoupper	(char *);
+char *	TOOLEXPORT	FP_stolower	(char *);
+int 	TOOLEXPORT	FP_strmatch	(char *, char *);
+char *	TOOLEXPORT	FP_strstr	(char *, char *);
+char *	TOOLEXPORT	FP_stristr	(char *, char *);
+char *	TOOLEXPORT	FP_strirstr	(char *, char *);
+char *	TOOLEXPORT	FP_strrchr	(char *, int);
+char *	TOOLEXPORT	FP_fgets	(char *, int, FILE *);
+char *	TOOLEXPORT	FP_strpbrk	(char *, char *);
+char *	TOOLEXPORT	FP_strtok	(char *, char *);
+char *	TOOLEXPORT	FP_cutdir	(char *);
+char *	TOOLEXPORT	FP_strerror	(int);
+char *	TOOLEXPORT	FP_tempnam	(char *, char *);
 
 #ifdef __cplusplus
 }

@@ -1,11 +1,20 @@
 Revision history for Perl extension Convert::UUlib.
 
+0.05 Mon May 24 11:37:25 CEST 1999
+	- LoadFile returns number of parts loaded.
+
+0.04 Mon May 10 22:02:31 CEST 1999
+	- fixed a couple of portability problems.
+        - UUEncodeToStream had a wrong definition.
+        - added primitive testsuite.
+        - added README.
+
 0.03 Sat May  8 22:40:01 CEST 1999
-	- renamed it to Convert::UUlib
+	- renamed it to Convert::UUlib.
 
 0.02 Fri May  7 01:26:19 CEST 1999
-	- function names exportable (use :all-tag)
-	- made uulist-related functions methods
+	- function names exportable (use :all-tag).
+	- made uulist-related functions methods.
         - the first fix from cpan-tester. *sigh* you people save the
           world, continously.
 

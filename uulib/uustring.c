@@ -46,7 +46,7 @@
 #include <memory.h>
 #endif
 
-#include <uudeview.h>
+#include <uulib.h>
 #include <uuint.h>
 #include <uustring.h>
 

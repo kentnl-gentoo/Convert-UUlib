@@ -34,8 +34,8 @@
 
 /*
  * Replacement functions.
- * #define strerror _FP_strerror
- * #define tempnam  _FP_tempnam
+ * #define strerror FP_strerror
+ * #define tempnam  FP_tempnam
  * if you don't have these functions
  */
 #undef strerror

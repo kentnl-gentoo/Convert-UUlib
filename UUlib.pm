@@ -42,12 +42,12 @@ use AutoLoader;
 
 @EXPORT = @_consts;
 @EXPORT_OK = @_funcs;
-%EXPORT_TAGS = (all => [@_consts,@_funcs]);
-$VERSION = '0.03';
+%EXPORT_TAGS = (all => [@_consts,@_funcs], constants => \@_consts);
+$VERSION = '0.05';
 
 bootstrap Convert::UUlib $VERSION;
 
-Initialize ();
+Initialize(); END { CleanUp() }
 
 for (@_consts) {
    my $constant = constant($_);
@@ -90,7 +90,7 @@ __END__
 
 =head1 NAME
 
-Convert::UUlib - Perl interface to the UUDeview library.
+Convert::UUlib - Perl interface to the uulib library (a.k.a. uudeview/uuenview).
 
 =head1 SYNOPSIS
 
@@ -98,16 +98,20 @@ Convert::UUlib - Perl interface to the UUDeview library.
 
 =head1 DESCRIPTION
 
-Read the file uulibdoc.dvi.gz and the example-decoder
-source. Sorry - mode to come once people use me ;)
+Read the file uulibdoc.dvi.gz and the example-decoder source. Sorry - more
+to come once people use me ;)
 
 =head1 Exported constants
+
+Action code constants:
 
   ACT_COPYING
   ACT_DECODING
   ACT_ENCODING
   ACT_IDLE
   ACT_SCANNING
+
+File status flags:
 
   FILE_DECODED
   FILE_ERROR
@@ -119,12 +123,16 @@ source. Sorry - mode to come once people use me ;)
   FILE_READ
   FILE_TMPFILE
 
+Message severity levels:
+
   MSG_ERROR
   MSG_FATAL
   MSG_MESSAGE
   MSG_NOTE
   MSG_PANIC
   MSG_WARNING
+
+Options:
 
   OPT_BRACKPOL
   OPT_DEBUG
@@ -144,6 +152,8 @@ source. Sorry - mode to come once people use me ;)
   OPT_VERBOSE
   OPT_VERSION
 
+Error/Result codes:
+
   RET_CANCEL
   RET_CONT
   RET_EXISTS
@@ -154,6 +164,8 @@ source. Sorry - mode to come once people use me ;)
   RET_NOMEM
   RET_OK
   RET_UNSUP
+
+Encoding types:
 
   B64ENCODED
   BH_ENCODED
@@ -194,10 +206,10 @@ source. Sorry - mode to come once people use me ;)
 
 =head1 AUTHOR
 
-Marc Lehmann <pcg@goof.com>, the uudeview library was written by Frank Pilhofer <fp@informatik.uni-frankfurt.de>.
+Marc Lehmann <pcg@goof.com>, the uulib library was written by Frank Pilhofer <fp@informatik.uni-frankfurt.de>.
 
 =head1 SEE ALSO
 
-perl(1), uudevidew homepage at http://www.uni-frankfurt.de/~fp/uudeview/.
+perl(1), uudeview homepage at http://www.uni-frankfurt.de/~fp/uudeview/.
 
 =cut

@@ -49,7 +49,7 @@
 #include <errno.h>
 #endif
 
-#include <uudeview.h>
+#include <uulib.h>
 #include <uuint.h>
 #include <fptools.h>
 #include <uustring.h>
@@ -118,7 +118,7 @@ static int uulboundary;
  * To prevent warnings when using a char as index into an array
  */
 
-#define ACAST(s)	((int)(unsigned char)(s))
+#define ACAST(s)	((int)(uchar)(s))
 
 /*
  * Initialize decoding tables
@@ -195,8 +195,8 @@ UUBrokenByNetscape (char *string)
   if (string==NULL || (len=strlen(string))<3)
     return 0;
 
-  if ((ptr = _FP_stristr (string, "<a href=")) != NULL) {
-    if (_FP_stristr (string, "</a>") > ptr)
+  if ((ptr = FP_stristr (string, "<a href=")) != NULL) {
+    if (FP_stristr (string, "</a>") > ptr)
       return 2;
   }
 
@@ -209,7 +209,7 @@ UUBrokenByNetscape (char *string)
   if (*--ptr == ' ') ptr--;
   ptr--;
 
-  if (_FP_strnicmp (ptr, "<a", 2) == 0)
+  if (FP_strnicmp (ptr, "<a", 2) == 0)
     return 1;
 
   return 0;
@@ -243,9 +243,9 @@ UUNetscapeCollapse (char *string)
    */
   while (*p1) {
     if (*p1 == '&') {
-      if      (_FP_strnicmp (p1, "&amp;", 5) == 0) { p1+=5; *p2++='&'; }
-      else if (_FP_strnicmp (p1, "&lt;",  4) == 0) { p1+=4; *p2++='<'; }
-      else if (_FP_strnicmp (p1, "&gt;",  4) == 0) { p1+=4; *p2++='>'; }
+      if      (FP_strnicmp (p1, "&amp;", 5) == 0) { p1+=5; *p2++='&'; }
+      else if (FP_strnicmp (p1, "&lt;",  4) == 0) { p1+=4; *p2++='<'; }
+      else if (FP_strnicmp (p1, "&gt;",  4) == 0) { p1+=4; *p2++='>'; }
       else *p2++ = *p1++;
       res = 1;
     }
@@ -259,16 +259,16 @@ UUNetscapeCollapse (char *string)
 
   while (*p1) {
     if (*p1 == '<') {
-      if ((_FP_strnicmp (p1, "<ahref=", 7) == 0 ||
-	   _FP_strnicmp (p1, "<a href=",8) == 0) && 
-	  (_FP_strstr (p1, "</a>") != 0 || _FP_strstr (p1, "</A>") != 0)) {
+      if ((FP_strnicmp (p1, "<ahref=", 7) == 0 ||
+	   FP_strnicmp (p1, "<a href=",8) == 0) && 
+	  (FP_strstr (p1, "</a>") != 0 || FP_strstr (p1, "</A>") != 0)) {
 	while (*p1 && *p1!='>')        p1++;
 	if (*p1=='\0' || *(p1+1)!='<') return 0;
 	p1++;
-	while (*p1 && (*p1!='<' || _FP_strnicmp(p1,"</a>",4)!=0)) {
+	while (*p1 && (*p1!='<' || FP_strnicmp(p1,"</a>",4)!=0)) {
 	  *p2++ = *p1++;
 	}
-	if (_FP_strnicmp(p1,"</a>",4) != 0)
+	if (FP_strnicmp(p1,"</a>",4) != 0)
 	  return 0;
 	p1+=4;
 	res=1;
@@ -298,7 +298,7 @@ UUValidData (char *ptr, int encoding, int *bhflag)
   int i=0, j, len=0, suspicious=0, flag=0;
   char *s = ptr;
 
-  if ((s == NULL) || (*s < '\0')) {
+  if ((s == NULL) || ((schar)*s < '\0')) {
     return(0);              /* bad string */
   }
   
@@ -467,7 +467,7 @@ UUValidData (char *ptr, int encoding, int *bhflag)
       if (strchr (ptr, ' ') != NULL)
 	goto _t_XX;
 
-/*  suspicious = 1;    we're careful here REMOVED 0.4.15 __FP__ */
+/*  suspicious = 1;    we're careful here REMOVED 0.4.15 _FP__ */
     len        = j;
   }
 
@@ -540,7 +540,7 @@ UURepairData (FILE *datei, char *line, int encoding, int *bhflag)
       ptr = line + strlen (line);
       while (ptr>line && (*(ptr-1)=='\015' || *(ptr-1)=='\012'))
 	ptr--;
-      if (_FP_fgets (ptr, 255-(ptr-line), datei) == NULL)
+      if (FP_fgets (ptr, 255-(ptr-line), datei) == NULL)
 	break;
     }
     else {			/* don't need next line to repair */
@@ -616,26 +616,26 @@ UUDecodeLine (char *s, char *d, int method)
     else
       table = XXxlat;
 
-    i = table [*s++];
+    i = table [(uchar)*s++];
     j = UUxlen[i] - 1;
 
     while(j > 0) {
-      c  = table[*s++] << 2;
-      cc = table[*s++];
+      c  = table[(uchar)*s++] << 2;
+      cc = table[(uchar)*s++];
       c |= (cc >> 4);
 
       if(i-- > 0)
 	d[count++] = c;
       
       cc <<= 4;
-      c    = table[*s++];
+      c    = table[(uchar)*s++];
       cc  |= (c >> 2);
       
       if(i-- > 0)
 	d[count++] = cc;
       
       c <<= 6;
-      c |= table[*s++];
+      c |= table[(uchar)*s++];
       
       if(i-- > 0)
 	d[count++] = c;
@@ -726,7 +726,7 @@ UUDecodeQP (FILE *datain, FILE *dataout, int *state,
   while (!feof (datain) && 
 	 (ftell(datain)<maxpos || flags&FL_TOEND ||
 	  (!(flags&FL_PROPER) && uu_fast_scanning))) {
-    if (_FP_fgets (line, 255, datain) == NULL)
+    if (FP_fgets (line, 255, datain) == NULL)
       break;
     if (ferror (datain)) {
       UUMessage (uunconc_id, __LINE__, UUMSG_ERROR,
@@ -823,7 +823,7 @@ UUDecodePT (FILE *datain, FILE *dataout, int *state,
   while (!feof (datain) && 
 	 (ftell(datain)<maxpos || flags&FL_TOEND ||
 	  (!(flags&FL_PROPER) && uu_fast_scanning))) {
-    if (_FP_fgets (line, 255, datain) == NULL)
+    if (FP_fgets (line, 255, datain) == NULL)
       break;
     if (ferror (datain)) {
       UUMessage (uunconc_id, __LINE__, UUMSG_ERROR,
@@ -910,7 +910,7 @@ UUDecodePart (FILE *datain, FILE *dataout, int *state,
   while (!feof (datain) && *state != DONE && 
 	 (ftell(datain)<maxpos || flags&FL_TOEND || maxpos==-1 ||
 	  (!(flags&FL_PROPER) && uu_fast_scanning))) {
-    if (_FP_fgets (line, 255, datain) == NULL)
+    if (FP_fgets (line, 255, datain) == NULL)
       break;
     if (ferror (datain)) {
       UUMessage (uunconc_id, __LINE__, UUMSG_ERROR,
@@ -966,7 +966,7 @@ UUDecodePart (FILE *datain, FILE *dataout, int *state,
 
     if ((flags&FL_PROPER) == 0) {
       if (strncmp (line, "BEGIN", 5) == 0 &&
-	  _FP_strstr  (line, "CUT HERE")  && !tf) { /* I hate these lines */
+	  FP_strstr  (line, "CUT HERE")  && !tf) { /* I hate these lines */
 	tc = tf = vlc = 0;
 	continue;
       }
@@ -982,13 +982,13 @@ UUDecodePart (FILE *datain, FILE *dataout, int *state,
 	haddh = 1;
 	continue;
       }
-      if (_FP_strnicmp (line, "Content-Type", 12) == 0)
+      if (FP_strnicmp (line, "Content-Type", 12) == 0)
 	hadct = 1;
     }
 
     if (*state == BEGIN) {
       if (strncmp      (line, "begin ",       6) == 0 ||
-	  _FP_strnicmp (line, "<pre>begin ", 11) == 0) {    /* for LYNX */
+	  FP_strnicmp (line, "<pre>begin ", 11) == 0) {    /* for LYNX */
 	*state = DATA;
 	continue;
       }
@@ -1059,7 +1059,7 @@ UUDecodePart (FILE *datain, FILE *dataout, int *state,
 	  lc[1] = 3;
 	}
 	else {
-	  _FP_strncpy (save[tc++], line, 256);
+	  FP_strncpy (save[tc++], line, 256);
 	}
 	if (method == UU_ENCODED)
 	  *state = (line[0] == 'M') ? DATA : END;
@@ -1170,7 +1170,7 @@ UUDecode (uulist *data)
     UUMessage (uunconc_id, __LINE__, UUMSG_ERROR,
 	       uustring (S_WR_ERR_TARGET),
 	       data->binfile, strerror (uu_errno = errno));
-    _FP_free (data->binfile);
+    FP_free (data->binfile);
     data->binfile = NULL;
     uu_errno = errno;
     return UURET_IOERR;
@@ -1199,13 +1199,13 @@ UUDecode (uulist *data)
    */
   progress.action = 0;
   if (data->filename != NULL) {
-    _FP_strncpy (progress.curfile,
+    FP_strncpy (progress.curfile,
 		 (strlen(data->filename)>255)?
 		 (data->filename+strlen(data->filename)-255):data->filename,
 		 256);
   }
   else {
-    _FP_strncpy (progress.curfile,
+    FP_strncpy (progress.curfile,
 		 (strlen(data->binfile)>255)?
 		 (data->binfile+strlen(data->binfile)-255):data->binfile,
 		 256);
@@ -1264,7 +1264,7 @@ UUDecode (uulist *data)
 	res = UURET_IOERR;
 	break;
       }
-      _FP_strncpy (uugen_fnbuffer, iter->data->sfname, 1024);
+      FP_strncpy (uugen_fnbuffer, iter->data->sfname, 1024);
     }
 
     progress.partno  = part;
@@ -1296,7 +1296,7 @@ UUDecode (uulist *data)
 
   if (res != UURET_OK || (state != DONE && !uu_desperate)) {
     unlink (data->binfile);
-    _FP_free (data->binfile);
+    FP_free (data->binfile);
     data->binfile = NULL;
     data->state  &= ~UUFILE_TMPFILE;
     data->state  |=  UUFILE_ERROR;
@@ -1476,13 +1476,13 @@ UUQuickDecode (FILE *datain, FILE *dataout, char *boundary, long maxpos)
   memset (&myenv, 0, sizeof (headers));
   UUScanHeader (datain, &myenv);
 
-  if (_FP_stristr (myenv.ctenc, "uu") != NULL)
+  if (FP_stristr (myenv.ctenc, "uu") != NULL)
     encoding = UU_ENCODED;
-  else if (_FP_stristr (myenv.ctenc, "xx") != NULL)
+  else if (FP_stristr (myenv.ctenc, "xx") != NULL)
     encoding = XX_ENCODED;
-  else if (_FP_stricmp (myenv.ctenc, "base64") == 0)
+  else if (FP_stricmp (myenv.ctenc, "base64") == 0)
     encoding = B64ENCODED;
-  else if (_FP_stricmp (myenv.ctenc, "quoted-printable") == 0)
+  else if (FP_stricmp (myenv.ctenc, "quoted-printable") == 0)
     encoding = QP_ENCODED;
   else
     encoding = PT_ENCODED;

@@ -76,13 +76,13 @@ libuu.a:	$(UULIB_OBJ)
 .c.o:
 	$(CC) -c $(CFLAGS) $(VDEF) $<
 
-uuencode.o:	uuencode.c uudeview.h uuint.h uustring.h fptools.h config.h
-uulib.o:	uulib.c uudeview.h uuint.h uustring.h fptools.h config.h
-uunconc.o:	uunconc.c uudeview.h uuint.h uustring.h fptools.h config.h
-uucheck.o:	uucheck.c uudeview.h uuint.h uustring.h fptools.h config.h
-uuutil.o:	uuutil.c  uudeview.h uuint.h uustring.h fptools.h config.h
-uuscan.o:	uuutil.c  uudeview.h uuint.h uustring.h fptools.h config.h
-uustring.o:	uustring.c uudeview.h uuint.h uustring.h config.h
+uuencode.o:	uuencode.c uulib.h uuint.h uustring.h fptools.h config.h
+uulib.o:	uulib.c uulib.h uuint.h uustring.h fptools.h config.h
+uunconc.o:	uunconc.c uulib.h uuint.h uustring.h fptools.h config.h
+uucheck.o:	uucheck.c uulib.h uuint.h uustring.h fptools.h config.h
+uuutil.o:	uuutil.c  uulib.h uuint.h uustring.h fptools.h config.h
+uuscan.o:	uuutil.c  uulib.h uuint.h uustring.h fptools.h config.h
+uustring.o:	uustring.c uulib.h uuint.h uustring.h config.h
 fptools.o:	fptools.c fptools.h config.h
 
 uustring.h:	uustring.c
