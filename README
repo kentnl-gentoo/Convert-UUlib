@@ -6,9 +6,13 @@ SYNOPSIS
      use Convert::UUlib ':all';
  
      # read all the files named on the commandline and decode them
-     LoadFile($_) for @ARGV;
-     for($i=0; $uu=GetFileListItem($i); $i++) {
-        $uu->decode if $uu->state & FILE_OK;
+     # into the CURRENT directory. See below for a longer example.
+     LoadFile $_ for @ARGV;
+     for (my $i = 0; my $uu = GetFileListItem $i; $i++) {
+        if ($uu->state & FILE_OK) {
+          $uu->decode;
+          print $uu->filename, "\n";
+        }
      }
 
 DESCRIPTION
@@ -71,7 +75,7 @@ EXPORTED CONSTANTS
 
       UUFILE_READ   Read in, but not further processed
 
-     The following state codes are ored together:
+     The following state codes are or'ed together:
 
       FILE_MISPART  Missing Part(s) detected
       FILE_NOBEGIN  No 'begin' found
@@ -94,49 +98,99 @@ EXPORTED CONSTANTS
 EXPORTED FUNCTIONS
   Initializing and cleanup
     Initialize is automatically called when the module is loaded and
-    allocates quite a bit of memory. CleanUp releases that again.
+    allocates quite a small amount of memory for todays machines ;) CleanUp
+    releases that again.
 
-      Initialize; # not normally necessary
-      CleanUp;    # could be called at the end to release memory
+    Initialize
+        Not normally necessary, (re-)initializes the library.
+
+    CleanUp
+        Not normally necessary, could be called at the end to release memory
+        before starting a new decoding round.
 
   Setting and querying options
-      $option = GetOption OPT_xxx;
-      SetOption OPT_xxx, opt-value;
+    $option = GetOption OPT_xxx
+    SetOption OPT_xxx, opt-value
+
+    See the "OPT_xxx" constants above to see which options exist.
 
   Setting various callbacks
-      SetMsgCallback [callback-function];
-      SetBusyCallback [callback-function];
-      SetFileCallback [callback-function];
-      SetFNameFilter [callback-function];
+    SetMsgCallback [callback-function]
+    SetBusyCallback [callback-function]
+    SetFileCallback [callback-function]
+    SetFNameFilter [callback-function]
 
   Call the currently selected FNameFilter
-      $file = FNameFilter $file;
+    $file = FNameFilter $file
 
   Loading sourcefiles, optionally fuzzy merge and start decoding
-      ($retval, $count) = LoadFile $fname, [$id, [$delflag]];
-      $retval = Smerge $pass;
-      $item = GetFileListItem $item_number;
+    ($retval, $count) = LoadFile $fname, [$id, [$delflag]]
+        Load the given file and scan it for encoded contents. Optionally tag
+        it with the given id, and if $delflag is true, delete the file after
+        it is no longer necessary.
 
-  The procedural interface is undocumented, use the following methods instead
-      $retval = $item->rename($newname);
-      $retval = $item->decode_temp;
-      $retval = $item->remove_temp;
-      $retval = $item->decode([$target_path]);
-      $retval = $item->info(callback-function);
+    $retval = Smerge $pass
+        If you are desperate, try to call "Smerge" with increasing $pass
+        values, beginning at 0, to try to merge parts that usually would not
+        have been merged.
+
+        Most probably this will result in garbled files, so never do this by
+        default.
+
+    $item = GetFileListItem $item_number
+        Return the $item structure for the $item_number'th found file, or
+        "undef" of no file with that number exists.
+
+        The first file has number 0, and the series has no holes, so you can
+        iterate over all files by starting with zero and incrementing until
+        you hit "undef".
+
+  Decoding files
+    $retval = $item->rename($newname)
+        Change the ondisk filename where the decoded file will be saved.
+
+    $retval = $item->decode_temp
+        Decode the file into a temporary location, use "$item->infile" to
+        retrieve the temporary filename.
+
+    $retval = $item->remove_temp
+        Remove the temporarily decoded file again.
+
+    $retval = $item->decode([$target_path])
+        Decode the file to it's destination, or the given target path.
+
+    $retval = $item->info(callback-function)
 
   Querying (and setting) item attributes
-      $state    = $item->state;
-      $mode     = $item->mode([newmode]);
-      $uudet    = $item->uudet;
-      $size     = $item->size;
-      $filename = $item->filename([newfilename});
-      $subfname = $item->subfname;
-      $mimeid   = $item->mimeid;
-      $mimetype = $item->mimetype;
-      $binfile  = $item->binfile;
+    $state = $item->state
+    $mode = $item->mode([newmode])
+    $uudet = $item->uudet
+    $size = $item->size
+    $filename = $item->filename([newfilename})
+    $subfname = $item->subfname
+    $mimeid = $item->mimeid
+    $mimetype = $item->mimetype
+    $binfile = $item->binfile
 
-  Totally undocumented but well tested ;)
-      $parts = $item->parts;
+  Information about source parts
+    $parts = $item->parts
+        Return information about all parts (source files) used to decode the
+        file as a list of hashrefs with the following structure:
+
+         {
+           partno   => <integer describing the part number, starting with 1>,
+           # the following member sonly exist when they contain useful information
+           sfname   => <local pathname of the file where this part is from>,
+           filename => <the ondisk filename of the decoded file>,
+           subfname => <used to cluster postings, possibly the posting filename>,
+           subject  => <the subject of the posting/mail>,
+           origin   => <the possible source (From) address>,
+           mimetype => <the possible mimetype of the decoded file>,
+           mimeid   => <the id part of the Content-Type>,
+         }
+
+        Usually you are interested mostly the "sfname" and possibly the
+        "partno" and "filename" members.
 
   Functions below not documented and not very well tested
       QuickDecode

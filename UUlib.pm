@@ -4,9 +4,8 @@ use Carp;
 
 require Exporter;
 require DynaLoader;
-use AutoLoader;
 
-$VERSION = 0.3;
+$VERSION = 0.31;
 
 @ISA = qw(Exporter DynaLoader);
 
@@ -101,9 +100,13 @@ Convert::UUlib - Perl interface to the uulib library (a.k.a. uudeview/uuenview).
  use Convert::UUlib ':all';
  
  # read all the files named on the commandline and decode them
- LoadFile($_) for @ARGV;
- for($i=0; $uu=GetFileListItem($i); $i++) {
-    $uu->decode if $uu->state & FILE_OK;
+ # into the CURRENT directory. See below for a longer example.
+ LoadFile $_ for @ARGV;
+ for (my $i = 0; my $uu = GetFileListItem $i; $i++) {
+    if ($uu->state & FILE_OK) {
+      $uu->decode;
+      print $uu->filename, "\n";
+    }
  }
 
 =head1 DESCRIPTION
@@ -173,7 +176,7 @@ this document and especially the non-trivial decoder program at the end.
 
   UUFILE_READ   Read in, but not further processed
 
- The following state codes are ored together:
+ The following state codes are or'ed together:
 
   FILE_MISPART  Missing Part(s) detected
   FILE_NOBEGIN  No 'begin' found
@@ -199,56 +202,160 @@ this document and especially the non-trivial decoder program at the end.
 =head2 Initializing and cleanup
 
 Initialize is automatically called when the module is loaded and allocates
-quite a bit of memory. CleanUp releases that again.
+quite a small amount of memory for todays machines ;) CleanUp releases that
+again.
 
-  Initialize; # not normally necessary
-  CleanUp;    # could be called at the end to release memory
+=over 4
+
+=item Initialize
+
+Not normally necessary, (re-)initializes the library.
+
+=item CleanUp
+
+Not normally necessary, could be called at the end to release memory
+before starting a new decoding round.
+
+=back
 
 =head2 Setting and querying options
 
-  $option = GetOption OPT_xxx;
-  SetOption OPT_xxx, opt-value;
+=over 4
+
+=item $option = GetOption OPT_xxx
+
+=item SetOption OPT_xxx, opt-value
+
+=back
+
+See the C<OPT_xxx> constants above to see which options exist.
 
 =head2 Setting various callbacks
 
-  SetMsgCallback [callback-function];
-  SetBusyCallback [callback-function];
-  SetFileCallback [callback-function];
-  SetFNameFilter [callback-function];
+=over 4
+
+=item SetMsgCallback [callback-function]
+
+=item SetBusyCallback [callback-function]
+
+=item SetFileCallback [callback-function]
+
+=item SetFNameFilter [callback-function]
+
+=back
 
 =head2 Call the currently selected FNameFilter
 
-  $file = FNameFilter $file;
+=over 4
+
+=item $file = FNameFilter $file
+
+=back
 
 =head2 Loading sourcefiles, optionally fuzzy merge and start decoding
 
-  ($retval, $count) = LoadFile $fname, [$id, [$delflag]];
-  $retval = Smerge $pass;
-  $item = GetFileListItem $item_number;
+=over 4
 
-=head2 The procedural interface is undocumented, use the following methods instead
+=item ($retval, $count) = LoadFile $fname, [$id, [$delflag]]
 
-  $retval = $item->rename($newname);
-  $retval = $item->decode_temp;
-  $retval = $item->remove_temp;
-  $retval = $item->decode([$target_path]);
-  $retval = $item->info(callback-function);
+Load the given file and scan it for encoded contents. Optionally tag it
+with the given id, and if C<$delflag> is true, delete the file after it is
+no longer necessary.
+
+=item $retval = Smerge $pass
+
+If you are desperate, try to call C<Smerge> with increasing C<$pass>
+values, beginning at C<0>, to try to merge parts that usually would not
+have been merged.
+
+Most probably this will result in garbled files, so never do this by
+default.
+
+=item $item = GetFileListItem $item_number
+
+Return the C<$item> structure for the C<$item_number>'th found file, or
+C<undef> of no file with that number exists.
+
+The first file has number C<0>, and the series has no holes, so you can
+iterate over all files by starting with zero and incrementing until you
+hit C<undef>.
+
+=back
+
+=head2 Decoding files
+
+=over 4
+
+=item $retval = $item->rename($newname)
+
+Change the ondisk filename where the decoded file will be saved.
+
+=item $retval = $item->decode_temp
+
+Decode the file into a temporary location, use C<< $item->infile >> to
+retrieve the temporary filename.
+
+=item $retval = $item->remove_temp
+
+Remove the temporarily decoded file again.
+
+=item $retval = $item->decode([$target_path])
+
+Decode the file to it's destination, or the given target path.
+
+=item $retval = $item->info(callback-function)
+
+=back
 
 =head2 Querying (and setting) item attributes
 
-  $state    = $item->state;
-  $mode     = $item->mode([newmode]);
-  $uudet    = $item->uudet;
-  $size     = $item->size;
-  $filename = $item->filename([newfilename});
-  $subfname = $item->subfname;
-  $mimeid   = $item->mimeid;
-  $mimetype = $item->mimetype;
-  $binfile  = $item->binfile;
+=over 4
 
-=head2 Totally undocumented but well tested ;)
+=item $state    = $item->state
 
-  $parts = $item->parts;
+=item $mode     = $item->mode([newmode])
+
+=item $uudet    = $item->uudet
+
+=item $size     = $item->size
+
+=item $filename = $item->filename([newfilename})
+
+=item $subfname = $item->subfname
+
+=item $mimeid   = $item->mimeid
+
+=item $mimetype = $item->mimetype
+
+=item $binfile  = $item->binfile
+
+=back
+
+=head2 Information about source parts
+
+=over 4
+
+=item $parts = $item->parts
+
+Return information about all parts (source files) used to decode the file
+as a list of hashrefs with the following structure:
+
+ {
+   partno   => <integer describing the part number, starting with 1>,
+   # the following member sonly exist when they contain useful information
+   sfname   => <local pathname of the file where this part is from>,
+   filename => <the ondisk filename of the decoded file>,
+   subfname => <used to cluster postings, possibly the posting filename>,
+   subject  => <the subject of the posting/mail>,
+   origin   => <the possible source (From) address>,
+   mimetype => <the possible mimetype of the decoded file>,
+   mimeid   => <the id part of the Content-Type>,
+ }
+
+Usually you are interested mostly the C<sfname> and possibly the C<partno>
+and C<filename> members.
+
+=back
 
 =head2 Functions below not documented and not very well tested
 

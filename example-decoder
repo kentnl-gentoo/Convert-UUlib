@@ -1,101 +1,103 @@
- # decode all the files in the directory uusrc/ and copy
- # the resulting files to uudst/
+#!/usr/bin/perl
 
- use Convert::UUlib ':all';
+# decode all the files in the directory uusrc/ and copy
+# the resulting files to uudst/
 
- sub namefilter {
-    my($path)=@_;
-    $path=~s/^.*[\/\\]//;
-    $path;
- }
+use Convert::UUlib ':all';
 
- sub busycb {
-    my ($action, $curfile, $partno, $numparts, $percent, $fsize) = @_;
-    $_[0]=straction($action);
-    print "busy_callback(", (join ",",@_), ")\n";
-    0;
- }
+sub namefilter {
+   my($path)=@_;
+   $path=~s/^.*[\/\\]//;
+   $path;
+}
 
- SetOption OPT_IGNMODE, 1;
- SetOption OPT_VERBOSE, 1;
+sub busycb {
+   my ($action, $curfile, $partno, $numparts, $percent, $fsize) = @_;
+   $_[0]=straction($action);
+   print "busy_callback(", (join ",",@_), ")\n";
+   0;
+}
 
- # show the three ways you can set callback functions. I normally
- # prefer the one with the sub inplace.
- SetFNameFilter \&namefilter;
+SetOption OPT_IGNMODE, 1;
+SetOption OPT_VERBOSE, 1;
 
- SetBusyCallback "busycb", 333;
+# show the three ways you can set callback functions. I normally
+# prefer the one with the sub inplace.
+SetFNameFilter \&namefilter;
 
- SetMsgCallback sub {
-    my ($msg, $level) = @_;
-    print uc strmsglevel $_[1], ": $msg\n";
- };
+SetBusyCallback "busycb", 333;
 
- # the following non-trivial FileNameCallback takes care
- # of some subject lines not detected properly by uulib:
- SetFileNameCallback sub {
-    return unless $_[1]; # skip "Re:"-plies et al.
-    local $_ = $_[0];
+SetMsgCallback sub {
+   my ($msg, $level) = @_;
+   print uc strmsglevel $_[1], ": $msg\n";
+};
 
-    # the following rules are rather effective on some newsgroups,
-    # like alt.binaries.games.anime, where non-mime, uuencoded data
-    # is very common
+# the following non-trivial FileNameCallback takes care
+# of some subject lines not detected properly by uulib:
+SetFileNameCallback sub {
+   return unless $_[1]; # skip "Re:"-plies et al.
+   local $_ = $_[0];
 
-    # if we find some *.rar, take it as the filename
-    return $1 if /(\S{3,}\.(?:[rstuvwxyz]\d\d|rar))\s/i;
+   # the following rules are rather effective on some newsgroups,
+   # like alt.binaries.games.anime, where non-mime, uuencoded data
+   # is very common
 
-    # one common subject format
-    return $1 if /- "(.{2,}?\..+?)" (?:yenc )?\(\d+\/\d+\)/i;
+   # if we find some *.rar, take it as the filename
+   return $1 if /(\S{3,}\.(?:[rstuvwxyz]\d\d|rar))\s/i;
 
-    # - filename.par (04/55)
-    return $1 if /- "?(\S{3,}\.\S+?)"? (?:yenc )?\(\d+\/\d+\)/i;
+   # one common subject format
+   return $1 if /- "(.{2,}?\..+?)" (?:yenc )?\(\d+\/\d+\)/i;
 
-    # - (xxx) No. 1 sayuri81.jpg 756565 bytes
-    # - (20 files) No.17 Roseanne.jpg [2/2]
-    return $1 if /No\.[ 0-9]+ (\S+\....) (?:\d+ bytes )?\[/;
+   # - filename.par (04/55)
+   return $1 if /- "?(\S{3,}\.\S+?)"? (?:yenc )?\(\d+\/\d+\)/i;
 
-    # otherwise just pass what we have
-    return ();
- };
+   # - (xxx) No. 1 sayuri81.jpg 756565 bytes
+   # - (20 files) No.17 Roseanne.jpg [2/2]
+   return $1 if /No\.[ 0-9]+ (\S+\....) (?:\d+ bytes )?\[/;
 
- # now read all files in the directory uusrc/*
- for(<uusrc/*>) {
-    my($retval,$count)=LoadFile ($_, $_, 1);
-    print "file($_), status(", strerror $retval, ") parts($count)\n";
- }
+   # otherwise just pass what we have
+   return ();
+};
 
- SetOption OPT_SAVEPATH, "uudst/";
+# now read all files in the directory uusrc/*
+for(<uusrc/*>) {
+   my($retval,$count)=LoadFile ($_, $_, 1);
+   print "file($_), status(", strerror $retval, ") parts($count)\n";
+}
 
- # now wade through all files and their source parts
- $i = 0;
- while ($uu = GetFileListItem($i)) {
-    $i++;
-    print "file nr. $i";
-    print " state ", $uu->state;
-    print " mode ", $uu->mode;
-    print " uudet ", strencoding $uu->uudet;
-    print " size ", $uu->size;
-    print " filename ", $uu->filename;
-    print " subfname ", $uu->subfname;
-    print " mimeid ", $uu->mimeid;
-    print " mimetype ", $uu->mimetype;
-    print "\n";
+SetOption OPT_SAVEPATH, "uudst/";
 
-    # print additional info about all parts
-    for ($uu->parts) {
-       while (my ($k, $v) = each %$_) {
-          print "$k > $v, ";
-       }
-       print "\n";
-    }
+# now wade through all files and their source parts
+$i = 0;
+while ($uu = GetFileListItem $i) {
+   $i++;
+   print "file nr. $i";
+   print " state ", $uu->state;
+   print " mode ", $uu->mode;
+   print " uudet ", strencoding $uu->uudet;
+   print " size ", $uu->size;
+   print " filename ", $uu->filename;
+   print " subfname ", $uu->subfname;
+   print " mimeid ", $uu->mimeid;
+   print " mimetype ", $uu->mimetype;
+   print "\n";
 
-    $uu->decode_temp;
-    print " temporarily decoded to ", $uu->binfile, "\n";
-    $uu->remove_temp;
+   # print additional info about all parts
+   for ($uu->parts) {
+      while (my ($k, $v) = each %$_) {
+         print "$k > $v, ";
+      }
+      print "\n";
+   }
 
-    print strerror $uu->decode;
-    print " saved as uudst/", $uu->filename, "\n";
- }
+   $uu->decode_temp;
+   print " temporarily decoded to ", $uu->binfile, "\n";
+   $uu->remove_temp;
 
- print "cleanup...\n";
+   print strerror $uu->decode;
+   print " saved as uudst/", $uu->filename, "\n";
+}
 
- CleanUp();
+print "cleanup...\n";
+
+CleanUp();

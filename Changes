@@ -1,5 +1,12 @@
 Revision history for Perl extension Convert::UUlib.
 
+0.31 Wed Oct 16 01:22:34 CEST 2002
+	- no internal code changes.
+	- much better documentation, now considered "useful".
+        - removed the procedural interface.
+        - fought the wish to perl-5.8'ify and thus simply the code :().
+        - stress-tested version 0.3 against 70000 data postings since sunday.
+
 0.3   Sun Oct 13 15:12:11 CEST 2002
 	- updated to uulib 0.5.18. As expected, some but not all of my bugfixes
           have went into uulib, sdo the number of differences decreased a bit

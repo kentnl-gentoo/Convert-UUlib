@@ -7,14 +7,14 @@
 #include "uulib/uuint.h"
 
 static int
-not_here(char *s)
+not_here (char *s)
 {
-    croak("%s not implemented on this architecture", s);
+    croak("%s not implemented", s);
     return -1;
 }
 
 static int
-constant(char *name)
+constant (char *name)
 {
     errno = 0;
     switch (*name) {
@@ -92,7 +92,8 @@ constant(char *name)
     return 0;
 }
 
-static void uu_msg_callback (void *cb, char *msg, int level)
+static void
+uu_msg_callback (void *cb, char *msg, int level)
 {
   dSP;
   
@@ -105,7 +106,8 @@ static void uu_msg_callback (void *cb, char *msg, int level)
   PUTBACK; FREETMPS; LEAVE;
 }
 
-static int uu_busy_callback (void *cb, uuprogress *uup)
+static int
+uu_busy_callback (void *cb, uuprogress *uup)
 {
   dSP;
   int count;
@@ -132,7 +134,8 @@ static int uu_busy_callback (void *cb, uuprogress *uup)
   return retval;
 }
 
-static char *uu_fnamefilter_callback (void *cb, char *fname)
+static char *
+uu_fnamefilter_callback (void *cb, char *fname)
 {
   dSP;
   int count;
@@ -154,7 +157,8 @@ static char *uu_fnamefilter_callback (void *cb, char *fname)
   return str;
 }
 
-static int uu_file_callback (void *cb, char *id, char *fname, int retrieve)
+static int
+uu_file_callback (void *cb, char *id, char *fname, int retrieve)
 {
   dSP;
   int count;
@@ -182,7 +186,8 @@ static int uu_file_callback (void *cb, char *id, char *fname, int retrieve)
   return retval;
 }
 
-static char *uu_filename_callback (void *cb, char *subject, char *filename)
+static char *
+uu_filename_callback (void *cb, char *subject, char *filename)
 {
   dSP;
   int count;
@@ -231,7 +236,8 @@ static SV *uu_msg_sv, *uu_busy_sv, *uu_file_sv, *uu_fnamefilter_sv, *uu_filename
 
 #define FUNC_CB(cb) (void *)(sv_setsv (cb ## _sv, func), cb ## _sv), func ? cb ## _callback : NULL
 
-static int uu_info_file(void *cb, char *info)
+static int
+uu_info_file (void *cb, char *info)
 {
   dSP;
   int count;
@@ -274,12 +280,12 @@ MODULE = Convert::UUlib		PACKAGE = Convert::UUlib		PREFIX = UU
 PROTOTYPES: ENABLE
 
 int
-constant(name)
+constant (name)
 	char *		name
 
 
 void
-UUInitialize()
+UUInitialize ()
 	CODE:
         if (!uu_initialized)
           {
@@ -292,7 +298,7 @@ UUInitialize()
           }
 
 void
-UUCleanUp()
+UUCleanUp ()
 	CODE:
        	if (uu_initialized)
           UUCleanUp ();
@@ -300,7 +306,7 @@ UUCleanUp()
         uu_initialized = 0; 
 
 SV *
-UUGetOption(opt)
+UUGetOption (opt)
 	int	opt
         CODE:
 	{
@@ -322,7 +328,7 @@ UUGetOption(opt)
         RETVAL
 
 int
-UUSetOption(opt,val)
+UUSetOption (opt, val)
 	int	opt
         SV *	val
         CODE:
@@ -338,46 +344,46 @@ UUSetOption(opt,val)
         RETVAL
 
 char *
-UUstrerror(errcode)
+UUstrerror (errcode)
 	int	errcode
 
 void
-UUSetMsgCallback(func=0)
+UUSetMsgCallback (func = 0)
 	SV *	func
 	CODE:
 	UUSetMsgCallback (FUNC_CB(uu_msg));
 
 void
-UUSetBusyCallback(func=0,msecs=1000)
+UUSetBusyCallback (func = 0,msecs = 1000)
 	SV *	func
         long	msecs
 	CODE:
 	UUSetBusyCallback (FUNC_CB(uu_busy), msecs);
 
 void
-UUSetFileCallback(func=0)
+UUSetFileCallback (func = 0)
 	SV *	func
 	CODE:
 	UUSetFileCallback (FUNC_CB(uu_file));
 
 void
-UUSetFNameFilter(func=0)
+UUSetFNameFilter (func = 0)
 	SV *	func
 	CODE:
 	UUSetFNameFilter (FUNC_CB(uu_fnamefilter));
 
 void
-UUSetFileNameCallback(func=0)
+UUSetFileNameCallback (func = 0)
 	SV *	func
 	CODE:
 	UUSetFileNameCallback (FUNC_CB(uu_filename));
 
 char *
-UUFNameFilter(fname)
+UUFNameFilter (fname)
 	char *	fname
 
 void
-UULoadFile(fname,id=0,delflag=0)
+UULoadFile (fname, id = 0, delflag = 0)
 	char *	fname
 	char *	id
 	int	delflag
@@ -391,7 +397,7 @@ UULoadFile(fname,id=0,delflag=0)
 	}
 
 int
-UUSmerge(pass)
+UUSmerge (pass)
 	int	pass
 
 int
@@ -471,45 +477,51 @@ UUE_PrepPartial(outfile,infile,infname,encoding,outfname,filemode,partno,linperf
 	int	isemail
 
 uulist *
-UUGetFileListItem(num)
+UUGetFileListItem (num)
 	int	num
 
+MODULE = Convert::UUlib		PACKAGE = Convert::UUlib::Item
+
 int
-UURenameFile(item,newname)
+rename (item, newname)
 	uulist *item
 	char *	newname
-        ALIAS:
-        Convert::UUlib::Item::rename = 1
+        CODE:
+        RETVAL = UURenameFile (item, newname);
+	OUTPUT:
+        RETVAL
 
 int
-UUDecodeToTemp(item)
+decode_temp (item)
 	uulist *item
-        ALIAS:
-        Convert::UUlib::Item::decode_temp = 1
+        CODE:
+        RETVAL = UUDecodeToTemp (item);
+	OUTPUT:
+        RETVAL
 
 int
-UURemoveTemp(item)
+remove_temp (item)
 	uulist *item
-        ALIAS:
-        Convert::UUlib::Item::remove_temp = 1
+        CODE:
+        RETVAL = UURemoveTemp (item);
+	OUTPUT:
+        RETVAL
 
 int
-UUDecodeFile(item,target=0)
+decode (item, target = 0)
 	uulist *item
 	char *	target
-        ALIAS:
-        Convert::UUlib::Item::decode = 1
+        CODE:
+        RETVAL = UUDecodeFile (item, target);
+	OUTPUT:
+        RETVAL
 
 void
-UUInfoFile(item,func)
+info (item, func)
 	uulist *item
 	SV *	func
         CODE:
-        UUInfoFile(item,(void *)func,uu_info_file);
-        ALIAS:
-        Convert::UUlib::Item::info = 1
-
-MODULE = Convert::UUlib		PACKAGE = Convert::UUlib::Item
+        UUInfoFile (item,(void *)func, uu_info_file);
 
 short
 state(li)
@@ -547,7 +559,7 @@ size(li)
         RETVAL
 
 char *
-filename(li,newfilename=0)
+filename (li, newfilename = 0)
 	uulist *li
         char *	newfilename
         CODE:
@@ -561,7 +573,7 @@ filename(li,newfilename=0)
         RETVAL
 
 char *
-subfname(li)
+subfname (li)
 	uulist *li
         CODE:
         RETVAL = li->subfname;
@@ -569,7 +581,7 @@ subfname(li)
         RETVAL
 
 char *
-mimeid(li)
+mimeid (li)
 	uulist *li
         CODE:
         RETVAL = li->mimeid;
@@ -577,7 +589,7 @@ mimeid(li)
         RETVAL
 
 char *
-mimetype(li)
+mimetype (li)
 	uulist *li
         CODE:
         RETVAL = li->mimetype;
@@ -585,17 +597,17 @@ mimetype(li)
         RETVAL
 
 char *
-binfile(li)
+binfile (li)
 	uulist *li
         CODE:
         RETVAL = li->binfile;
         OUTPUT:
         RETVAL
 
-# functions accessing internal data(!)
+# methods accessing internal data(!)
 
 void
-parts(li)
+parts (li)
 	uulist *li
         PPCODE:
 	{
