@@ -42,6 +42,8 @@ SetFileNameCallback sub {
    # like alt.binaries.games.anime, where non-mime, uuencoded data
    # is very common
 
+   return $1 if /([a-z0-9_]{3,}\.[a-z]{3,4}(?:.\d+))/i;
+
    # if we find some *.rar, take it as the filename
    return $1 if /(\S{3,}\.(?:[rstuvwxyz]\d\d|rar))\s/i;
 

@@ -256,8 +256,8 @@ UUGetFileName (char *subject, char *ptonum, char *ptonend)
 	continue;
       }
 
-      /* two consecutive dots don't look correct */
-      if (*iter == '.') {
+      /* a dot followed by sth. unesthetically doesn't look right */
+      if (*iter < '0') {
 	ptr    = iter + 1;
 	length = 0;
 	continue;
