@@ -1,7 +1,7 @@
 /*
  * This file is part of uudeview, the simple and friendly multi-part multi-
- * file uudecoder  program  (c)  1994 by Frank Pilhofer. The author may be
- * contacted by his email address,          fp@informatik.uni-frankfurt.de
+ * file uudecoder  program  (c) 1994-2001 by Frank Pilhofer. The author may
+ * be contacted at fp@fpx.de
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,12 +49,12 @@
 #include <errno.h>
 #endif
 
-#include <uulib.h>
+#include <uudeview.h>
 #include <uuint.h>
 #include <fptools.h>
 #include <uustring.h>
 
-char * uuutil_id = "$Id: uuutil.c,v 1.13 1996/08/21 19:55:16 fp Exp $";
+char * uuutil_id = "$Id: uuutil.c,v 1.2 2001/06/11 20:42:39 root Exp $";
 
 /*
  * Parts with different known extensions will not be merged by SPMS.
@@ -477,9 +477,3 @@ UUSmerge (int pass)
   return flag;
 }
 
-
-/*****************************************************************************
- + Frank Pilhofer                             fp@informatik.uni-frankfurt.de +
- +---------------------------------------------------------------------------+
- | Department of Computer Sciences * University of Frankfurt / Main, Germany |
- *****************************************************************************/

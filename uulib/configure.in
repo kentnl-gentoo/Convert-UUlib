@@ -11,7 +11,7 @@ AC_CONFIG_HEADER(config.h)
 # package revision
 #
 VERSION=0.5
-PATCH=13
+PATCH=15
 
 AC_ARG_WITH(cc,,CC=$with_cc)
 AC_ARG_WITH(cflags,,CFLAGS=$with_cflags)
@@ -42,6 +42,9 @@ AC_CHECK_HEADERS(io.h sys/time.h)
 AC_CHECK_FUNCS(gettimeofday)
 
 AC_CHECK_FUNC(tempnam,,AC_DEFINE(tempnam,FP_tempnam))
+
+AC_CHECK_FUNC(chmod,AC_DEFINE(HAVE_CHMOD))
+AC_CHECK_FUNC(umask,AC_DEFINE(HAVE_UMASK))
 
 #
 # strerror might be internally defined. this would cause a

@@ -1,7 +1,7 @@
 /*
  * This file is part of uudeview, the simple and friendly multi-part multi-
- * file uudecoder  program  (c)  1994 by Frank Pilhofer. The author may be
- * contacted by his email address,          fp@informatik.uni-frankfurt.de
+ * file uudecoder  program  (c) 1994-2001 by Frank Pilhofer. The author may
+ * be contacted at fp@fpx.de
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -13,7 +13,6 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -49,12 +48,12 @@
 #include <memory.h>
 #endif
 
-#include <uulib.h>
+#include <uudeview.h>
 #include <uuint.h>
 #include <fptools.h>
 #include <uustring.h>
 
-char * uucheck_id = "$Id: uucheck.c,v 1.10 1996/11/03 12:47:05 fp Exp $";
+char * uucheck_id = "$Id: uucheck.c,v 1.2 2001/06/11 20:42:36 root Exp $";
 
 /*
  * Arbitrary number. This is the maximum number of part numbers we
@@ -1461,9 +1460,3 @@ UUCheckGlobalList (void)
   return UUGlobalFileList;
 }
 
-
-/*****************************************************************************
- + Frank Pilhofer                             fp@informatik.uni-frankfurt.de +
- +---------------------------------------------------------------------------+
- | Department of Computer Sciences * University of Frankfurt / Main, Germany |
- *****************************************************************************/

@@ -1,9 +1,8 @@
 /*
  * fptools.c, some helper functions for getcgi.c and uu(en|de)view
  *
- * Distributed by the GNU General Public License. Use and be happy.
- * Read http://www.uni-frankfurt.de/~fp/Tools/Getcgi.html for more
- * information.                     fp@informatik.uni-frankfurt.de
+ * Distributed under the terms of the GNU General Public License.
+ * Use and be happy.
  */
 
 /*
@@ -11,7 +10,7 @@
  * be both faster and better. ``better'', if your compiler allows
  * cleaner use of such functions by proper use of ``const''.
  *
- * $Id: fptools.h,v 1.2 1996/09/10 18:48:01 fp Exp $
+ * $Id: fptools.h,v 1.2 2001/06/11 20:42:36 root Exp $
  */
 
 #ifndef FPTOOLS_H__

@@ -1,7 +1,7 @@
 
 /*
  * needed for auto configuration
- * $Id: acconfig.h,v 1.1.1.1 1996/06/06 19:41:15 fp Exp $
+ * $Id: acconfig.h,v 1.2 2001/06/12 03:20:44 root Exp $
  */
 
 /*
@@ -31,6 +31,16 @@
  * define if your compiler supports function prototypes
  */
 #undef PROTOTYPES
+
+/*
+ * define if your system has chmod(2)
+ */
+#undef HAVE_CHMOD
+
+/*
+ * define if your system has umask(2)
+ */
+#undef HAVE_UMASK
 
 /*
  * Replacement functions.

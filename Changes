@@ -1,5 +1,16 @@
 Revision history for Perl extension Convert::UUlib.
 
+0.2  Thu Jun 14 18:42:49 CEST 2001
+        - Frank Pilhofer is NOT dead! He is a live, kicking, and fixing
+          bugs in uulib now! Since his uulib and mine diverged quite
+          a bit I am still in the process of merging his bugfixes
+          into my version. So be aware that this might introduce new
+          instabilities...
+        - merged uulib-0.5.15
+        - optimize decode_file to not copy the file contents when a rename
+          succeeds (TMPDIR same disk as destination).
+        - updated documentation.
+
 0.111 Fri May  4 22:29:09 CEST 2001
         - heuristic to decode microsoft-rfc822-headers (microsoft uses
           '\' as path seperator which is also the rfc822 quote character.

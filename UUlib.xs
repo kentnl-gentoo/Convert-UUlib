@@ -3,7 +3,7 @@
 #include "XSUB.h"
 
 #include "uulib/fptools.h"
-#include "uulib/uulib.h"
+#include "uulib/uudeview.h"
 #include "uulib/uuint.h"
 
 static int
@@ -60,6 +60,8 @@ constant(char *name)
 	if (strEQ(name, "OPT_USETEXT")) return UUOPT_USETEXT;
 	if (strEQ(name, "OPT_VERBOSE")) return UUOPT_VERBOSE;
 	if (strEQ(name, "OPT_VERSION")) return UUOPT_VERSION;
+	if (strEQ(name, "OPT_REMOVE")) return UUOPT_REMOVE;
+	if (strEQ(name, "OPT_MOREMIME")) return UUOPT_MOREMIME;
     case 'R':
 	if (strEQ(name, "RET_CANCEL")) return UURET_CANCEL;
 	if (strEQ(name, "RET_CONT")) return UURET_CONT;

@@ -1,7 +1,7 @@
 /*
  * This file is part of uudeview, the simple and friendly multi-part multi-
- * file uudecoder  program  (c)  1994 by Frank Pilhofer. The author may be
- * contacted by his email address,          fp@informatik.uni-frankfurt.de
+ * file uudecoder  program  (c) 1994-2001 by Frank Pilhofer. The author may
+ * be contacted at fp@fpx.de
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,12 +49,12 @@
 #include <errno.h>
 #endif
 
-#include <uulib.h>
+#include <uudeview.h>
 #include <uuint.h>
 #include <fptools.h>
 #include <uustring.h>
 
-char * uunconc_id = "$Id: uunconc.c,v 1.22 1997/01/16 20:33:12 fp Exp $";
+char * uunconc_id = "$Id: uunconc.c,v 1.2 2001/06/11 20:42:37 root Exp $";
 
 /* for braindead systems */
 #ifndef SEEK_SET
@@ -165,7 +165,7 @@ UUInitConc (void)
 
   /* prepare line length table */
   UUxlen[0] = 1;
-  for(i = 1, j = 5; i <= 60; i += 3, j += 4)
+  for(i = 1, j = 5; i <= 61; i += 3, j += 4)
     UUxlen[i] = UUxlen[i+1] = UUxlen[i+2] = j;
 
   /* prepare other tables */
@@ -243,9 +243,9 @@ UUNetscapeCollapse (char *string)
    */
   while (*p1) {
     if (*p1 == '&') {
-      if      (FP_strnicmp (p1, "&amp;", 5) == 0) { p1+=5; *p2++='&'; }
-      else if (FP_strnicmp (p1, "&lt;",  4) == 0) { p1+=4; *p2++='<'; }
-      else if (FP_strnicmp (p1, "&gt;",  4) == 0) { p1+=4; *p2++='>'; }
+      if      (FP_strnicmp (p1, "&amp;", 5) == 0) { p1+=5; *p2++='&'; res=1; }
+      else if (FP_strnicmp (p1, "&lt;",  4) == 0) { p1+=4; *p2++='<'; res=1; }
+      else if (FP_strnicmp (p1, "&gt;",  4) == 0) { p1+=4; *p2++='>'; res=1; }
       else *p2++ = *p1++;
       res = 1;
     }
@@ -450,8 +450,10 @@ UUValidData (char *ptr, int encoding, int *bhflag)
    * evaluated if the first character is lowercase, which really shouldn't
    * be in uuencoded text.
    */
-  if (len != j && 
-      !(*ptr != 'M' && *ptr != 'h' && len > j && len <= UUxlen[UUxlat['M']])) {
+  if (len != j &&
+      ((ptr[0] == '-' && ptr[1] == '-' && strstr(ptr,"part")!=NULL) ||
+       !(*ptr != 'M' && *ptr != 'h' &&
+	 len > j && len <= UUxlen[UUxlat['M']]))) {
     if (encoding==UU_ENCODED) return 0;
     goto _t_XX;             /* bad length */
   }
@@ -861,9 +863,8 @@ UUDecodePT (FILE *datain, FILE *dataout, int *state,
      * So if the part ends here, don't print a line break"
      */
     if ((*ptr == '\012' || *ptr == '\015') &&
-	(!feof (datain) && 
-	 (ftell(datain)<maxpos || flags&FL_TOEND || flags&FL_PARTIAL ||
-	  (!(flags&FL_PROPER) && uu_fast_scanning)))) {
+	(ftell(datain)<maxpos || flags&FL_TOEND || flags&FL_PARTIAL ||
+	 !boundary || (!(flags&FL_PROPER) && uu_fast_scanning))) {
       *ptr = '\0';
       fprintf (dataout, "%s\n", line);
     }
@@ -1151,7 +1152,7 @@ UUDecode (uulist *data)
   if (data->state & UUFILE_NOBEGIN && !uu_desperate)
     return UURET_NODATA;
 
-  if (data->uudet == QP_ENCODED || data->uudet == PT_ENCODED)
+  if (data->uudet == PT_ENCODED)
     mode = "wt";	/* open text files in text mode */
   else
     mode = "wb";	/* otherwise in binary          */

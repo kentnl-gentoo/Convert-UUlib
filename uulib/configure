@@ -532,7 +532,7 @@ fi
 # package revision
 #
 VERSION=0.5
-PATCH=13
+PATCH=15
 
 # Check whether --with-cc or --without-cc was given.
 if test "${with_cc+set}" = set; then
@@ -1353,15 +1353,118 @@ EOF
 fi
 
 
+echo $ac_n "checking for chmod""... $ac_c" 1>&6
+echo "configure:1358: checking for chmod" >&5
+if eval "test \"`echo '$''{'ac_cv_func_chmod'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 1363 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char chmod(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char chmod();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_chmod) || defined (__stub___chmod)
+choke me
+#else
+chmod();
+#endif
+
+; return 0; }
+EOF
+if { (eval echo configure:1386: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+  rm -rf conftest*
+  eval "ac_cv_func_chmod=yes"
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  eval "ac_cv_func_chmod=no"
+fi
+rm -f conftest*
+fi
+
+if eval "test \"`echo '$ac_cv_func_'chmod`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+  cat >> confdefs.h <<\EOF
+#define HAVE_CHMOD 1
+EOF
+
+else
+  echo "$ac_t""no" 1>&6
+fi
+
+echo $ac_n "checking for umask""... $ac_c" 1>&6
+echo "configure:1409: checking for umask" >&5
+if eval "test \"`echo '$''{'ac_cv_func_umask'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 1414 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char umask(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char umask();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_umask) || defined (__stub___umask)
+choke me
+#else
+umask();
+#endif
+
+; return 0; }
+EOF
+if { (eval echo configure:1437: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+  rm -rf conftest*
+  eval "ac_cv_func_umask=yes"
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  eval "ac_cv_func_umask=no"
+fi
+rm -f conftest*
+fi
+
+if eval "test \"`echo '$ac_cv_func_'umask`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+  cat >> confdefs.h <<\EOF
+#define HAVE_UMASK 1
+EOF
+
+else
+  echo "$ac_t""no" 1>&6
+fi
+
+
 #
 # strerror might be internally defined. this would cause a
 # CHECK_FUNCS(strerror) to fail because it'd be called with
 # zero arguments. So use our own code.
 #
 echo $ac_n "checking for strerror""... $ac_c" 1>&6
-echo "configure:1363: checking for strerror" >&5
+echo "configure:1466: checking for strerror" >&5
 cat > conftest.$ac_ext <<EOF
-#line 1365 "configure"
+#line 1468 "configure"
 #include "confdefs.h"
 
 char *blubb() { return (char *) strerror (42); }
@@ -1372,7 +1475,7 @@ int main() {
 
 ; return 0; }
 EOF
-if { (eval echo configure:1376: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:1479: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   have_strerror=yes
 else
@@ -1389,9 +1492,9 @@ rm -f conftest*
 echo "$ac_t""$have_strerror" 1>&6
 
 echo $ac_n "checking for stdin""... $ac_c" 1>&6
-echo "configure:1393: checking for stdin" >&5
+echo "configure:1496: checking for stdin" >&5
 cat > conftest.$ac_ext <<EOF
-#line 1395 "configure"
+#line 1498 "configure"
 #include "confdefs.h"
 
 #include <stdio.h>
@@ -1403,7 +1506,7 @@ int main() {
 
 ; return 0; }
 EOF
-if { (eval echo configure:1407: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
+if { (eval echo configure:1510: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest${ac_exeext}; then
   rm -rf conftest*
   have_stdio=yes
 else
@@ -1424,17 +1527,17 @@ if test "$ac_cv_header_stdc" = "no" ; then
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
-echo "configure:1428: checking for $ac_hdr" >&5
+echo "configure:1531: checking for $ac_hdr" >&5
 if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1433 "configure"
+#line 1536 "configure"
 #include "confdefs.h"
 #include <$ac_hdr>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1438: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:1541: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out | grep -v "^conftest.${ac_ext}\$"`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -1512,7 +1615,7 @@ EOF
 # set version number
 #
 echo $ac_n "checking version number""... $ac_c" 1>&6
-echo "configure:1516: checking version number" >&5
+echo "configure:1619: checking version number" >&5
 version_number="$VERSION"pl"$PATCH"
 echo "$ac_t""$version_number" 1>&6
 

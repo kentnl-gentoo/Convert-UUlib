@@ -1,7 +1,7 @@
 /*
  * This file is part of uudeview, the simple and friendly multi-part multi-
- * file uudecoder  program  (c)  1994 by Frank Pilhofer. The author may be
- * contacted by his email address,          fp@informatik.uni-frankfurt.de
+ * file uudecoder  program  (c) 1994-2001 by Frank Pilhofer. The author may
+ * be contacted at fp@fpx.de
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,11 +46,11 @@
 #include <memory.h>
 #endif
 
-#include <uulib.h>
+#include <uudeview.h>
 #include <uuint.h>
 #include <uustring.h>
 
-char * uustring_id = "$Id: uustring.c,v 1.4 1996/08/26 20:11:35 fp Exp $";
+char * uustring_id = "$Id: uustring.c,v 1.2 2001/06/11 20:42:38 root Exp $";
 
 typedef struct {
   int code;

@@ -10,7 +10,9 @@ UUlib.xs
 typemap
 example-decoder
 t/cb.t
-uulibdoc.dvi
+doc/library.pdf
+doc/encodings.pdf
+doc/HISTORY
 uulib/Makefile.in
 uulib/acconfig.h
 uulib/aclocal.m4
@@ -20,7 +22,7 @@ uulib/configure.in
 uulib/fptools.c
 uulib/fptools.h
 uulib/uucheck.c
-uulib/uulib.h
+uulib/uudeview.h
 uulib/uuencode.c
 uulib/uuint.h
 uulib/uulib.c

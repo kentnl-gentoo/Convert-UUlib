@@ -3,7 +3,6 @@
 #
 # This is the Makefile for the uu library, part of the uudeview package.
 # The values here were guessed by ./configure and are probably correct.
-#                                        fp@informatik.uni-frankfurt.de
 #
 # Usefull targets
 #	all		Compile the package
@@ -12,7 +11,7 @@
 #
 # ============================================================================
 #
-# $Id: Makefile.in,v 1.4 1996/10/14 20:19:18 fp Exp $
+# $Id: Makefile.in,v 1.2 2001/06/11 20:42:36 root Exp $
 #
 # your make might need this
 #
@@ -76,13 +75,13 @@ libuu.a:	$(UULIB_OBJ)
 .c.o:
 	$(CC) -c $(CFLAGS) $(VDEF) $<
 
-uuencode.o:	uuencode.c uulib.h uuint.h uustring.h fptools.h config.h
-uulib.o:	uulib.c uulib.h uuint.h uustring.h fptools.h config.h
-uunconc.o:	uunconc.c uulib.h uuint.h uustring.h fptools.h config.h
-uucheck.o:	uucheck.c uulib.h uuint.h uustring.h fptools.h config.h
-uuutil.o:	uuutil.c  uulib.h uuint.h uustring.h fptools.h config.h
-uuscan.o:	uuutil.c  uulib.h uuint.h uustring.h fptools.h config.h
-uustring.o:	uustring.c uulib.h uuint.h uustring.h config.h
+uuencode.o:	uuencode.c uudeview.h uuint.h uustring.h fptools.h config.h
+uulib.o:	uulib.c uudeview.h uuint.h uustring.h fptools.h config.h
+uunconc.o:	uunconc.c uudeview.h uuint.h uustring.h fptools.h config.h
+uucheck.o:	uucheck.c uudeview.h uuint.h uustring.h fptools.h config.h
+uuutil.o:	uuutil.c  uudeview.h uuint.h uustring.h fptools.h config.h
+uuscan.o:	uuutil.c  uudeview.h uuint.h uustring.h fptools.h config.h
+uustring.o:	uustring.c uudeview.h uuint.h uustring.h config.h
 fptools.o:	fptools.c fptools.h config.h
 
 uustring.h:	uustring.c

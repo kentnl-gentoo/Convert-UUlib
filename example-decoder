@@ -60,11 +60,11 @@ while($uu=GetFileListItem($i)) {
       print "\n";
    }
 
-   $uu->decode_temp;
+   print strerror($uu->decode_temp)."\n";
    print " temporarily decoded to ",$uu->binfile,"\n";
    $uu->remove_temp;
 
-   print strerror($uu->decode);
+   print strerror($uu->decode)."\n";
    print " saved as uudst/",$uu->filename,"\n";
 }
 

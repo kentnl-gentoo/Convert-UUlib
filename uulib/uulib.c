@@ -1,7 +1,7 @@
 /*
  * This file is part of uudeview, the simple and friendly multi-part multi-
- * file uudecoder  program  (c)  1994 by Frank Pilhofer. The author may be
- * contacted by his email address,          fp@informatik.uni-frankfurt.de
+ * file uudecoder  program  (c) 1994-2001 by Frank Pilhofer. The author may
+ * be contacted at fp@fpx.de
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 
 /*
  * This file implements the externally visible functions, as declared
- * in uulib.h, and some internal interfacing functions
+ * in uudeview.h, and some internal interfacing functions
  */
 
 #ifdef HAVE_CONFIG_H
@@ -76,12 +76,12 @@
 #include <io.h>
 #endif
 
-#include <uulib.h>
+#include <uudeview.h>
 #include <uuint.h>
 #include <fptools.h>
 #include <uustring.h>
 
-char * uulib_id = "$Id: uulib.c,v 1.16 1996/11/03 12:49:07 fp Exp $";
+char * uulib_id = "$Id: uulib.c,v 1.4 2001/06/12 09:56:11 root Exp $";
 
 #ifdef SYSTEM_WINDLL
 BOOL _export WINAPI 
@@ -141,6 +141,8 @@ int uu_ignmode = 0;		/* ignore the original file mode            */
 int uu_handletext = 0;		/* do we want text/plain messages           */
 int uu_usepreamble = 0;		/* do we want Mime preambles/epilogues      */
 int uu_tinyb64 = 0;		/* detect short B64 outside of MIME         */
+int uu_remove_input = 0;        /* remove input files after decoding        */
+int uu_more_mime = 0;           /* strictly adhere to MIME headers          */
 
 headercount hlcount = {
   3,			        /* restarting after a MIME body             */
@@ -229,7 +231,7 @@ static allomap toallocate[] = {
   { &uucheck_lastname,   256 },	 /* from uucheck.c */
   { &uucheck_tempname,   256 },
   { &uuestr_itemp,       256 },  /* from uuencode.c:UUEncodeStream() */
-  { &uuestr_otemp,       256 },
+  { &uuestr_otemp,      1024 },
   { &uulib_msgstring,   1024 },  /* from uulib.c:UUMessage() */
   { &uuncdl_fulline,   256+4 },  /* from uunconc.c:UUDecodeLine(). +4 is for leftover parts */
   { &uuncdp_oline,     4*257 },  /* from uunconc.c:UUDecodePart() */
@@ -487,6 +489,14 @@ UUGetOption (int option, int *ivalue, char *cvalue, int clength)
     FP_strncpy (cvalue, uuencodeext, clength);
     result = 0;
     break;
+  case UUOPT_REMOVE:
+    if (ivalue) *ivalue = uu_remove_input;
+    result = uu_remove_input;
+    break;
+  case UUOPT_MOREMIME:
+    if (ivalue) *ivalue = uu_more_mime;
+    result = uu_more_mime;
+    break;
   default:
     return -1;
   }
@@ -540,6 +550,12 @@ UUSetOption (int option, int ivalue, char *cvalue)
   case UUOPT_ENCEXT:
     FP_free (uuencodeext);
     uuencodeext = FP_strdup (cvalue);
+    break;
+  case UUOPT_REMOVE:
+    uu_remove_input = ivalue;
+    break;
+  case UUOPT_MOREMIME:
+    uu_more_mime = ivalue;
     break;
   default:
     return UURET_ILLVAL;
@@ -739,6 +755,7 @@ UULoadFile (char *filename, char *fileid, int delflag, int *partcount)
     }
 
     if ((loaded->uudet == QP_ENCODED || loaded->uudet == PT_ENCODED) &&
+	(loaded->filename == NULL || *(loaded->filename) == '\0') &&
 	!uu_handletext && (loaded->flags&FL_PARTIAL)==0) {
       /*
        * Don't want text
@@ -924,6 +941,20 @@ UUDecodeFile (uulist *thefile, char *destname)
     return UURET_IOERR;
   }
 
+  /* try rename() shortcut first */
+  if (!rename (thefile->binfile, uugen_fnbuffer))
+    {
+      mode_t mask = 0000; /* there is a slight window here anyway */
+#if HAVE_UMASK
+      mask = umask (0022); umask (mask);
+#endif
+      fclose (source);
+#if HAVE_CHMOD
+      chmod (uugen_fnbuffer, thefile->mode & ~mask);
+#endif
+      goto skip_copy;
+    }
+
   progress.action   = 0;
   FP_strncpy (progress.curfile,
 	       (strlen(uugen_fnbuffer)>255)?
@@ -1005,6 +1036,8 @@ UUDecodeFile (uulist *thefile, char *destname)
 	       thefile->binfile,
 	       strerror (uu_errno = errno));
   }
+
+skip_copy:
   FP_free (thefile->binfile);
   thefile->binfile = NULL;
   thefile->state  &= ~UUFILE_TMPFILE;
@@ -1152,14 +1185,14 @@ int UUEXPORT
 UUCleanUp (void)
 {
   itbd *iter=ftodel, *ptr;
+  uulist *liter;
+  uufile *fiter;
   allomap *aiter;
 
-  UUkilllist (UUGlobalFileList);
-  UUGlobalFileList = NULL;
-
   /*
-   * delete input files
+   * delete temporary input files (such as the copy of stdin)
    */
+
   while (iter) {
     if (unlink (iter->fname)) {
       UUMessage (uulib_id, __LINE__, UUMSG_WARNING,
@@ -1171,7 +1204,35 @@ UUCleanUp (void)
     iter = iter->NEXT;
     FP_free (ptr);
   }
+
   ftodel = NULL;
+
+  /*
+   * Delete input files after successful decoding
+   */
+
+  if (uu_remove_input) {
+    liter = UUGlobalFileList;
+    while (liter) {
+      if (liter->state & UUFILE_DECODED) {
+	fiter = liter->thisfile;
+	while (fiter) {
+	  if (fiter->data && fiter->data->sfname) {
+	    /*
+	     * Error code ignored. We might want to delete a file multiple
+	     * times
+	     */
+	    unlink (fiter->data->sfname);
+	  }
+	  fiter = fiter->NEXT;
+	}
+      }
+      liter = liter->NEXT;
+    }
+  }
+
+  UUkilllist (UUGlobalFileList);
+  UUGlobalFileList = NULL;
 
   FP_free (uusavepath);
   FP_free (uuencodeext);
