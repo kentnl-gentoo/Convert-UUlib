@@ -1,5 +1,12 @@
 Revision history for Perl extension Convert::UUlib.
 
+1.06 Tue Dec  6 00:56:05 CET 2005
+        - fix a number of int/long format errors in the encoding part and
+          fix some signed/unsigned char problems of unknown relevance,
+          reported by Jonas Smedegaard.
+        - new EXPERIMENTAL options OPT_RBUF and OPT_WBUF to set default
+          stdio buffer size for reading and writing files.
+
 1.051 Thu Mar  3 18:00:52 CET 2005
 	- change of contact address.
         - updated perl parts to GPLv2.

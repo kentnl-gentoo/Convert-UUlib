@@ -183,6 +183,11 @@ extern void *uu_FNCBArg;
  * variables
  */
 
+extern int uu_rbuf;
+extern int uu_wbuf;
+#define UUSETBUF(fp,buff,size) if (size) setvbuf ((fp), ((buff) = malloc (size)), _IOFBF, (size))
+#define UUCLRBUF(size,buff) if (size) free (buff)
+
 extern int uu_fast_scanning;
 extern int uu_bracket_policy;
 extern int uu_verbose;

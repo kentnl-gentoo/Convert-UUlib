@@ -126,6 +126,10 @@ void *uu_FileCBArg = NULL;
 void *uu_FFCBArg   = NULL;
 void *uu_FNCBArg;
 
+/* I/O buffer sizes */
+int uu_rbuf = 0;
+int uu_wbuf = 0;
+
 /*
  * Global variables
  */
@@ -421,6 +425,14 @@ UUGetOption (int option, int *ivalue, char *cvalue, int clength)
   int result;
 
   switch (option) {
+  case UUOPT_RBUF:
+    *ivalue = uu_rbuf;
+    result = 0;
+    break;
+  case UUOPT_WBUF:
+    *ivalue = uu_wbuf;
+    result = 0;
+    break;
   case UUOPT_VERSION:
     _FP_strncpy (cvalue, uulibversion, clength);
     result = 0;
@@ -515,6 +527,12 @@ int UUEXPORT
 UUSetOption (int option, int ivalue, char *cvalue)
 {
   switch (option) {
+  case UUOPT_RBUF:
+    uu_rbuf = ivalue;
+    break;
+  case UUOPT_WBUF:
+    uu_wbuf = ivalue;
+    break;
   case UUOPT_FAST:
     uu_fast_scanning  = ivalue;
     break;
@@ -682,12 +700,13 @@ UULoadFile (char *filename, char *fileid, int delflag, int *partcount)
 int UUEXPORT
 UULoadFileWithPartNo (char *filename, char *fileid, int delflag, int partno, int *partcount)
 {
-  int res, sr, count=0;
+  int res, sr;
   struct stat finfo;
   fileread *loaded;
   uufile *fload;
   itbd *killem;
   FILE *datei;
+  void *datei_buf;
 
   int _count;
   if (!partcount)
@@ -701,12 +720,14 @@ UULoadFileWithPartNo (char *filename, char *fileid, int delflag, int partno, int
 	       filename, strerror (uu_errno = errno));
     return UURET_IOERR;
   }
+  UUSETBUF (datei, datei_buf, uu_rbuf);
 
   if (fstat (fileno(datei), &finfo) == -1) {
     UUMessage (uulib_id, __LINE__, UUMSG_ERROR,
 	       uustring (S_NOT_STAT_FILE),
 	       filename, strerror (uu_errno = errno));
     fclose (datei);
+    UUCLRBUF (uu_rbuf, datei_buf);
     return UURET_IOERR;
   }
 
@@ -766,6 +787,7 @@ UULoadFileWithPartNo (char *filename, char *fileid, int delflag, int partno, int
 	UUCheckGlobalList ();
 	progress.action = 0;
 	fclose (datei);
+        UUCLRBUF (uu_rbuf, datei_buf);
 	return sr;
       }
       continue;
@@ -778,6 +800,7 @@ UULoadFileWithPartNo (char *filename, char *fileid, int delflag, int partno, int
       UUCheckGlobalList ();
       progress.action = 0;
       fclose (datei);
+      UUCLRBUF (uu_rbuf, datei_buf);
       return UURET_IOERR;
     }
 
@@ -846,6 +869,7 @@ UULoadFileWithPartNo (char *filename, char *fileid, int delflag, int partno, int
 	UUCheckGlobalList ();
 	progress.action = 0;
 	fclose (datei);
+        UUCLRBUF (uu_rbuf, datei_buf);
 	return res;
       }
       if (uu_fast_scanning && sr != UURET_CONT)
@@ -872,9 +896,11 @@ UULoadFileWithPartNo (char *filename, char *fileid, int delflag, int partno, int
     UUCheckGlobalList ();
     progress.action = 0;
     fclose (datei);
+    UUCLRBUF (uu_rbuf, datei_buf);
     return UURET_IOERR;
   }
   fclose (datei);
+  UUCLRBUF (uu_rbuf, datei_buf);
 
   if (!uu_fast_scanning && *partcount == 0)
     UUMessage (uulib_id, __LINE__, UUMSG_NOTE,
@@ -904,6 +930,7 @@ int UUEXPORT
 UUDecodeFile (uulist *thefile, char *destname)
 {
   FILE *target, *source;
+  void *target_buf, *source_buf;
   struct stat finfo;
   int fildes, res;
   size_t bytes;
@@ -927,6 +954,7 @@ UUDecodeFile (uulist *thefile, char *destname)
 	       thefile->binfile, strerror (uu_errno = errno));
     return UURET_IOERR;
   }
+  UUSETBUF (source, source_buf, uu_rbuf);
 
   /*
    * for system security, strip setuid/setgid bits from mode
@@ -968,6 +996,7 @@ UUDecodeFile (uulist *thefile, char *destname)
       UUMessage (uulib_id, __LINE__, UUMSG_ERROR,
 		 uustring (S_TARGET_EXISTS), uugen_fnbuffer);
       fclose (source);
+      UUCLRBUF (uu_rbuf, source_buf);
       return UURET_EXISTS;
     }
   }
@@ -977,6 +1006,7 @@ UUDecodeFile (uulist *thefile, char *destname)
 	       uustring (S_NOT_STAT_FILE),
 	       thefile->binfile, strerror (uu_errno = errno));
     fclose (source);
+    UUCLRBUF (uu_rbuf, source_buf);
     return UURET_IOERR;
   }
 
@@ -988,6 +1018,7 @@ UUDecodeFile (uulist *thefile, char *destname)
       mask = umask (0022); umask (mask);
 #endif
       fclose (source);
+      UUCLRBUF (uu_rbuf, source_buf);
 #if HAVE_CHMOD
       chmod (uugen_fnbuffer, thefile->mode & ~mask);
 #endif
@@ -1014,6 +1045,7 @@ UUDecodeFile (uulist *thefile, char *destname)
 	       uustring (S_NOT_OPEN_TARGET),
 	       uugen_fnbuffer, strerror (uu_errno = errno));
     fclose (source);
+    UUCLRBUF (uu_rbuf, source_buf);
     return UURET_IOERR;
   }
 
@@ -1023,9 +1055,11 @@ UUDecodeFile (uulist *thefile, char *destname)
 	       uustring (S_IO_ERR_TARGET),
 	       uugen_fnbuffer, strerror (uu_errno = errno));
     fclose (source);
+    UUCLRBUF (uu_rbuf, source_buf);
     close  (fildes);
     return UURET_IOERR;
   }
+  UUSETBUF (target, target_buf, uu_wbuf);
 
   while (!feof (source)) {
 
@@ -1033,7 +1067,9 @@ UUDecodeFile (uulist *thefile, char *destname)
       UUMessage (uulib_id, __LINE__, UUMSG_NOTE,
 		 uustring (S_DECODE_CANCEL));
       fclose (source);
+      UUCLRBUF (uu_rbuf, source_buf);
       fclose (target);
+      UUCLRBUF (uu_wbuf, target_buf);
       unlink (uugen_fnbuffer);
       return UURET_CANCEL;
     }
@@ -1046,7 +1082,9 @@ UUDecodeFile (uulist *thefile, char *destname)
 		 uustring (S_READ_ERROR),
 		 thefile->binfile, strerror (uu_errno = errno));
       fclose (source);
+      UUCLRBUF (uu_rbuf, source_buf);
       fclose (target);
+      UUCLRBUF (uu_wbuf, target_buf);
       unlink (uugen_fnbuffer);
       return UURET_IOERR;
     }
@@ -1056,20 +1094,25 @@ UUDecodeFile (uulist *thefile, char *destname)
 		 uustring (S_WR_ERR_TARGET),
 		 uugen_fnbuffer, strerror (uu_errno = errno));
       fclose (source);
+      UUCLRBUF (uu_rbuf, source_buf);
       fclose (target);
+      UUCLRBUF (uu_wbuf, target_buf);
       unlink (uugen_fnbuffer);
       return UURET_IOERR;
     }
   }
 
   fclose (source);
+  UUCLRBUF (uu_rbuf, source_buf);
   if (fclose (target)) {
+    UUCLRBUF (uu_wbuf, target_buf);
     UUMessage (uulib_id, __LINE__, UUMSG_ERROR,
 	       uustring (S_WR_ERR_TARGET),
 	       uugen_fnbuffer, strerror (uu_errno = errno));
     unlink (uugen_fnbuffer);
     return UURET_IOERR;
   }
+  UUCLRBUF (uu_wbuf, target_buf);
 
   /*
    * after a successful decoding run, we delete the temporary file

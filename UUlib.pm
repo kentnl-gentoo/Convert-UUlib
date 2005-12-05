@@ -5,7 +5,7 @@ use Carp;
 require Exporter;
 require DynaLoader;
 
-$VERSION = "1.051";
+$VERSION = "1.06";
 
 @ISA = qw(Exporter DynaLoader);
 
@@ -17,6 +17,7 @@ $VERSION = "1.051";
 
 	MSG_ERROR MSG_FATAL MSG_MESSAGE MSG_NOTE MSG_PANIC MSG_WARNING
 
+        OPT_RBUF OPT_WBUF
 	OPT_BRACKPOL OPT_DEBUG OPT_DESPERATE OPT_DUMBNESS OPT_ENCEXT
 	OPT_ERRNO OPT_FAST OPT_IGNMODE OPT_IGNREPLY OPT_OVERWRITE OPT_PREAMB
 	OPT_PROGRESS OPT_SAVEPATH OPT_TINYB64 OPT_USETEXT OPT_VERBOSE
@@ -156,6 +157,8 @@ this document and especially the non-trivial decoder program at the end.
   OPT_REMOVE	remove input files after decoding (dangerous)
   OPT_MOREMIME	strict MIME adherence
   OPT_DOTDOT	".."-unescaping has not yet been done on input files
+  OPT_RBUF      set default read I/O buffer size in bytes *EXPERIMENTAL*
+  OPT_WBUF      set default write I/O buffer size in bytes *EXPERIMENTAL*
 
 =head2 Result/Error codes
 

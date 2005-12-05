@@ -88,6 +88,8 @@
  * Option indices for GetOption / SetOption
  */
 
+#define UUOPT_RBUF	(90)    /* file read I/O buffer size */
+#define UUOPT_WBUF	(91)    /* file write I/O buffer size */
 #define UUOPT_VERSION	(0)	/* version number MAJOR.MINORplPATCH (ro) */
 #define UUOPT_FAST	(1)	/* assumes only one part per file */
 #define UUOPT_DUMBNESS	(2)	/* switch off the program's intelligence */

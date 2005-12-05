@@ -297,7 +297,7 @@ int
 UUValidData (char *ptr, int encoding, int *bhflag)
 {
   int i=0, j, len=0, suspicious=0, flag=0;
-  char *s = ptr;
+  signed char *s = ptr;
 
   if ((s == NULL) || (*s == '\0')) {
     return 0;              /* bad string */
@@ -1314,6 +1314,7 @@ UUDecode (uulist *data)
   int state=BEGIN, part=-1, res=0, hb;
   unsigned long rsize, dsize, numbytes;
   FILE *datain, *dataout;
+  void *datain_buf, *dataout_buf;
   unsigned char r[8];
   char *mode, *ntmp;
   uufile *iter;
@@ -1388,6 +1389,7 @@ UUDecode (uulist *data)
     uu_errno = errno;
     return UURET_IOERR;
   }
+  UUSETBUF (dataout, dataout_buf, uu_wbuf);
 
   /*
    * we don't have begin lines in Base64 or plain text files.
@@ -1480,6 +1482,7 @@ UUDecode (uulist *data)
       }
       _FP_strncpy (uugen_fnbuffer, iter->data->sfname, 1024);
     }
+    UUSETBUF (datain, datain_buf, uu_rbuf);
 
     progress.partno  = part;
     progress.fsize   = (iter->data->length)?iter->data->length:-1;
@@ -1491,6 +1494,7 @@ UUDecode (uulist *data)
 			iter->data->startpos+iter->data->length,
 			data->uudet, iter->data->flags, NULL);
     fclose             (datain);
+    UUCLRBUF (uu_rbuf, datain_buf);
 
     if (uu_FileCallback)
       (*uu_FileCallback) (uu_FileCBArg, iter->data->sfname, uugen_fnbuffer, 0);
@@ -1512,6 +1516,7 @@ UUDecode (uulist *data)
 	       strerror (uu_errno = errno));
     res = UURET_IOERR;
   }
+  UUCLRBUF (uu_wbuf, dataout_buf);
 
   if (res != UURET_OK || (state != DONE && !uu_desperate)) {
     unlink (data->binfile);
@@ -1557,10 +1562,12 @@ UUDecode (uulist *data)
       free (ntmp);
       return UURET_IOERR;
     }
+    UUSETBUF (datain, datain_buf, uu_rbuf);
+
 #ifdef HAVE_MKSTEMP
-	strcpy(ntmp, tmpdir);
-	strcat(ntmp, "/");
-	strcat(ntmp, tmpprefix); 
+    strcpy(ntmp, tmpdir);
+    strcat(ntmp, "/");
+    strcat(ntmp, tmpprefix); 
     if ((tmpfd = mkstemp(ntmp)) == -1 ||
 		(dataout = fdopen(tmpfd, "wb")) == NULL) {
 #else
@@ -1571,6 +1578,7 @@ UUDecode (uulist *data)
 		 ntmp, strerror (uu_errno = errno));
       progress.action = 0;
       fclose (datain);
+      UUCLRBUF (uu_rbuf, datain_buf);
 #ifdef HAVE_MKSTEMP
 	  if (tmpfd != -1) {
 		  unlink(ntmp);
@@ -1580,6 +1588,7 @@ UUDecode (uulist *data)
       free   (ntmp);
       return UURET_IOERR;
     }
+    UUSETBUF (dataout, dataout_buf, uu_wbuf);
 
     /*
      * read fork lengths. remember they're in Motorola format
@@ -1635,7 +1644,9 @@ UUDecode (uulist *data)
 	UUMessage (uunconc_id, __LINE__, UUMSG_NOTE,
 		   uustring (S_DECODE_CANCEL));
 	fclose (datain);
+        UUCLRBUF (uu_rbuf, datain_buf);
 	fclose (dataout);
+        UUCLRBUF (uu_wbuf, dataout_buf);
 	unlink (ntmp);
 	free   (ntmp);
 	return UURET_CANCEL;
@@ -1650,7 +1661,9 @@ UUDecode (uulist *data)
 		   uustring (S_SOURCE_READ_ERR),
 		   data->binfile, strerror (uu_errno = errno));
 	fclose (datain);
+        UUCLRBUF (uu_rbuf, datain_buf);
 	fclose (dataout);
+        UUCLRBUF (uu_wbuf, dataout_buf);
 	unlink (ntmp);
 	free   (ntmp);
 	return UURET_IOERR;
@@ -1661,7 +1674,9 @@ UUDecode (uulist *data)
 		   uustring (S_WR_ERR_TARGET),
 		   ntmp, strerror (uu_errno = errno));
 	fclose (datain);
+        UUCLRBUF (uu_rbuf, datain_buf);
 	fclose (dataout);
+        UUCLRBUF (uu_wbuf, dataout_buf);
 	unlink (ntmp);
 	free   (ntmp);
 	return UURET_IOERR;
@@ -1682,7 +1697,9 @@ UUDecode (uulist *data)
      */
 
     fclose (datain);
+    UUCLRBUF (uu_rbuf, datain_buf);
     if (fclose (dataout)) {
+      UUCLRBUF (uu_wbuf, dataout_buf);
       UUMessage (uunconc_id, __LINE__, UUMSG_ERROR,
 		 uustring (S_WR_ERR_TARGET),
 		 ntmp, strerror (uu_errno = errno));
@@ -1690,6 +1707,7 @@ UUDecode (uulist *data)
       free   (ntmp);
       return UURET_IOERR;
     }
+    UUCLRBUF (uu_wbuf, dataout_buf);
 
     if (unlink (data->binfile)) {
       UUMessage (uunconc_id, __LINE__, UUMSG_WARNING,

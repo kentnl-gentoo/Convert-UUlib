@@ -931,10 +931,11 @@ UUEncodePartial (FILE *outfile, FILE *infile,
 		 eolstring);
       }
 
-      fprintf (outfile, "=ypart begin=%d end=%d%s",
-	       (partno-1)*linperfile*128+1,
-	       (partno*linperfile*128) < progress.totsize ? 
-	       (partno*linperfile*128) : progress.totsize,
+      fprintf (outfile, "=ypart begin=%ld end=%ld%s",
+	       (partno - 1) * linperfile * 128 + 1,
+	       (partno * linperfile * 128) < progress.totsize
+                  ? partno * linperfile * 128
+                  : progress.totsize,
 	       eolstring);
     }
     else {
@@ -997,14 +998,15 @@ UUEncodePartial (FILE *outfile, FILE *infile,
   }
   else if (encoding == YENC_ENCODED) {
     if (numparts != 1) {
-      fprintf (outfile, "=yend size=%d part=%d pcrc32=%08lx",
-	       (partno*linperfile*128) < progress.totsize ? 
-	       linperfile*128 : (progress.totsize-(partno-1)*linperfile*128),
+      fprintf (outfile, "=yend size=%ld part=%d pcrc32=%08lx",
+	       (partno * linperfile * 128) < progress.totsize
+                  ? linperfile * 128
+                  : (progress.totsize - (partno - 1) * linperfile * 128),
 	       partno,
 	       pcrc);
     }
     else {
-      fprintf (outfile, "=yend size=%d",
+      fprintf (outfile, "=yend size=%ld",
 	       progress.totsize);
     }
     if (feof (theifile))
@@ -1405,7 +1407,7 @@ UUEncodeToFile (FILE *infile, char *infname, int encoding,
 		   eolstring);
 	}
 
-	fprintf (outfile, "=ypart begin=%d end=%d%s",
+	fprintf (outfile, "=ypart begin=%ld end=%ld%s",
 		 (part-1)*linperfile*128+1,
 		 (part*linperfile*128) < progress.totsize ? 
 		 (part*linperfile*128) : progress.totsize,
@@ -1451,14 +1453,14 @@ UUEncodeToFile (FILE *infile, char *infname, int encoding,
     }
     else if (encoding == YENC_ENCODED) {
       if (numparts != 1) {
-	fprintf (outfile, "=yend size=%d part=%d pcrc32=%08lx",
+	fprintf (outfile, "=yend size=%ld part=%d pcrc32=%08lx",
 		 (part*linperfile*128) < progress.totsize ? 
 		 linperfile*128 : (progress.totsize-(part-1)*linperfile*128),
 		 part,
 		 pcrc);
       }
       else {
-	fprintf (outfile, "=yend size=%d",
+	fprintf (outfile, "=yend size=%ld",
 		 progress.totsize);
       }
       if (feof (theifile))

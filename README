@@ -57,6 +57,8 @@ EXPORTED CONSTANTS
       OPT_REMOVE    remove input files after decoding (dangerous)
       OPT_MOREMIME  strict MIME adherence
       OPT_DOTDOT    ".."-unescaping has not yet been done on input files
+      OPT_RBUF      set default read I/O buffer size in bytes *EXPERIMENTAL*
+      OPT_WBUF      set default write I/O buffer size in bytes *EXPERIMENTAL*
 
   Result/Error codes
       RET_OK        everything went fine

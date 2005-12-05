@@ -18,6 +18,9 @@ sub busycb {
    0;
 }
 
+SetOption OPT_RBUF, 128*1024;
+SetOption OPT_WBUF, 1024*1024;
+SetOption OPT_IGNMODE, 1;
 SetOption OPT_IGNMODE, 1;
 SetOption OPT_VERBOSE, 1;
 
