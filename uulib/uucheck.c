@@ -1229,17 +1229,18 @@ UUInsertPartToList (uufile *data)
   else
     unew->mimetype = NULL;
 
+  {
+    static uulist uulist_new;
+    *unew = uulist_new; /* zero-initialise the structure */
+  }
+
   unew->state     = UUFILE_READ;
-  unew->binfile   = NULL;
   unew->thisfile  = data;
   unew->mode      = data->data->mode;
   unew->uudet     = data->data->uudet;
   unew->flags     = data->data->flags;
-  unew->begin     = (data->data->begin) ? ((data->partno)?data->partno:1) : 0;
-  unew->end       = (data->data->end)   ? ((data->partno)?data->partno:1) : 0;
-  unew->misparts  = NULL;
-  unew->haveparts = NULL;
-  unew->NEXT      = NULL;
+  unew->begin     = data->data->begin ? (data->partno ? data->partno : 1) : 0;
+  unew->end       = data->data->end   ? (data->partno ? data->partno : 1) : 0;
 
   if (iter == NULL)
     UUGlobalFileList = unew;
