@@ -1191,6 +1191,11 @@ UUInsertPartToList (uufile *data)
     return UURET_NOMEM;
   }
 
+  {
+    static uulist uulist_new;
+    *unew = uulist_new; /* zero-initialise the structure */
+  }
+
   if ((unew->subfname = _FP_strdup (data->subfname)) == NULL) {
     _FP_free (unew);
     return UURET_NOMEM;
@@ -1228,11 +1233,6 @@ UUInsertPartToList (uufile *data)
   }
   else
     unew->mimetype = NULL;
-
-  {
-    static uulist uulist_new;
-    *unew = uulist_new; /* zero-initialise the structure */
-  }
 
   unew->state     = UUFILE_READ;
   unew->thisfile  = data;

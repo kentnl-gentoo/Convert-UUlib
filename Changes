@@ -1,10 +1,14 @@
 Revision history for Perl extension Convert::UUlib.
 
+1.08 Sat Dec 16 23:27:13 CET 2006
+	- URGENT update, the lastr elease did not
+          decode files correctly, usually not at all.
+        - the last patch was, of course, completely bogus.
+          (sorry. looked simple...).
+
 1.07 Sun Dec 10 17:41:46 CET 2006
 	- fixed an uninitialised variable based on analysis
-          and patch by Mark Martinec. This might have caused
-          the coredumps on solaris due to calls to malloc with
-          large positive or negative values.
+          and patch by Mark Martinec.
 
 1.06 Tue Dec  6 00:56:05 CET 2005
         - fix a number of int/long format errors in the encoding part and
