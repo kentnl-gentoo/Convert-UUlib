@@ -1,15 +1,18 @@
 package Convert::UUlib;
 
+no warnings;
+use strict;
+
 use Carp;
 
 require Exporter;
 require DynaLoader;
 
-$VERSION = '1.08';
+our $VERSION = '1.09';
 
-@ISA = qw(Exporter DynaLoader);
+our @ISA = qw(Exporter DynaLoader);
 
-@_consts = qw(
+our @_consts = qw(
 	ACT_COPYING ACT_DECODING ACT_ENCODING ACT_IDLE ACT_SCANNING
 
 	FILE_DECODED FILE_ERROR FILE_MISPART FILE_NOBEGIN FILE_NODATA
@@ -30,7 +33,7 @@ $VERSION = '1.08';
 	XX_ENCODED UU_ENCODED YENC_ENCODED
 );
 
-@_funcs = qw(
+our @_funcs = qw(
         Initialize CleanUp GetOption SetOption strerror SetMsgCallback
         SetBusyCallback SetFileCallback SetFNameFilter SetFileNameCallback
         FNameFilter LoadFile GetFileListItem RenameFile DecodeToTemp
@@ -41,9 +44,9 @@ $VERSION = '1.08';
         straction strencoding strmsglevel
 );
 
-@EXPORT = @_consts;
-@EXPORT_OK = @_funcs;
-%EXPORT_TAGS = (all => [@_consts,@_funcs], constants => \@_consts);
+our @EXPORT = @_consts;
+our @EXPORT_OK = @_funcs;
+our %EXPORT_TAGS = (all => [@_consts,@_funcs], constants => \@_consts);
 
 bootstrap Convert::UUlib $VERSION;
 
@@ -54,6 +57,7 @@ Initialize();
 
 for (@_consts) {
    my $constant = constant($_);
+   no strict 'refs';
    *$_ = sub () { $constant };
 }
 

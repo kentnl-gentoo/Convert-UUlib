@@ -9,89 +9,91 @@
 static int
 not_here (char *s)
 {
-    croak("%s not implemented", s);
-    return -1;
+  croak("%s not implemented", s);
+  return -1;
 }
 
 static int
 constant (char *name)
 {
-    errno = 0;
-    switch (*name) {
-    case 'A':
-	if (strEQ(name, "ACT_COPYING")) return UUACT_COPYING;
-	if (strEQ(name, "ACT_DECODING")) return UUACT_DECODING;
-	if (strEQ(name, "ACT_ENCODING")) return UUACT_ENCODING;
-	if (strEQ(name, "ACT_IDLE")) return UUACT_IDLE;
-	if (strEQ(name, "ACT_SCANNING")) return UUACT_SCANNING;
-    case 'F':
-	if (strEQ(name, "FILE_DECODED")) return UUFILE_DECODED;
-	if (strEQ(name, "FILE_ERROR")) return UUFILE_ERROR;
-	if (strEQ(name, "FILE_MISPART")) return UUFILE_MISPART;
-	if (strEQ(name, "FILE_NOBEGIN")) return UUFILE_NOBEGIN;
-	if (strEQ(name, "FILE_NODATA")) return UUFILE_NODATA;
-	if (strEQ(name, "FILE_NOEND")) return UUFILE_NOEND;
-	if (strEQ(name, "FILE_OK")) return UUFILE_OK;
-	if (strEQ(name, "FILE_READ")) return UUFILE_READ;
-	if (strEQ(name, "FILE_TMPFILE")) return UUFILE_TMPFILE;
-	break;
-    case 'M':
-	if (strEQ(name, "MSG_ERROR")) return UUMSG_ERROR;
-	if (strEQ(name, "MSG_FATAL")) return UUMSG_FATAL;
-	if (strEQ(name, "MSG_MESSAGE")) return UUMSG_MESSAGE;
-	if (strEQ(name, "MSG_NOTE")) return UUMSG_NOTE;
-	if (strEQ(name, "MSG_PANIC")) return UUMSG_PANIC;
-	if (strEQ(name, "MSG_WARNING")) return UUMSG_WARNING;
-    case 'O':
-	if (strEQ(name, "OPT_VERSION")) return UUOPT_VERSION;
-	if (strEQ(name, "OPT_FAST")) return UUOPT_FAST;
-	if (strEQ(name, "OPT_DUMBNESS")) return UUOPT_DUMBNESS;
-	if (strEQ(name, "OPT_BRACKPOL")) return UUOPT_BRACKPOL;
-	if (strEQ(name, "OPT_VERBOSE")) return UUOPT_VERBOSE;
-	if (strEQ(name, "OPT_DESPERATE")) return UUOPT_DESPERATE;
-	if (strEQ(name, "OPT_IGNREPLY")) return UUOPT_IGNREPLY;
-	if (strEQ(name, "OPT_OVERWRITE")) return UUOPT_OVERWRITE;
-	if (strEQ(name, "OPT_SAVEPATH")) return UUOPT_SAVEPATH;
-	if (strEQ(name, "OPT_IGNMODE")) return UUOPT_IGNMODE;
-	if (strEQ(name, "OPT_DEBUG")) return UUOPT_DEBUG;
-	if (strEQ(name, "OPT_ERRNO")) return UUOPT_ERRNO;
-	if (strEQ(name, "OPT_PROGRESS")) return UUOPT_PROGRESS;
-	if (strEQ(name, "OPT_USETEXT")) return UUOPT_USETEXT;
-	if (strEQ(name, "OPT_PREAMB")) return UUOPT_PREAMB;
-	if (strEQ(name, "OPT_TINYB64")) return UUOPT_TINYB64;
-	if (strEQ(name, "OPT_ENCEXT")) return UUOPT_ENCEXT;
-	if (strEQ(name, "OPT_REMOVE")) return UUOPT_REMOVE;
-	if (strEQ(name, "OPT_MOREMIME")) return UUOPT_MOREMIME;
-	if (strEQ(name, "OPT_DOTDOT")) return UUOPT_DOTDOT;
-	if (strEQ(name, "OPT_RBUF")) return UUOPT_RBUF;
-	if (strEQ(name, "OPT_WBUF")) return UUOPT_WBUF;
-    case 'R':
-	if (strEQ(name, "RET_CANCEL")) return UURET_CANCEL;
-	if (strEQ(name, "RET_CONT")) return UURET_CONT;
-	if (strEQ(name, "RET_EXISTS")) return UURET_EXISTS;
-	if (strEQ(name, "RET_ILLVAL")) return UURET_ILLVAL;
-	if (strEQ(name, "RET_IOERR")) return UURET_IOERR;
-	if (strEQ(name, "RET_NODATA")) return UURET_NODATA;
-	if (strEQ(name, "RET_NOEND")) return UURET_NOEND;
-	if (strEQ(name, "RET_NOMEM")) return UURET_NOMEM;
-	if (strEQ(name, "RET_OK")) return UURET_OK;
-	if (strEQ(name, "RET_UNSUP")) return UURET_UNSUP;
-    case 'B':
-	if (strEQ(name, "B64_ENCODED")) return B64ENCODED;
-	if (strEQ(name, "BH_ENCODED")) return BH_ENCODED;
-    case 'P':
-	if (strEQ(name, "PT_ENCODED")) return PT_ENCODED;
-    case 'Q':
-	if (strEQ(name, "QP_ENCODED")) return QP_ENCODED;
-    case 'U':
-	if (strEQ(name, "UU_ENCODED")) return UU_ENCODED;
-    case 'X':
-	if (strEQ(name, "XX_ENCODED")) return XX_ENCODED;
-    case 'Y':
-	if (strEQ(name, "YENC_ENCODED")) return YENC_ENCODED;
+  errno = 0;
+  switch (*name)
+    {
+      case 'A':
+        if (strEQ(name, "ACT_COPYING")) return UUACT_COPYING;
+        if (strEQ(name, "ACT_DECODING")) return UUACT_DECODING;
+        if (strEQ(name, "ACT_ENCODING")) return UUACT_ENCODING;
+        if (strEQ(name, "ACT_IDLE")) return UUACT_IDLE;
+        if (strEQ(name, "ACT_SCANNING")) return UUACT_SCANNING;
+      case 'F':
+        if (strEQ(name, "FILE_DECODED")) return UUFILE_DECODED;
+        if (strEQ(name, "FILE_ERROR")) return UUFILE_ERROR;
+        if (strEQ(name, "FILE_MISPART")) return UUFILE_MISPART;
+        if (strEQ(name, "FILE_NOBEGIN")) return UUFILE_NOBEGIN;
+        if (strEQ(name, "FILE_NODATA")) return UUFILE_NODATA;
+        if (strEQ(name, "FILE_NOEND")) return UUFILE_NOEND;
+        if (strEQ(name, "FILE_OK")) return UUFILE_OK;
+        if (strEQ(name, "FILE_READ")) return UUFILE_READ;
+        if (strEQ(name, "FILE_TMPFILE")) return UUFILE_TMPFILE;
+        break;
+      case 'M':
+        if (strEQ(name, "MSG_ERROR")) return UUMSG_ERROR;
+        if (strEQ(name, "MSG_FATAL")) return UUMSG_FATAL;
+        if (strEQ(name, "MSG_MESSAGE")) return UUMSG_MESSAGE;
+        if (strEQ(name, "MSG_NOTE")) return UUMSG_NOTE;
+        if (strEQ(name, "MSG_PANIC")) return UUMSG_PANIC;
+        if (strEQ(name, "MSG_WARNING")) return UUMSG_WARNING;
+      case 'O':
+        if (strEQ(name, "OPT_VERSION")) return UUOPT_VERSION;
+        if (strEQ(name, "OPT_FAST")) return UUOPT_FAST;
+        if (strEQ(name, "OPT_DUMBNESS")) return UUOPT_DUMBNESS;
+        if (strEQ(name, "OPT_BRACKPOL")) return UUOPT_BRACKPOL;
+        if (strEQ(name, "OPT_VERBOSE")) return UUOPT_VERBOSE;
+        if (strEQ(name, "OPT_DESPERATE")) return UUOPT_DESPERATE;
+        if (strEQ(name, "OPT_IGNREPLY")) return UUOPT_IGNREPLY;
+        if (strEQ(name, "OPT_OVERWRITE")) return UUOPT_OVERWRITE;
+        if (strEQ(name, "OPT_SAVEPATH")) return UUOPT_SAVEPATH;
+        if (strEQ(name, "OPT_IGNMODE")) return UUOPT_IGNMODE;
+        if (strEQ(name, "OPT_DEBUG")) return UUOPT_DEBUG;
+        if (strEQ(name, "OPT_ERRNO")) return UUOPT_ERRNO;
+        if (strEQ(name, "OPT_PROGRESS")) return UUOPT_PROGRESS;
+        if (strEQ(name, "OPT_USETEXT")) return UUOPT_USETEXT;
+        if (strEQ(name, "OPT_PREAMB")) return UUOPT_PREAMB;
+        if (strEQ(name, "OPT_TINYB64")) return UUOPT_TINYB64;
+        if (strEQ(name, "OPT_ENCEXT")) return UUOPT_ENCEXT;
+        if (strEQ(name, "OPT_REMOVE")) return UUOPT_REMOVE;
+        if (strEQ(name, "OPT_MOREMIME")) return UUOPT_MOREMIME;
+        if (strEQ(name, "OPT_DOTDOT")) return UUOPT_DOTDOT;
+        if (strEQ(name, "OPT_RBUF")) return UUOPT_RBUF;
+        if (strEQ(name, "OPT_WBUF")) return UUOPT_WBUF;
+      case 'R':
+        if (strEQ(name, "RET_CANCEL")) return UURET_CANCEL;
+        if (strEQ(name, "RET_CONT")) return UURET_CONT;
+        if (strEQ(name, "RET_EXISTS")) return UURET_EXISTS;
+        if (strEQ(name, "RET_ILLVAL")) return UURET_ILLVAL;
+        if (strEQ(name, "RET_IOERR")) return UURET_IOERR;
+        if (strEQ(name, "RET_NODATA")) return UURET_NODATA;
+        if (strEQ(name, "RET_NOEND")) return UURET_NOEND;
+        if (strEQ(name, "RET_NOMEM")) return UURET_NOMEM;
+        if (strEQ(name, "RET_OK")) return UURET_OK;
+        if (strEQ(name, "RET_UNSUP")) return UURET_UNSUP;
+      case 'B':
+        if (strEQ(name, "B64_ENCODED")) return B64ENCODED;
+        if (strEQ(name, "BH_ENCODED")) return BH_ENCODED;
+      case 'P':
+        if (strEQ(name, "PT_ENCODED")) return PT_ENCODED;
+      case 'Q':
+        if (strEQ(name, "QP_ENCODED")) return QP_ENCODED;
+      case 'U':
+        if (strEQ(name, "UU_ENCODED")) return UU_ENCODED;
+      case 'X':
+        if (strEQ(name, "XX_ENCODED")) return XX_ENCODED;
+      case 'Y':
+        if (strEQ(name, "YENC_ENCODED")) return YENC_ENCODED;
     }
-    errno = EINVAL;
-    return 0;
+
+  errno = EINVAL;
+  return 0;
 }
 
 static void
@@ -150,9 +152,9 @@ uu_fnamefilter_callback (void *cb, char *fname)
   PUTBACK; count = perl_call_sv ((SV *)cb, G_SCALAR); SPAGAIN;
 
   if (count != 1)
-    croak ("fnamefilter perl callback returned more than one argument");
+    croak ("fnamefilter perl callback MUST return a single filename exactly");
 
-  _FP_free(str); str = _FP_strdup (POPp);
+  _FP_free (str); str = _FP_strdup (SvPV_nolen (TOPs));
 
   PUTBACK; FREETMPS; LEAVE;
 
@@ -166,7 +168,6 @@ uu_file_callback (void *cb, char *id, char *fname, int retrieve)
   int count;
   int retval;
   SV *xfname = newSVpv ("", 0);
-  STRLEN dc;
   
   ENTER; SAVETMPS; PUSHMARK (SP); EXTEND (SP, 3);
 
@@ -177,10 +178,9 @@ uu_file_callback (void *cb, char *id, char *fname, int retrieve)
   PUTBACK; count = perl_call_sv ((SV *)cb, G_SCALAR); SPAGAIN;
 
   if (count != 1)
-    croak ("filecallback perl callback returned more than one argument");
+    croak ("filecallback perl callback must return a single return status");
 
-  strcpy (fname, SvPV (xfname, dc));
-
+  strcpy (fname, SvPV_nolen (xfname));
   retval = POPi;
 
   PUTBACK; FREETMPS; LEAVE;
@@ -193,40 +193,24 @@ uu_filename_callback (void *cb, char *subject, char *filename)
 {
   dSP;
   int count;
-  SV *retval;
-  STRLEN dc;
   
-  ENTER; SAVETMPS; PUSHMARK(SP); EXTEND(SP,3);
+  ENTER; SAVETMPS; PUSHMARK (SP); EXTEND (SP, 2);
 
-  PUSHs(sv_2mortal(newSVpv(subject, 0)));
-  PUSHs(filename ? sv_2mortal(newSVpv(filename, 0)) : &PL_sv_undef);
+  PUSHs (sv_2mortal(newSVpv(subject, 0)));
+  PUSHs (filename ? sv_2mortal(newSVpv(filename, 0)) : &PL_sv_undef);
 
   PUTBACK; count = perl_call_sv ((SV *)cb, G_ARRAY); SPAGAIN;
 
   if (count > 1)
-    croak ("filenamecallback perl callback returned more than one argument");
+    croak ("filenamecallback perl callback must return nothing or a single filename");
 
   if (count)
     {
       _FP_free (filename);
 
-      retval = POPs;
-
-      if (SvOK (retval))
-        {
-          STRLEN len;
-          char *fn = SvPV (retval, len);
-
-          filename = malloc (len + 1);
-
-          if (filename)
-            {
-              memcpy (filename, fn, len);
-              filename[len] = 0;
-            }
-        }
-      else
-        filename = 0;
+      filename = SvOK (TOPs)
+         ? _FP_strdup (SvPV_nolen (TOPs))
+         : 0;
     }
 
   PUTBACK; FREETMPS; LEAVE;
@@ -353,32 +337,32 @@ void
 UUSetMsgCallback (func = 0)
 	SV *	func
 	CODE:
-	UUSetMsgCallback (FUNC_CB(uu_msg));
+	UUSetMsgCallback (FUNC_CB (uu_msg));
 
 void
 UUSetBusyCallback (func = 0,msecs = 1000)
 	SV *	func
         long	msecs
 	CODE:
-	UUSetBusyCallback (FUNC_CB(uu_busy), msecs);
+	UUSetBusyCallback (FUNC_CB (uu_busy), msecs);
 
 void
 UUSetFileCallback (func = 0)
 	SV *	func
 	CODE:
-	UUSetFileCallback (FUNC_CB(uu_file));
+	UUSetFileCallback (FUNC_CB (uu_file));
 
 void
 UUSetFNameFilter (func = 0)
 	SV *	func
 	CODE:
-	UUSetFNameFilter (FUNC_CB(uu_fnamefilter));
+	UUSetFNameFilter (FUNC_CB (uu_fnamefilter));
 
 void
 UUSetFileNameCallback (func = 0)
 	SV *	func
 	CODE:
-	UUSetFileNameCallback (FUNC_CB(uu_filename));
+	UUSetFileNameCallback (FUNC_CB (uu_filename));
 
 char *
 UUFNameFilter (fname)
@@ -644,9 +628,9 @@ parts (li)
         }
 
 BOOT:
-  uu_msg_sv		= newSVsv(&PL_sv_undef);
-  uu_busy_sv		= newSVsv(&PL_sv_undef);
-  uu_file_sv		= newSVsv(&PL_sv_undef);
-  uu_fnamefilter_sv	= newSVsv(&PL_sv_undef);
-  uu_filename_sv	= newSVsv(&PL_sv_undef);
+  uu_msg_sv		= newSVsv (&PL_sv_undef);
+  uu_busy_sv		= newSVsv (&PL_sv_undef);
+  uu_file_sv		= newSVsv (&PL_sv_undef);
+  uu_fnamefilter_sv	= newSVsv (&PL_sv_undef);
+  uu_filename_sv	= newSVsv (&PL_sv_undef);
 

@@ -961,12 +961,18 @@ ScanData (FILE *datei, char *fname, int *errcode,
        * name continues to the end of the line
        */
       
-      _FP_free (result->filename);
       ptr = _FP_strstr (line, " name=") + 6;
-      result->filename = _FP_strdup (ptr);
 
-      while (isspace (result->filename[strlen(result->filename)-1]))
-	result->filename[strlen(result->filename)-1] = '\0';
+      /* newsbin pro 5.0 (at least) is braindamaged enough to put (null) here */
+      /* create something sensible, trust a windows program to fuck it up */
+      if (strncmp (ptr, "(null)", 6))
+        {
+          _FP_free (result->filename);
+          result->filename = _FP_strdup (ptr);
+
+          while (isspace (result->filename[strlen(result->filename)-1]))
+            result->filename[strlen(result->filename)-1] = '\0';
+        }
 
       /*
        * Determine size

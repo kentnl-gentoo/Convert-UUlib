@@ -102,7 +102,6 @@ static char *brackchr[] = {
  * ptonum is, if not NULL, a pointer to the part number in the subject line,
  * so that it won't be used as filename.
  **/
-
 static char *
 UUGetFileName (char *subject, char *ptonum, char *ptonend)
 {

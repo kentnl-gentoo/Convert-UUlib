@@ -981,10 +981,10 @@ UUDecodeFile (uulist *thefile, char *destname)
   if (destname)
     strcpy (uugen_fnbuffer, destname);
   else {
+    char *fname = UUFNameFilter (thefile->filename ? thefile->filename : "unknown.xxx");
     sprintf (uugen_fnbuffer, "%.1024s%.3071s",
-	     (uusavepath)?uusavepath:"",
-	     UUFNameFilter ((thefile->filename)?
-			    thefile->filename:"unknown.xxx"));
+	     uusavepath ? uusavepath : "",
+             fname ? fname : "unknown.xxx");
   }
 
   /*

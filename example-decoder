@@ -6,16 +6,18 @@
 use Convert::UUlib ':all';
 
 sub namefilter {
-   my($path)=@_;
+   my ($path) = @_;
+
    $path=~s/^.*[\/\\]//;
-   $path;
+
+   $path
 }
 
 sub busycb {
    my ($action, $curfile, $partno, $numparts, $percent, $fsize) = @_;
    $_[0]=straction($action);
    print "busy_callback(", (join ",",@_), ")\n";
-   0;
+   0
 }
 
 SetOption OPT_RBUF, 128*1024;
@@ -58,16 +60,16 @@ SetFileNameCallback sub {
    # - (20 files) No.17 Roseanne.jpg [2/2]
    return $1 if /No\.[ 0-9]+ (\S+\....) (?:\d+ bytes )?\[/;
 
-   # try to detetc some common forms of filenames
+   # try to detect some common forms of filenames
    return $1 if /([a-z0-9_\-+.]{3,}\.[a-z]{3,4}(?:.\d+))/i;
 
    # otherwise just pass what we have
-   return ();
+   ()
 };
 
 # now read all files in the directory uusrc/*
 for(<uusrc/*>) {
-   my($retval,$count)=LoadFile ($_, $_, 1);
+   my ($retval, $count) = LoadFile ($_, $_, 1);
    print "file($_), status(", strerror $retval, ") parts($count)\n";
 }
 

@@ -1,9 +1,15 @@
 Revision history for Perl extension Convert::UUlib.
 
+1.09 Fri May 25 19:38:11 CEST 2007
+	- create something sensible, trust a windows program to fuck
+          it up: work around literal "(null)" filenames in yenc-encoded
+          files.
+        - some minor cleanups.
+
 1.08 Sat Dec 16 23:27:13 CET 2006
-	- URGENT update, the lastr elease did not
+	- URGENT update, the last release did not
           decode files correctly, usually not at all.
-        - the last patch was, of course, completely bogus.
+        - my last patch was, of course, completly bogus.
           (sorry. looked simple...).
 
 1.07 Sun Dec 10 17:41:46 CET 2006
