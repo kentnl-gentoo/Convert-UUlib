@@ -3129,7 +3129,6 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 
   if ((!sstate.envelope.ctype || _FP_stristr (sstate.envelope.ctype, "multipart"))
       && !uu_more_mime) {
-        fprintf (stderr, "hiya\n");//D
     prevpos = ftell (datei);
     while (!feof (datei)) {
       if (_FP_fgets (line, 255, datei) == NULL) {
