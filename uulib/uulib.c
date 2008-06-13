@@ -889,6 +889,7 @@ UULoadFileWithPartNo (char *filename, char *fileid, int delflag, int partno, int
     if (uu_fast_scanning && sr != UURET_CONT)
       break;
   }
+
   if (ferror (datei)) {
     UUMessage (uulib_id, __LINE__, UUMSG_ERROR,
 	       uustring (S_READ_ERROR), filename,
@@ -899,6 +900,7 @@ UULoadFileWithPartNo (char *filename, char *fileid, int delflag, int partno, int
     UUCLRBUF (uu_rbuf, datei_buf);
     return UURET_IOERR;
   }
+
   fclose (datei);
   UUCLRBUF (uu_rbuf, datei_buf);
 

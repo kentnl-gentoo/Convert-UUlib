@@ -1,7 +1,11 @@
 Revision history for Perl extension Convert::UUlib.
 
+1.10 Fri Jun 13 14:22:42 CEST 2008
+	- fix an infinite-looping problem when scanning in freestyle
+          mode (testcase provided by Pieter Geens).
+
 1.09 Fri May 25 19:38:11 CEST 2007
-	- create something sensible, trust a windows program to fuck
+        - create something sensible, trust a windows program to fuck
           it up: work around literal "(null)" filenames in yenc-encoded
           files.
         - some minor cleanups.
@@ -9,7 +13,7 @@ Revision history for Perl extension Convert::UUlib.
 1.08 Sat Dec 16 23:27:13 CET 2006
 	- URGENT update, the last release did not
           decode files correctly, usually not at all.
-        - my last patch was, of course, completly bogus.
+        - my last patch was, of course, completely bogus.
           (sorry. looked simple...).
 
 1.07 Sun Dec 10 17:41:46 CET 2006

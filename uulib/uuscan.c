@@ -933,6 +933,9 @@ ScanData (FILE *datei, char *fname, int *errcode,
 	(((ptr = _FP_strrstr (line+2, "--")) == NULL) ||
 	 (*(ptr+2) != '\012' && *(ptr+2) != '\015')) &&
 	_FP_strstr (line+2, "_=_") != NULL) {
+
+      long oldposition = ftell (datei); /* refresh oldpositition so the comment below becomes true */
+     
       if (_FP_fgets (line, 255, datei) == NULL) {
 	break;
       }
@@ -1522,7 +1525,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
     /* ignore empty lines at the beginning of a file */
     preheaders = ftell (datei);
     while (!feof (datei)) {
-      if (UUBUSYPOLL(ftell(datei),progress.fsize)) SPCANCEL();
+      if (UUBUSYPOLL(preheaders,progress.fsize)) SPCANCEL();
       if (_FP_fgets (line, 255, datei) == NULL)
 	break;
       line[255] = '\0';
@@ -3124,9 +3127,9 @@ ScanPart (FILE *datei, char *fname, int *errcode)
    * be here!
    */
 
-  if ((sstate.envelope.ctype == NULL ||
-       _FP_stristr (sstate.envelope.ctype, "multipart") != NULL) &&
-      !uu_more_mime) {
+  if ((!sstate.envelope.ctype || _FP_stristr (sstate.envelope.ctype, "multipart"))
+      && !uu_more_mime) {
+        fprintf (stderr, "hiya\n");//D
     prevpos = ftell (datei);
     while (!feof (datei)) {
       if (_FP_fgets (line, 255, datei) == NULL) {
@@ -3181,6 +3184,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 
   if (sstate.envelope.subject)
     result->subject = _FP_strdup (sstate.envelope.subject);
+
   if (sstate.envelope.from)
     result->origin  = _FP_strdup (sstate.envelope.from);
 

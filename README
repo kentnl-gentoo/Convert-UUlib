@@ -4,8 +4,8 @@ NAME
 
 SYNOPSIS
      use Convert::UUlib ':all';
- 
-     # read all the files named on the commandline and decode them
+     
+ # read all the files named on the commandline and decode them
      # into the CURRENT directory. See below for a longer example.
      LoadFile $_ for @ARGV;
      for (my $i = 0; my $uu = GetFileListItem $i; $i++) {
