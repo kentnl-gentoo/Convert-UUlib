@@ -142,14 +142,15 @@ typedef struct _fileread {
   char *origin;		/* Whole 'From:' line */
   char *mimeid;		/* the ID for Mime-encoded files */
   char *mimetype;	/* Content-Type */
-  short mode;		/* Mode of File (from 'begin') */
+  int   mode;		/* Mode of File (from 'begin') */
   int   begin;		/* begin detected */
   int   end;		/* end detected */
   int   flags;		/* associated flags */
+  long  yefilesize;     /* the yencode file size, or 0 */
 
-  short uudet;		/* valid encoded data. value indicates encoding */
-  short partno;		/* Mime-files have a part number within */
-  short maxpno;		/* ... plus the total number of parts   */
+  int   uudet;		/* valid encoded data. value indicates encoding */
+  int   partno;		/* Mime-files have a part number within */
+  int   maxpno;		/* ... plus the total number of parts   */
 
   char *sfname;		/* Associated source file */
   long startpos;	/* ftell() position where data starts */
@@ -168,8 +169,9 @@ typedef struct _uufile {
   char     *subfname;
   char     *mimeid;
   char     *mimetype;
-  short     partno;
+  int       partno;
   fileread *data;
+  long      yefilesize;
   struct _uufile *NEXT;
 } uufile;
 

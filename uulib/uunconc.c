@@ -1630,7 +1630,7 @@ UUDecode (uulist *data)
     progress.action   = 0;
     progress.partno   = 0;
     progress.numparts = 1;
-    progress.fsize    = (numbytes)?numbytes:-1;
+    progress.fsize    = numbytes ? numbytes : -1;
     progress.foffset  = hb;
     progress.percent  = 0;
     progress.action   = UUACT_COPYING;

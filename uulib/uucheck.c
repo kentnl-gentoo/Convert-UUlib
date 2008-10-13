@@ -753,8 +753,9 @@ UUPreProcessPart (fileread *data, int *ret)
   else
     result->subfname = NULL;
 
-  result->mimeid   = _FP_strdup (data->mimeid);
-  result->mimetype = _FP_strdup (data->mimetype);
+  result->yefilesize = data->yefilesize;
+  result->mimeid     = _FP_strdup (data->mimeid);
+  result->mimetype   = _FP_strdup (data->mimetype);
 
   if (result->partno == -1 && 
       (data->uudet == PT_ENCODED || data->uudet == QP_ENCODED))
@@ -1003,6 +1004,7 @@ UUInsertPartToList (uufile *data)
    *     (c) Both parts don't have different MIME-IDs
    *     (d) Both parts don't encode different files
    *     (e) The other part wants to stay alone (FL_SINGLE)
+   *     (g) The yencode file size matches.
    */
 
   /*
@@ -1014,16 +1016,15 @@ UUInsertPartToList (uufile *data)
     if (data->data->flags & FL_SINGLE) {
       /* this space intentionally left blank */
     }
-    else if ((data->mimeid && iter->mimeid &&
-	      strcmp (data->mimeid, iter->mimeid) == 0) ||
-	     (_FP_stricmp (data->subfname, iter->subfname) == 0 &&
-	      !(iter->begin && data->data->begin) &&
-	      !(iter->end   && data->data->end) &&
-	      !(data->mimeid && iter->mimeid &&
-		strcmp (data->mimeid, iter->mimeid) != 0) &&
-	      !(data->filename && iter->filename &&
-		strcmp (data->filename, iter->filename) != 0) &&
-	      !(iter->flags & FL_SINGLE))) {
+    else if ((data->mimeid && iter->mimeid && strcmp (data->mimeid, iter->mimeid) == 0)
+             ||
+	     (_FP_stricmp (data->subfname, iter->subfname) == 0
+              && !(iter->thisfile && iter->thisfile->yefilesize != data->yefilesize)
+	      && !(iter->begin && data->data->begin)
+	      && !(iter->end   && data->data->end)
+	      && !(data->mimeid   && iter->mimeid   && strcmp (data->mimeid,   iter->mimeid)   != 0)
+	      && !(data->filename && iter->filename && strcmp (data->filename, iter->filename) != 0)
+	      && !(iter->flags & FL_SINGLE))) {
 
       /*
        * Don't insert a part that is already there.

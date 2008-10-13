@@ -1,11 +1,18 @@
 Revision history for Perl extension Convert::UUlib.
 
+1.12 Mon Oct 13 14:11:01 CEST 2008
+	- use the yencode filesize as additional matching criterium
+          to avoid false matches.
+        - made the example decoder more verbose w.r.t. error handling.
+        - removed potentially confusing decide_temp calls from
+          example decoder.
+
 1.11 Fri Jun 13 15:32:30 CEST 2008
 	- don't ask.
 
 1.10 Fri Jun 13 14:22:42 CEST 2008
 	- fix an infinite-looping problem when scanning in freestyle
-          mode (testcase provided by Pieter Geens).
+          mode (testcase provided by Pieter Geens and Reinhard Pfau).
 
 1.09 Fri May 25 19:38:11 CEST 2007
         - create something sensible, trust a windows program to fuck

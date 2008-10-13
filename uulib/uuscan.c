@@ -619,7 +619,7 @@ ScanData (FILE *datei, char *fname, int *errcode,
   int encoding=0, dflag=0, ctline=42;
   int dontcare=0, hadnl=0;
   long preheaders=0, oldposition;
-  long yefilesize=0, yepartends=0;
+  long yepartends=0;
   size_t dcc, bhopc;
 
   *errcode = UURET_OK;
@@ -983,10 +983,10 @@ ScanData (FILE *datei, char *fname, int *errcode,
 
       if ((ptr = _FP_strstr (line, " size=")) != NULL) {
 	ptr += 6;
-	yefilesize = atoi (ptr);
+	result->yefilesize = atoi (ptr);
       }
       else {
-	yefilesize = -1;
+	result->yefilesize = -1;
       }
 
       /*
@@ -1031,7 +1031,7 @@ ScanData (FILE *datei, char *fname, int *errcode,
 
     if (strncmp (line, "=yend ", 6) == 0 &&
 	result->uudet == YENC_ENCODED) {
-      if (yepartends == 0 || yepartends >= yefilesize) {
+      if (yepartends == 0 || yepartends >= result->yefilesize) {
 	result->end = 1;
       }
 #if 0

@@ -43,6 +43,8 @@ SetFileNameCallback sub {
    return unless $_[1]; # skip "Re:"-plies et al.
    local $_ = $_[0];
 
+      return $1 if /(\S+\s+IMG_\d+.jpg)/i;
+
    # the following rules are rather effective on some newsgroups,
    # like alt.binaries.games.anime, where non-mime, uuencoded data
    # is very common
@@ -98,14 +100,17 @@ while ($uu = GetFileListItem $i) {
       print "\n";
    }
 
-   $uu->decode_temp;
-   print " temporarily decoded to ", $uu->binfile, "\n";
+   print $uu->filename;
+
    $uu->remove_temp;
 
-   print strerror $uu->decode;
-   print " saved as uudst/", $uu->filename, "\n";
+   if (my $err = $uu->decode ()) {
+      print ", ", strerror $err, "\n";
+   } else {
+      print ", saved as uudst/", $uu->filename, "\n";
+   }
 }
 
 print "cleanup...\n";
 
-CleanUp();
+CleanUp;
