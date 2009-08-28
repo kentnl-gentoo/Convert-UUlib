@@ -16,6 +16,8 @@
 #ifndef FPTOOLS_H__
 #define FPTOOLS_H__
 
+#include <string.h>
+
 typedef signed char schar;
 typedef unsigned char uchar;
 
@@ -47,6 +49,15 @@ extern "C" {
 #define _FP_cutdir	FP_cutdir
 #define _FP_strerror	FP_strerror
 #define _FP_tempnam	FP_tempnam
+#define _FP_fgetc	FP_fgetc
+
+#if HAVE_FGETC_UNLOCKED
+# define FP_fgetc(s) fgetc_unlocked (s)
+#else
+# define FP_fgetc(s) fgetc (s)
+#endif
+
+#define FP_strstr(a,b) strstr (a, b)
 
 void	TOOLEXPORT	_FP_free	(void *);
 char *	TOOLEXPORT	_FP_strdup	(char *);
@@ -58,7 +69,6 @@ char *	TOOLEXPORT	_FP_strrstr	(char *, char *);
 char *	TOOLEXPORT	_FP_stoupper	(char *);
 char *	TOOLEXPORT	_FP_stolower	(char *);
 int 	TOOLEXPORT	_FP_strmatch	(char *, char *);
-char *	TOOLEXPORT	_FP_strstr	(char *, char *);
 char *	TOOLEXPORT	_FP_stristr	(char *, char *);
 char *	TOOLEXPORT	_FP_strirstr	(char *, char *);
 char *	TOOLEXPORT	_FP_strrchr	(char *, int);
@@ -70,6 +80,18 @@ char *	TOOLEXPORT	_FP_strerror	(int);
 #ifndef HAVE_MKSTEMP
 char *	TOOLEXPORT	_FP_tempnam	(char *, char *);
 #endif /* HAVE_MKSTEMP */
+
+#if HAVE_STRCASECMP
+# define FP_stricmp(a,b) strcasecmp (a, b)
+#endif
+
+#if HAVE_STRNCASECMP
+# define FP_strnicmp(a,b,l) strncasecmp (a, b, l)
+#endif
+
+#if HAVE_STRCASESTR
+# define FP_stristr(a,b) strcasestr (a, b)
+#endif
 
 #ifdef __cplusplus
 }

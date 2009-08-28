@@ -67,27 +67,36 @@ char * uuscan_id = "$Id$";
  * to scan the bodies from partial multipart messages.
  */
 
-static char *knownmsgheaders[] = {
-  "From ", "Return-Path:", "Received:", "Reply-To:",
-  "From:", "Sender:", "Resent-Reply-To:", "Resent-From:",
-  "Resent-Sender:", "Date:", "Resent-Date:", "To:",
-  "Resent-To:", "Cc:", "Bcc:", "Resent-bcc:",
-  "Message-ID:", "Resent-Message-Id:", "In-Reply-To:",
-  "References:", "Keywords:", "Subject:", "Comments:",
-  
-  "Delivery-Date:", "Posted-Date:", "Received-Date:",
-  "Precedence:", 
+#define LSTR(s) { sizeof (s) - 1, s }
 
-  "Path:", "Newsgroups:", "Organization:", "Lines:",
-  "NNTP-Posting-Host:",
-  NULL
+struct lstr {
+  int len;
+  const char *str;
 };
 
-static char *knownmimeheaders[] = {
-  "Mime-Version:",  "Content-Transfer-Encoding:",
-  "Content-Type:", "Content-Disposition:", 
-  "Content-Description:", "Content-Length:",
-  NULL
+#define MAX_KNOWNHEADERLEN 28 /* max. length of a known header */
+
+static struct lstr knownheaders[] = {
+  /* "From " handled in IsKnownHeader */
+
+  /* knownmsgheaders */
+  LSTR ("Return-Path"), LSTR ("Received"), LSTR ("Reply-To"),
+  LSTR ("From"), LSTR ("Sender"), LSTR ("Resent-Reply-To"), LSTR ("Resent-From"),
+  LSTR ("Resent-Sender"), LSTR ("Date"), LSTR ("Resent-Date"), LSTR ("To"),
+  LSTR ("Resent-To"), LSTR ("Cc"), LSTR ("Bcc"), LSTR ("Resent-bcc"),
+  LSTR ("Message-ID"), LSTR ("Resent-Message-Id"), LSTR ("In-Reply-To"),
+  LSTR ("References"), LSTR ("Keywords"), LSTR ("Subject"), LSTR ("Comments"),
+  
+  LSTR ("Delivery-Date"), LSTR ("Posted-Date"), LSTR ("Received-Date"),
+  LSTR ("Precedence"), 
+
+  LSTR ("Path"), LSTR ("Newsgroups"), LSTR ("Organization"), LSTR ("Lines"),
+  LSTR ("NNTP-Posting-Host"),
+
+  /* knownminehaders */
+  LSTR ("Mime-Version"),  LSTR ("Content-Transfer-Encoding"),
+  LSTR ("Content-Type"), LSTR ("Content-Disposition"), 
+  LSTR ("Content-Description"), LSTR ("Content-Length")
 };
 
 /*
@@ -167,6 +176,7 @@ IsHeaderLine (char *data)
  * RFC0822 does not specify a maximum length for headers, but we
  * truncate everything beyond an insane value of 1024 characters.
  */
+/* (schmorp)every later rfc says 998 octets max */
 
 static char *
 ScanHeaderLine (FILE *datei, char *initial)
@@ -175,71 +185,50 @@ ScanHeaderLine (FILE *datei, char *initial)
   char *ptr2, *p1, *p2, *p3;
   int llength, c;
   long curpos;
-  int hadcr;
 
   if (initial) {
     _FP_strncpy (uuscan_shlline, initial, 1024);
-  }
-  else {
+  } else {
     /* read first line */
     if (feof (datei) || ferror (datei))
       return NULL;
-    if (_FP_fgets (uuscan_shlline, 1023, datei) == NULL)
+    if (_FP_fgets (uuscan_shlline, 1024, datei) == NULL)
       return NULL;
-    uuscan_shlline[1023] = '\0';
   }
 
   llength = strlen (uuscan_shlline);
-  hadcr   = 0;
 
   /* strip whitespace at end */
   ptr = uuscan_shlline + llength;
   while (llength && isspace(*(ptr-1))) {
-    if (*(ptr-1) == '\012' || *(ptr-1) == '\015')
-      hadcr = 1;
     ptr--; llength--;
   }
-  if (llength == 0) {
-    uuscan_shlline[0] = '\0';
+  if (llength == 0)
     return uuscan_shlline;
-  }
 
   while (!feof (datei)) {
-    c = fgetc (datei);
-    if (feof (datei))
+    c = _FP_fgetc (datei);
+    if (c == EOF)
       break;
 
-    /*
-     * If the line didn't have a CR, it was longer than 256 characters
-     * and is continued anyway.
-     */
+    if (c != ' ' && c != '\t')
+      {
+        ungetc (c, datei);
+        break;
+      }
 
-    if (hadcr==1 && c != ' ' && c != '\t') {
-      /* no LWSP-char, header line does not continue */
-      ungetc (c, datei);
-      break;
-    }
     while (!feof (datei) && (c == ' ' || c == '\t'))
-      c = fgetc (datei);
+      c = _FP_fgetc (datei);
 
     if (!feof (datei))
       ungetc (c, datei);	/* push back for fgets() */
-
-    /* insert a single LWSP */
-    if (hadcr==1 && llength < 1023) {
-      *ptr++ = ' ';
-      llength++;
-    }
-    *ptr = '\0'; /* make lint happier */
-
-    if (feof (datei))
+    else
       break;
 
     /* read next line */
     curpos = ftell (datei);
-    if (_FP_fgets (uugen_inbuffer, 255, datei) == NULL)
+    if (_FP_fgets (uugen_inbuffer, 1024, datei) == NULL)
       break;
-    uugen_inbuffer[255] = '\0';
 
     if (IsLineEmpty (uugen_inbuffer)) { /* oops */
       fseek (datei, curpos, SEEK_SET);
@@ -248,14 +237,7 @@ ScanHeaderLine (FILE *datei, char *initial)
 
     _FP_strncpy (ptr, uugen_inbuffer, 1024-llength);
 
-    /*
-     * see if line was terminated with CR. Otherwise, it continues ...
-     */
     c = strlen (ptr);
-    if (c>0 && (ptr[c-1] == '\012' || ptr[c-1] == '\015'))
-      hadcr = 1;
-    else
-      hadcr = 0;
 
     /*
      * strip whitespace
@@ -531,7 +513,7 @@ ParseHeader (headers *theheaders, char *line)
     while (isspace (*value))
       value++;
     while (*value && (delimit==0 || *value!=delimit) &&
-	   *value != '\012' && *value != '\015' && length < 255) {
+	   *value && length < 255) {
       *ptr++ = *value++;
       length++;
     }
@@ -554,21 +536,26 @@ ParseHeader (headers *theheaders, char *line)
 static int
 IsKnownHeader (char *line)
 {
-  char **iter = knownmsgheaders;
+  const char *sep;
+  int len, i;
 
-  while (iter && *iter) {
-    if (_FP_strnicmp (line, *iter, strlen (*iter)) == 0)
+  /* "From " handled specially */
+  /* we assume the buffer is at least 5 bytes long */
+  if (line [4] == ' ' && line [1] == 'r' && line [2] == 'o' && line [3] == 'm'
+      && (line [0] == 'f' || line [0] == 'F'))
+    return 1;
+
+  sep = memchr (line, ':', MAX_KNOWNHEADERLEN);
+
+  /* fast reject, the majority of calls are simple rejects */
+  if (!sep)
+    return 0;
+
+  len = sep - line; /* length of part before ':' */
+
+  for (i = 0; i < sizeof (knownheaders) / sizeof (knownheaders [0]); ++i)
+    if (len == knownheaders [i].len && _FP_strnicmp (line, knownheaders [i].str, len) == 0)
       return 1;
-    iter++;
-  }
-
-  iter = knownmimeheaders;
-
-  while (iter && *iter) {
-    if (_FP_strnicmp (line, *iter, strlen (*iter)) == 0)
-      return 2;
-    iter++;
-  }
 
   return 0;
 }
@@ -585,7 +572,7 @@ UUScanHeader (FILE *datei, headers *envelope)
   while (!feof (datei)) {
     if ((ptr = ScanHeaderLine (datei, NULL)) == NULL)
       break;
-    if (*ptr == '\0' || *ptr == '\012' || *ptr == '\015')
+    if (*ptr == '\0')
       break;
     ParseHeader (envelope, ptr);
   }
@@ -644,12 +631,10 @@ ScanData (FILE *datei, char *fname, int *errcode,
 
   while (!feof (datei)) {
     oldposition = ftell (datei);
-    if (_FP_fgets (line, 255, datei) == NULL)
+    if (_FP_fgets (line, 1024, datei) == NULL)
       break;
     if (ferror (datei))
       break;
-
-    line[255] = '\0'; /* For Safety of string functions */
 
     /*
      * Make Busy Polls
@@ -931,12 +916,12 @@ ScanData (FILE *datei, char *fname, int *errcode,
     if (boundary == NULL && !ismime && !uu_more_mime && dflag <= 1 &&
 	line[0] == '-' && line[1] == '-' && strlen(line+2)>10 &&
 	(((ptr = _FP_strrstr (line+2, "--")) == NULL) ||
-	 (*(ptr+2) != '\012' && *(ptr+2) != '\015')) &&
+	 ptr[2]) &&
 	_FP_strstr (line+2, "_=_") != NULL) {
 
       long oldposition = ftell (datei); /* refresh oldpositition so the comment below becomes true */
      
-      if (_FP_fgets (line, 255, datei) == NULL) {
+      if (_FP_fgets (line, 1024, datei) == NULL) {
 	break;
       }
       if (_FP_strnicmp (line, "Content-", 8) == 0) {
@@ -1000,11 +985,9 @@ ScanData (FILE *datei, char *fname, int *errcode,
 	  result->begin = 1;
 	}
 
-	if (_FP_fgets (line, 255, datei) == NULL) {
+	if (_FP_fgets (line, 1024, datei) == NULL) {
 	  break;
 	}
-
-	line[255] = '\0';
 
 	if (strncmp (line, "=ypart ", 7) != 0) {
 	  break;
@@ -1220,12 +1203,10 @@ ScanData (FILE *datei, char *fname, int *errcode,
 	    }
 
 	    oldposition = ftell (datei);
-	    if (_FP_fgets (line, 255, datei) == NULL)
+	    if (_FP_fgets (line, 1024, datei) == NULL)
 	      break;
 	    if (ferror (datei))
 	      break;
-
-	    line[255] = '\0';
 
 	    /*
 	     * Stop scanning at an empty line or a MIME-boundary.
@@ -1526,9 +1507,8 @@ ScanPart (FILE *datei, char *fname, int *errcode)
     preheaders = ftell (datei);
     while (!feof (datei)) {
       if (UUBUSYPOLL(preheaders,progress.fsize)) SPCANCEL();
-      if (_FP_fgets (line, 255, datei) == NULL)
+      if (_FP_fgets (line, 1024, datei) == NULL)
 	break;
-      line[255] = '\0';
       if (!IsLineEmpty (line)) {
 	fseek (datei, preheaders, SEEK_SET);
 	break;
@@ -1564,11 +1544,10 @@ ScanPart (FILE *datei, char *fname, int *errcode)
     }
 
     prevpos = ftell (datei);
-    if (_FP_fgets (line, 255, datei) == NULL) {
+    if (_FP_fgets (line, 1024, datei) == NULL) {
       _FP_free (result);
       return NULL;
     }
-    line[255] = '\0';
 
     /*
      * Special handling for AOL folder files, which start off with a boundary.
@@ -1579,11 +1558,6 @@ ScanPart (FILE *datei, char *fname, int *errcode)
      */
 
     if (!feof (datei) && line[0] == '-' && line[1] == '-' && line[2]) {
-      while (line[strlen(line)-1] == '\012' ||
-	     line[strlen(line)-1] == '\015') {
-	line[strlen(line)-1] = '\0';
-      }
-
       sstate.ismime            = 1;
       sstate.envelope.mimevers = _FP_strdup ("1.0");
       sstate.envelope.boundary = _FP_strdup (line+2);
@@ -1622,27 +1596,23 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 	break;
       }
 
-      if (_FP_fgets (line, 255, datei) == NULL) {
+      if (_FP_fgets (line, 1024, datei) == NULL) {
         /* If we are at eof without finding headers, there probably isn't */
-        if (hcount < hlcount.afternl) {
+        if (hcount < hlcount.afternl)
           fseek (datei, prevpos, SEEK_SET);
-          line[0] = '\0';
-        }
         break;
       }
-      line[255] = '\0';
     }
 
     /* skip empty lines */
     prevpos = ftell (datei);
     if (IsLineEmpty (line)) {
       while (!feof (datei)) {
-	if (_FP_fgets (line, 255, datei) == NULL)
+	if (_FP_fgets (line, 1024, datei) == NULL)
 	  break;
 	if (UUBUSYPOLL(ftell(datei),progress.fsize)) SPCANCEL();
 	if (!IsLineEmpty (line)) {
 	  fseek (datei, prevpos, SEEK_SET);
-	  line[255] = '\0';
 	  break;
 	}
 	prevpos = ftell (datei);
@@ -1662,11 +1632,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       /*
        * see above
        */
-      if (_FP_fgets (line, 255, datei) == NULL) {
-	line[0] = '\012';
-	line[1] = '\0';
-      }
-      line[255] = '\0';
+      _FP_fgets (line, 1024, datei);
 
       while (!feof (datei) && !IsLineEmpty (line)) {
 	if (IsKnownHeader (line))
@@ -1679,19 +1645,17 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 	  return NULL;
 	}
 
-	if (_FP_fgets (line, 255, datei) == NULL)
+	if (_FP_fgets (line, 1024, datei) == NULL)
 	  break;
-	line[255] = '\0';
       }
       /* skip empty lines */
       prevpos = ftell (datei);
       while (!feof (datei)) {
-	if (_FP_fgets (line, 255, datei) == NULL)
+	if (_FP_fgets (line, 1024, datei) == NULL)
 	  break;
 	if (UUBUSYPOLL(ftell(datei),progress.fsize)) SPCANCEL();
 	if (!IsLineEmpty (line)) {
 	  fseek (datei, prevpos, SEEK_SET);
-	  line[255] = '\0';
 	  break;
 	}
 	prevpos = ftell (datei);
@@ -1767,10 +1731,8 @@ ScanPart (FILE *datei, char *fname, int *errcode)
     lcount = 0;
     
     while (!feof (datei)) {
-      if (_FP_fgets (line, 255, datei) == NULL) {
-	line[0] = '\0';
+      if (_FP_fgets (line, 1024, datei) == NULL)
 	break;
-      }
       if (UUBUSYPOLL(ftell(datei),progress.fsize)) SPCANCEL();
       if (line[0] == '-' && line[1] == '-' &&
 	  strncmp (line+2, sstate.envelope.boundary, blen) == 0)
@@ -1893,7 +1855,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
        * check if the epilogue is empty
        */
       while (!feof (datei) && !ferror (datei) && lcount<10 && res==0) {
-	if (_FP_fgets (line, 255, datei) == NULL)
+	if (_FP_fgets (line, 1024, datei) == NULL)
 	  break;
 	if (!IsLineEmpty (line))
 	  res++;
@@ -1929,12 +1891,9 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       blen = strlen (multistack[mssdepth-1].envelope.boundary);
 
     while (!feof (datei)) {
-      if (_FP_fgets (line, 255, datei) == NULL) {
-	line[0] = '\0';
+      if (_FP_fgets (line, 1024, datei) == NULL)
 	break;
-      }
       if (UUBUSYPOLL(ftell(datei),progress.fsize)) SPCANCEL();
-      line[255] = '\0';
       /* check for parent boundary */
       if (mssdepth > 0 && line[0] == '-' && line[1] == '-' &&
 	  strncmp (line+2,
@@ -2145,7 +2104,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
     lcount = 0;
     preheaders = prevpos;
     
-    if (_FP_fgets (line, 255, datei) == NULL) {
+    if (_FP_fgets (line, 1024, datei) == NULL) {
       sstate.isfolder = 0;
       sstate.ismime   = 0;
       while (mssdepth) {
@@ -2157,7 +2116,6 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       _FP_free (result);
       return NULL;
     }
-    line[255] = '\0';
 
     while (!feof (datei) && !IsLineEmpty (line)) {
       if (IsKnownHeader (line))
@@ -2177,9 +2135,8 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 
       prevpos = ftell (datei);
 
-      if (_FP_fgets (line, 255, datei) == NULL)
+      if (_FP_fgets (line, 1024, datei) == NULL)
 	break;
-      line[255] = '\0';
       lcount++;
     }
     if (line[0] == '-' && line[1] == '-') {
@@ -2270,10 +2227,8 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       lcount = 0;
       
       while (!feof (datei)) {
-	if (_FP_fgets (line, 255, datei) == NULL) {
-	  line[0] = '\0';
+	if (_FP_fgets (line, 1024, datei) == NULL)
 	  break;
-	}
 	if (UUBUSYPOLL(ftell(datei),progress.fsize)) SPCANCEL();
 	line[255] = '\0';
 	if (line[0] == '-' && line[1] == '-' &&
@@ -2439,12 +2394,9 @@ ScanPart (FILE *datei, char *fname, int *errcode)
     prevpos = ftell  (datei);
 
     while (!feof (datei)) {
-      if (_FP_fgets (line, 255, datei) == NULL) {
-	line[0] = '\0';
+      if (_FP_fgets (line, 1024, datei) == NULL)
 	break;
-      }
       if (UUBUSYPOLL(ftell(datei),progress.fsize)) SPCANCEL();
-      line[255] = '\0';
       if (line[0] == '-' && line[1] == '-' &&
 	  strncmp (line+2, sstate.envelope.boundary, blen) == 0)
 	break;
@@ -2622,9 +2574,8 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       /* skip over blank lines first */
       prevpos = ftell (datei);
       while (!feof (datei)) {
-	if (_FP_fgets (line, 255, datei) == NULL)
+	if (_FP_fgets (line, 1024, datei) == NULL)
 	  break;
-	line[255] = '\0';
 	if (UUBUSYPOLL(ftell(datei),progress.fsize)) SPCANCEL();
 	if (!IsLineEmpty (line))
 	  break;
@@ -2647,9 +2598,8 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 	if (ParseHeader (&localenv, ptr1) == NULL)
 	  *errcode = UURET_NOMEM;
 
-	if (_FP_fgets (line, 255, datei) == NULL)
+	if (_FP_fgets (line, 1024, datei) == NULL)
 	  break;
-	line[255] = '\0';
 	lcount++;
       }
       prevpos = ftell (datei);
@@ -2736,9 +2686,8 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 	 */
 	preheaders = ftell (datei);
 	while (!feof (datei)) {
-	  if (_FP_fgets (line, 255, datei) == NULL)
+	  if (_FP_fgets (line, 1024, datei) == NULL)
 	    break;
-	  line[255] = '\0';
 	  if (!IsLineEmpty (line)) {
 	    break;
 	  }
@@ -2751,9 +2700,8 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 	  if (lcount > WAITHEADER && hcount < hlcount.afternl)
 	    break;
 
-	  if (_FP_fgets (line, 255, datei) == NULL)
+	  if (_FP_fgets (line, 1024, datei) == NULL)
 	    break;
-	  line[255] = '\0';
 	}
 	if (hcount < hlcount.afternl)
 	  fseek (datei, preheaders, SEEK_SET);
@@ -2765,12 +2713,11 @@ ScanPart (FILE *datei, char *fname, int *errcode)
        */
 
       while (!feof (datei)) {
-	if (_FP_fgets (line, 255, datei) == NULL)
+	if (_FP_fgets (line, 1024, datei) == NULL)
 	  break;
 	if (UUBUSYPOLL(ftell(datei),progress.fsize)) SPCANCEL();
 	if (ferror (datei))
 	  break;
-	line[255] = '\0';
 
 	if ((vflag = IsKnownHeader (line))) {
 	  (void) ScanHeaderLine (datei, line);
@@ -2972,9 +2919,8 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 	 */
 	preheaders = ftell (datei);
 	while (!feof (datei)) {
-	  if (_FP_fgets (line, 255, datei) == NULL)
+	  if (_FP_fgets (line, 1024, datei) == NULL)
 	    break;
-	  line[255] = '\0';
 	  if (!IsLineEmpty (line)) {
 	    break;
 	  }
@@ -2987,9 +2933,8 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 	  if (lcount > WAITHEADER && hcount < hlcount.afternl)
 	    break;
 
-	  if (_FP_fgets (line, 255, datei) == NULL)
+	  if (_FP_fgets (line, 1024, datei) == NULL)
 	    break;
-	  line[255] = '\0';
 	}
 	if (hcount < hlcount.afternl)
 	  fseek (datei, preheaders, SEEK_SET);
@@ -3001,12 +2946,11 @@ ScanPart (FILE *datei, char *fname, int *errcode)
        */
 
       while (!feof (datei)) {
-	if (_FP_fgets (line, 255, datei) == NULL)
+	if (_FP_fgets (line, 1024, datei) == NULL)
 	  break;
 	if (UUBUSYPOLL(ftell(datei),progress.fsize)) SPCANCEL();
 	if (ferror (datei))
 	  break;
-	line[255] = '\0';
 
 	if (IsKnownHeader (line)) {
 	  (void) ScanHeaderLine (datei, line);
@@ -3131,10 +3075,8 @@ ScanPart (FILE *datei, char *fname, int *errcode)
       && !uu_more_mime) {
     prevpos = ftell (datei);
     while (!feof (datei)) {
-      if (_FP_fgets (line, 255, datei) == NULL) {
-	line[0] = '\0';
+      if (_FP_fgets (line, 1024, datei) == NULL)
 	break;
-      }
       if (UUBUSYPOLL(ftell(datei),progress.fsize)) SPCANCEL();
       if (!IsLineEmpty (line))
 	break;
@@ -3143,7 +3085,7 @@ ScanPart (FILE *datei, char *fname, int *errcode)
 	!IsLineEmpty (line+2) && !feof (datei)) {
       ptr1 = _FP_strrstr (line+2, "--");
       ptr2 = ScanHeaderLine (datei, NULL);
-      if ((ptr1 == NULL || (*(ptr1+2) != '\012' && *(ptr1+2) != '\015')) &&
+      if ((ptr1 == NULL || ptr1[2]) &&
 	  ptr2 && _FP_strnicmp (ptr2, "Content-", 8) == 0) {
 	/*
 	 * hmm, okay, let's do it!

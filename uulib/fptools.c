@@ -140,6 +140,7 @@ _FP_memdup (void *ptr, int len)
  * case-insensitive compare
  */
 
+#ifndef FP_stricmp
 int TOOLEXPORT
 _FP_stricmp (char *str1, char *str2)
 {
@@ -154,7 +155,9 @@ _FP_stricmp (char *str1, char *str2)
   }
   return (tolower (*str1) - tolower (*str2));
 }
+#endif
 
+#ifndef FP_strnicmp
 int TOOLEXPORT
 _FP_strnicmp (char *str1, char *str2, int count)
 {
@@ -170,33 +173,7 @@ _FP_strnicmp (char *str1, char *str2, int count)
   }
   return count ? (tolower (*str1) - tolower (*str2)) : 0;
 }
-
-/*
- * autoconf says this function might be a compatibility problem
- */
-
-char * TOOLEXPORT
-_FP_strstr (char *str1, char *str2)
-{
-  char *ptr1, *ptr2;
-
-  if (str1==NULL)
-    return NULL;
-  if (str2==NULL)
-    return str1;
-
-  while (*(ptr1=str1)) {
-    for (ptr2=str2;
-	 *ptr1 && *ptr2 && *ptr1==*ptr2;
-	 ptr1++, ptr2++)
-      /* empty loop */ ;
-
-    if (*ptr2 == '\0')
-      return str1;
-    str1++;
-  }
-  return NULL;
-}
+#endif
 
 char * TOOLEXPORT
 _FP_strpbrk (char *str, char *accept)
@@ -257,6 +234,7 @@ _FP_strtok (char *str1, char *str2)
  * case insensitive strstr.
  */
 
+#ifndef FP_stristr
 char * TOOLEXPORT
 _FP_stristr (char *str1, char *str2)
 {
@@ -279,6 +257,7 @@ _FP_stristr (char *str1, char *str2)
   }
   return NULL;
 }
+#endif
 
 /*
  * Nice fake of the real (non-standard) one
@@ -431,80 +410,54 @@ _FP_cutdir (char *filename)
 
 /*
  * My own fgets function. It handles all kinds of line terminators
- * properly: LF (Unix), CRLF (DOS) and CR (Mac). In all cases, the
- * terminator is replaced by a single LF
+ * properly: LF (Unix), CRLF (DOS) and CR (Mac).
  */
-
+/* (schmorp) the buffer is always written to, and no LF is stored at the end */
 char * TOOLEXPORT
 _FP_fgets (char *buf, int n, FILE *stream)
 {
-  char *obp = buf;
+  static char format[64];
+  static int format_n = 0;
+  char *cp = buf;
+  int res;
   int c;
 
   /* shield against buffer overflows caused by "255 - bytes_left"-kind of bugs when bytes_left > 255 */
   if (n <= 0)
     return NULL;
 
-  if (feof (stream))
-    return NULL;
-
-  while (--n && !feof (stream)) {
-    if ((c = fgetc (stream)) == EOF) {
-      if (ferror (stream))
-	return NULL;
-      else {
-	if (obp == buf)
-	  return NULL;
-	*buf = '\0';
-	return obp;
-      }
+  if (format_n != n)
+    {
+      sprintf (format, "%%%d[^\015\012]", n - 1);
+      format_n = n;
     }
-    if (c == '\015') { /* CR */
-      /*
-       * Peek next character. If it's no LF, push it back.
-       * ungetc(EOF, stream) is handled correctly according
-       * to the manual page
-       */
-      if ((c = fgetc (stream)) != '\012')
-	if (!feof (stream))
-	  ungetc (c, stream);
-      *buf++ = '\012';
-      *buf   = '\0';
-      return obp;
+
+  *buf = 0; /* fscanf return s0 on empty lines */
+  res = fscanf (stream, format, buf);
+
+  if (res == EOF)
+    return 0; /* an error occured */
+
+  /* skip line endings */
+  for (;;)
+    {
+      c = _FP_fgetc (stream);
+
+      if (c == '\012') /* LF */
+        return buf;
+      else if (c == '\015') /* CR */
+        {
+          c = _FP_fgetc (stream);
+          if (c != '\012') /* CR LF? */
+            ungetc (c, stream);
+
+          return buf;
+        }
+      else if (c == EOF)
+        return 0; /* error */
+
+      /* skip remaining line */
     }
-    else if (c == '\012') { /* LF */
-      *buf++ = '\012';
-      *buf   = '\0';
-      return obp;
-    }
-    /*
-     * just another standard character
-     */
-    *buf++ = c;
-  }
-
-  /*
-   * n-1 characters already transferred
-   */
-
-  *buf = '\0';
-
-  /*
-   * If a line break is coming up, read it
-   */
-
-  if (!feof (stream)) {
-    if ((c = fgetc (stream)) == '\015' && !feof (stream)) {
-      if ((c = fgetc (stream)) != '\012' && !feof (stream)) {
-	ungetc (c, stream);
-      }
-    }
-    else if (c != '\012' && !feof (stream)) {
-      ungetc (c, stream);
-    }
-  }
-
-  return obp;
 }
 
 /*

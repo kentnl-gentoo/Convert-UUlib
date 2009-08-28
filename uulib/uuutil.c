@@ -435,38 +435,41 @@ UUSmerge (int pass)
   uulist *iter = UUGlobalFileList, *last=NULL, *res, *temp;
   int flag = 0;
 
-  while (iter) {
-    if ((iter->state & UUFILE_OK) || iter->uudet == 0) {
-      last = iter;
-      iter = iter->NEXT;
-      continue;
-    }
-    if ((res = UU_smparts_r (iter, pass)) != NULL) {
-      UUMessage (uuutil_id, __LINE__, UUMSG_MESSAGE,
-		 uustring (S_SMERGE_MERGED),
-		 (iter->subfname) ? iter->subfname : "",
-		 (res->subfname)  ? res->subfname  : "", pass);
- 
-      temp       = iter->NEXT;
-      iter->NEXT = NULL;
-      UUkilllist (iter);
+  if (pass >= 0)
+    {
+      while (iter) {
+        if ((iter->state & UUFILE_OK) || iter->uudet == 0) {
+          last = iter;
+          iter = iter->NEXT;
+          continue;
+        }
+        if ((res = UU_smparts_r (iter, pass)) != NULL) {
+          UUMessage (uuutil_id, __LINE__, UUMSG_MESSAGE,
+		     uustring (S_SMERGE_MERGED),
+		     (iter->subfname) ? iter->subfname : "",
+		     (res->subfname)  ? res->subfname  : "", pass);
+     
+          temp       = iter->NEXT;
+          iter->NEXT = NULL;
+          UUkilllist (iter);
 
-      flag++;
+          flag++;
 
-      if (last == NULL) {
-	UUGlobalFileList = temp;
-	iter             = temp;
+          if (last == NULL) {
+	    UUGlobalFileList = temp;
+	    iter             = temp;
+          }
+          else {
+	    last->NEXT       = temp;
+	    iter             = temp;
+          }
+
+          continue;
+        }
+        last = iter;
+        iter = iter->NEXT;
       }
-      else {
-	last->NEXT       = temp;
-	iter             = temp;
-      }
-
-      continue;
     }
-    last = iter;
-    iter = iter->NEXT;
-  }
 
   /*
    * check again

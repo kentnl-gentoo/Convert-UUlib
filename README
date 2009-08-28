@@ -4,8 +4,8 @@ NAME
 
 SYNOPSIS
      use Convert::UUlib ':all';
-     
- # read all the files named on the commandline and decode them
+ 
+     # read all the files named on the commandline and decode them
      # into the CURRENT directory. See below for a longer example.
      LoadFile $_ for @ARGV;
      for (my $i = 0; my $uu = GetFileListItem $i; $i++) {
@@ -57,8 +57,9 @@ EXPORTED CONSTANTS
       OPT_REMOVE    remove input files after decoding (dangerous)
       OPT_MOREMIME  strict MIME adherence
       OPT_DOTDOT    ".."-unescaping has not yet been done on input files
-      OPT_RBUF      set default read I/O buffer size in bytes *EXPERIMENTAL*
-      OPT_WBUF      set default write I/O buffer size in bytes *EXPERIMENTAL*
+      OPT_RBUF      set default read I/O buffer size in bytes
+      OPT_WBUF      set default write I/O buffer size in bytes
+      OPT_AUTOCHECK automatically check file list after every loadfile
 
   Result/Error codes
       RET_OK        everything went fine
@@ -144,7 +145,12 @@ EXPORTED FUNCTIONS
         have been merged.
 
         Most probably this will result in garbled files, so never do this by
-        default.
+        default, except:
+
+        If the "OPT_AUTOCHECK" option has been disabled (by default it is
+        enabled) to speed up file loading, then you *have* to call "Smerge
+        -1" after loading all files as an additional pre-pass (which is
+        normally done by "LoadFile").
 
     $item = GetFileListItem $item_number
         Return the $item structure for the $item_number'th found file, or
@@ -304,8 +310,6 @@ LARGE EXAMPLE DECODER
        SetFileNameCallback sub {
           return unless $_[1]; # skip "Re:"-plies et al.
           local $_ = $_[0];
-
-             return $1 if /(\S+\s+IMG_\d+.jpg)/i;
 
           # the following rules are rather effective on some newsgroups,
           # like alt.binaries.games.anime, where non-mime, uuencoded data

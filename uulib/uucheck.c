@@ -1018,13 +1018,17 @@ UUInsertPartToList (uufile *data)
     }
     else if ((data->mimeid && iter->mimeid && strcmp (data->mimeid, iter->mimeid) == 0)
              ||
-	     (_FP_stricmp (data->subfname, iter->subfname) == 0
-              && !(iter->thisfile && iter->thisfile->yefilesize != data->yefilesize)
+	     (
+              1
+	      && !(iter->thisfile && iter->thisfile->yefilesize != data->yefilesize)
 	      && !(iter->begin && data->data->begin)
 	      && !(iter->end   && data->data->end)
-	      && !(data->mimeid   && iter->mimeid   && strcmp (data->mimeid,   iter->mimeid)   != 0)
+	      && !(iter->flags & FL_SINGLE)
 	      && !(data->filename && iter->filename && strcmp (data->filename, iter->filename) != 0)
-	      && !(iter->flags & FL_SINGLE))) {
+              && _FP_stricmp (data->subfname, iter->subfname) == 0
+	      && !(data->mimeid   && iter->mimeid   && strcmp (data->mimeid,   iter->mimeid)   != 0)
+             )
+            ) {
 
       /*
        * Don't insert a part that is already there.
@@ -1255,7 +1259,7 @@ UUInsertPartToList (uufile *data)
  * "UUGlobalFileList". Do some checking. All parts there?
  **/
 
-uulist *
+void UUEXPORT
 UUCheckGlobalList (void)
 {
   int misparts[MAXPLIST], haveparts[MAXPLIST];
@@ -1484,7 +1488,5 @@ UUCheckGlobalList (void)
     prev        = liter;
     liter       = liter->NEXT;
   }
-
-  return UUGlobalFileList;
 }
 

@@ -203,9 +203,6 @@ UUBrokenByNetscape (char *string)
 
   ptr = string + len;
 
-  while (len && (*(ptr-1)=='\015' || *(ptr-1)=='\012')) {
-    ptr--; len--;
-  }
   if (len<3)         return 0;
   if (*--ptr == ' ') ptr--;
   ptr--;
@@ -303,7 +300,7 @@ UUValidData (char *ptr, int encoding, int *bhflag)
     return 0;              /* bad string */
   }
 
-  while (*s && *s!='\012' && *s!='\015') {
+  while (*s) {
     s++;
     len++;
     i++;
@@ -545,8 +542,6 @@ UURepairData (FILE *datei, char *line, int encoding, int *bhflag)
       if (strlen (line) > 250)
 	break;
       ptr = line + strlen (line);
-      while (ptr>line && (*(ptr-1)=='\015' || *(ptr-1)=='\012'))
-	ptr--;
       if (_FP_fgets (ptr, 299-(ptr-line), datei) == NULL)
 	break;
     }
@@ -579,9 +574,6 @@ UURepairData (FILE *datei, char *line, int encoding, int *bhflag)
 
   if (vflag == 0) {
     ptr    = line + strlen(line);
-    while (ptr>line && (*(ptr-1)=='\012' || *(ptr-1)=='\015')) {
-      ptr--;
-    }
     *ptr++ = ' ';
     *ptr-- = '\0';
     if ((vflag = UUValidData (line, encoding, bhflag)) != UU_ENCODED) {
@@ -795,7 +787,7 @@ UUDecodeQP (FILE *datain, FILE *dataout, int *state,
 	p2 += 2;
 	p1  = p2;
       }
-      else if (*p2 == '\012' || *(p2+1) == '\015') {
+      else if (!*p2) {
 	/* soft line break */
 	*p2 = '\0';
 	break;
@@ -805,16 +797,6 @@ UUDecodeQP (FILE *datain, FILE *dataout, int *state,
 	fputc ('=', dataout);
       }
     }
-    /*
-     * p2 points to a nullbyte right after the CR/LF/CRLF
-     */
-    val = 0;
-    while (p2>p1 && isspace (*(p2-1))) {
-      if (*(p2-1) == '\012' || *(p2-1) == '\015')
-	val = 1;
-      p2--;
-    }
-    *p2 = '\0';
 
     /*
      * If the part ends directly after this line, the data does not end
@@ -822,9 +804,10 @@ UUDecodeQP (FILE *datain, FILE *dataout, int *state,
      * encapsulation line is conceptually attached to the boundary.
      * So if the part ends here, don't print a line break"
      */
-    if (val && (!feof (datain) && 
-		(ftell(datain)<maxpos || flags&FL_TOEND ||
-		 (!(flags&FL_PROPER) && uu_fast_scanning))))
+    /* something is broken here now, but it was broken before */
+    if (!feof (datain) && 
+	(ftell(datain)<maxpos || flags&FL_TOEND ||
+	 (!(flags&FL_PROPER) && uu_fast_scanning)))
       fprintf (dataout, "%s\n", p1);
     else
       fprintf (dataout, "%s", p1);
@@ -875,18 +858,13 @@ UUDecodePT (FILE *datain, FILE *dataout, int *state,
 
     ptr = line + strlen (line);
 
-    while (ptr>line && (*(ptr-1) == '\012' || *(ptr-1) == '\015'))
-      ptr--;
-
-
     /*
      * If the part ends directly after this line, the data does not end
      * with a linebreak. Or, as the docs put it, "the CRLF preceding the
      * encapsulation line is conceptually attached to the boundary.
      * So if the part ends here, don't print a line break"
      */
-    if ((*ptr == '\012' || *ptr == '\015') &&
-	(ftell(datain)<maxpos || flags&FL_TOEND || flags&FL_PARTIAL ||
+    if ((ftell(datain)<maxpos || flags&FL_TOEND || flags&FL_PARTIAL ||
 	 !boundary || (!(flags&FL_PROPER) && uu_fast_scanning))) {
       *ptr = '\0';
       fprintf (dataout, "%s\n", line);
@@ -945,8 +923,8 @@ UUDecodeField (char *s, char *d, int method)
 	  count++;
 	  s+=3;
 	}
-	else if (*(s+1) == '\012' || *(s+1) == '\015') {
-	  s+=2;
+	else if (!s[1]) {
+          d[count++] = '\012';
 	}
 	else {
 	  d[count++] = *s++;
@@ -1021,7 +999,7 @@ UUDecodePart (FILE *datain, FILE *dataout, int *state,
       return UURET_IOERR;
     }
 
-    if (line[0]=='\015' || line[0]=='\012') { /* Empty line? */
+    if (!*line) { /* Empty line? */
       if (*state == DATA &&
 	  (method == UU_ENCODED || method == XX_ENCODED))
 	*state = END;
@@ -1593,7 +1571,7 @@ UUDecode (uulist *data)
     /*
      * read fork lengths. remember they're in Motorola format
      */
-    r[0] = fgetc (datain);
+    r[0] = _FP_fgetc (datain);
     hb   = (int) r[0] + 22;
     fseek (datain, (int) r[0] + 12, SEEK_SET);
     fread (r, 1, 8, datain);

@@ -110,6 +110,7 @@
 #define UUOPT_REMOVE    (20)    /* remove input files after decoding */
 #define UUOPT_MOREMIME  (21)    /* strict MIME adherence */
 #define UUOPT_DOTDOT	(22)	/* .. unescaping has not yet been done on input files */
+#define UUOPT_AUTOCHECK (23)    /* call checkgloballist after every part */
 
 /*
  * Code for the "action" in the progress structure
@@ -234,7 +235,7 @@ int	UUEXPORT UUEncodePartial	_ANSI_ARGS_((FILE *, FILE *,
 						     char *, int,
 						     char *, char *,
 						     int, int, long,
-						     unsigned long*));
+						     unsigned int *));
 int	UUEXPORT UUEncodeToStream	_ANSI_ARGS_((FILE *, FILE *,
 						     char *, int,
 						     char *, int));
@@ -263,6 +264,7 @@ int	UUEXPORT UUE_PrepPartialExt	_ANSI_ARGS_((FILE *, FILE *,
 						     int, long, long, char *,
 						     char *, char *, char *,
 						     int));
+void	UUEXPORT UUCheckGlobalList	(void);
 #ifdef __cplusplus
 }
 #endif

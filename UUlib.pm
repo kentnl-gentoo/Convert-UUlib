@@ -8,7 +8,7 @@ use Carp;
 require Exporter;
 require DynaLoader;
 
-our $VERSION = '1.12';
+our $VERSION = '1.3';
 
 our @ISA = qw(Exporter DynaLoader);
 
@@ -24,7 +24,7 @@ our @_consts = qw(
 	OPT_BRACKPOL OPT_DEBUG OPT_DESPERATE OPT_DUMBNESS OPT_ENCEXT
 	OPT_ERRNO OPT_FAST OPT_IGNMODE OPT_IGNREPLY OPT_OVERWRITE OPT_PREAMB
 	OPT_PROGRESS OPT_SAVEPATH OPT_TINYB64 OPT_USETEXT OPT_VERBOSE
-	OPT_VERSION OPT_REMOVE OPT_MOREMIME OPT_DOTDOT
+	OPT_VERSION OPT_REMOVE OPT_MOREMIME OPT_DOTDOT OPT_AUTOCHECK
 
 	RET_CANCEL RET_CONT RET_EXISTS RET_ILLVAL RET_IOERR RET_NODATA
 	RET_NOEND RET_NOMEM RET_OK RET_UNSUP
@@ -161,8 +161,9 @@ this document and especially the non-trivial decoder program at the end.
   OPT_REMOVE	remove input files after decoding (dangerous)
   OPT_MOREMIME	strict MIME adherence
   OPT_DOTDOT	".."-unescaping has not yet been done on input files
-  OPT_RBUF      set default read I/O buffer size in bytes *EXPERIMENTAL*
-  OPT_WBUF      set default write I/O buffer size in bytes *EXPERIMENTAL*
+  OPT_RBUF      set default read I/O buffer size in bytes
+  OPT_WBUF      set default write I/O buffer size in bytes
+  OPT_AUTOCHECK automatically check file list after every loadfile
 
 =head2 Result/Error codes
 
@@ -283,7 +284,12 @@ values, beginning at C<0>, to try to merge parts that usually would not
 have been merged.
 
 Most probably this will result in garbled files, so never do this by
-default.
+default, except:
+
+If the C<OPT_AUTOCHECK> option has been disabled (by default it is
+enabled) to speed up file loading, then you I<have> to call C<Smerge -1>
+after loading all files as an additional pre-pass (which is normally done
+by C<LoadFile>).
 
 =item $item = GetFileListItem $item_number
 
@@ -483,8 +489,6 @@ instead of more thorough documentation.
    SetFileNameCallback sub {
       return unless $_[1]; # skip "Re:"-plies et al.
       local $_ = $_[0];
-
-         return $1 if /(\S+\s+IMG_\d+.jpg)/i;
 
       # the following rules are rather effective on some newsgroups,
       # like alt.binaries.games.anime, where non-mime, uuencoded data

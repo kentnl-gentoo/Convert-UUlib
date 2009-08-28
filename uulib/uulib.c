@@ -126,6 +126,8 @@ void *uu_FileCBArg = NULL;
 void *uu_FFCBArg   = NULL;
 void *uu_FNCBArg;
 
+int uu_autocheck = 1;           /* call UUCheckGlobaList after every part */
+
 /* I/O buffer sizes */
 int uu_rbuf = 0;
 int uu_wbuf = 0;
@@ -252,10 +254,10 @@ static allomap toallocate[] = {
   { &uuscan_shlline2,   1024 },  /* from uuscan.c:ScanHeaderLine() */
   { &uuscan_pvvalue,     300 },  /* from uuscan.c:ParseValue() */
   { &uuscan_phtext,      300 },  /* from uuscan.c:ParseHeader() */
-  { &uuscan_sdline,      300 },  /* from uuscan.c:ScanData() */
+  { &uuscan_sdline,     1024 },  /* from uuscan.c:ScanData() */
   { &uuscan_sdbhds1,     300 },
   { &uuscan_sdbhds2,     300 },
-  { &uuscan_spline,      300 },  /* from uuscan.c:ScanPart() */
+  { &uuscan_spline,     1024 },  /* from uuscan.c:ScanPart() */
   { &uuutil_bhwtmp,      300 },  /* from uuutil.c:UUbhwrite() */
   { NULL, 0 }
 };
@@ -517,6 +519,10 @@ UUGetOption (int option, int *ivalue, char *cvalue, int clength)
     if (ivalue) *ivalue = uu_dotdot;
     result = uu_dotdot;
     break;
+  case UUOPT_AUTOCHECK:
+    if (ivalue) *ivalue = uu_autocheck;
+    result = uu_autocheck;
+    break;
   default:
     return -1;
   }
@@ -585,6 +591,9 @@ UUSetOption (int option, int ivalue, char *cvalue)
     break;
   case UUOPT_DOTDOT:
     uu_dotdot = ivalue;
+    break;
+  case UUOPT_AUTOCHECK:
+    uu_autocheck = ivalue;
     break;
   default:
     return UURET_ILLVAL;
@@ -770,7 +779,7 @@ UULoadFileWithPartNo (char *filename, char *fileid, int delflag, int partno, int
     /* 
      * Peek file, or some systems won't detect EOF
      */
-    res = fgetc (datei);
+    res = _FP_fgetc (datei);
     if (feof (datei) || ferror (datei))
       break;
     else
@@ -784,7 +793,7 @@ UULoadFileWithPartNo (char *filename, char *fileid, int delflag, int partno, int
 		     uustring (S_READ_ERROR), filename,
 		     strerror (uu_errno));
 
-	UUCheckGlobalList ();
+	if (uu_autocheck) UUCheckGlobalList ();
 	progress.action = 0;
 	fclose (datei);
         UUCLRBUF (uu_rbuf, datei_buf);
@@ -797,7 +806,7 @@ UULoadFileWithPartNo (char *filename, char *fileid, int delflag, int partno, int
       UUMessage (uulib_id, __LINE__, UUMSG_ERROR,
 		 uustring (S_READ_ERROR), filename,
 		 strerror (uu_errno = errno));
-      UUCheckGlobalList ();
+      if (uu_autocheck) UUCheckGlobalList ();
       progress.action = 0;
       fclose (datei);
       UUCLRBUF (uu_rbuf, datei_buf);
@@ -866,7 +875,7 @@ UULoadFileWithPartNo (char *filename, char *fileid, int delflag, int partno, int
       UUkillfile (fload);
 
       if (res != UURET_NODATA) {
-	UUCheckGlobalList ();
+	if (uu_autocheck) UUCheckGlobalList ();
 	progress.action = 0;
 	fclose (datei);
         UUCLRBUF (uu_rbuf, datei_buf);
@@ -894,7 +903,7 @@ UULoadFileWithPartNo (char *filename, char *fileid, int delflag, int partno, int
     UUMessage (uulib_id, __LINE__, UUMSG_ERROR,
 	       uustring (S_READ_ERROR), filename,
 	       strerror (uu_errno = errno));
-    UUCheckGlobalList ();
+    if (uu_autocheck) UUCheckGlobalList ();
     progress.action = 0;
     fclose (datei);
     UUCLRBUF (uu_rbuf, datei_buf);
@@ -909,7 +918,7 @@ UULoadFileWithPartNo (char *filename, char *fileid, int delflag, int partno, int
 	       uustring (S_NO_DATA_FOUND), filename);
 
   progress.action = 0;
-  UUCheckGlobalList ();
+  if (uu_autocheck) UUCheckGlobalList ();
 
   return UURET_OK;
 }

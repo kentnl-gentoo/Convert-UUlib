@@ -185,6 +185,7 @@ extern void *uu_FNCBArg;
  * variables
  */
 
+extern int uu_autocheck;
 extern int uu_rbuf;
 extern int uu_wbuf;
 #define UUSETBUF(fp,buff,size) if (size) setvbuf ((fp), ((buff) = malloc (size)), _IOFBF, (size))
@@ -287,7 +288,6 @@ int		UUBusyPoll		(void);
 
 uufile *	UUPreProcessPart	(fileread *, int *);
 int 		UUInsertPartToList	(uufile *);
-uulist *	UUCheckGlobalList	(void);
 
 /*
  * Functions from uuutil.c

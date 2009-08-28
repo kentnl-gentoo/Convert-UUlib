@@ -25,6 +25,8 @@ SetOption OPT_WBUF, 1024*1024;
 SetOption OPT_IGNMODE, 1;
 SetOption OPT_IGNMODE, 1;
 SetOption OPT_VERBOSE, 1;
+SetOption OPT_DOTDOT, 1;
+SetOption OPT_AUTOCHECK, 0;
 
 # show the three ways you can set callback functions. I normally
 # prefer the one with the sub inplace.
@@ -43,11 +45,17 @@ SetFileNameCallback sub {
    return unless $_[1]; # skip "Re:"-plies et al.
    local $_ = $_[0];
 
-      return $1 if /(\S+\s+IMG_\d+.jpg)/i;
+   if ($_[1] =~ /^(img_?\d+|\d+\w?)\./) {
+      return "$1 $_[1]"
+         if /^\s*\(([^)]+)\) \[\d+/;
+   }
 
    # the following rules are rather effective on some newsgroups,
    # like alt.binaries.games.anime, where non-mime, uuencoded data
    # is very common
+
+   # File 06 of 33 - Kendo - Final - 0001.jpg (2/3)
+   return $1 if /File \d+ of \d+ - (.*) \(\d+\/\d+\)/i;
 
    # if we find some *.rar, take it as the filename
    return $1 if /(\S{3,}\.(?:[rstuvwxyz]\d\d|rar))\s/i;
@@ -74,6 +82,8 @@ for(<uusrc/*>) {
    my ($retval, $count) = LoadFile ($_, $_, 1);
    print "file($_), status(", strerror $retval, ") parts($count)\n";
 }
+
+Smerge -1;
 
 SetOption OPT_SAVEPATH, "uudst/";
 
@@ -104,7 +114,8 @@ while ($uu = GetFileListItem $i) {
 
    $uu->remove_temp;
 
-   if (my $err = $uu->decode ()) {
+   print "<s", $uu->state, ">";#d#
+   if (my $err = $uu->decode) {
       print ", ", strerror $err, "\n";
    } else {
       print ", saved as uudst/", $uu->filename, "\n";

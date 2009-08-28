@@ -66,6 +66,7 @@ constant (char *name)
         if (strEQ(name, "OPT_DOTDOT")) return UUOPT_DOTDOT;
         if (strEQ(name, "OPT_RBUF")) return UUOPT_RBUF;
         if (strEQ(name, "OPT_WBUF")) return UUOPT_WBUF;
+        if (strEQ(name, "OPT_AUTOCHECK")) return UUOPT_AUTOCHECK;
       case 'R':
         if (strEQ(name, "RET_CANCEL")) return UURET_CANCEL;
         if (strEQ(name, "RET_CONT")) return UURET_CONT;
