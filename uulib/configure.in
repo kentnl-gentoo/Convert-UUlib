@@ -43,7 +43,8 @@ AC_CHECK_HEADERS(fcntl.h unistd.h memory.h malloc.h errno.h)
 AC_CHECK_HEADERS(io.h sys/time.h)
 
 CFLAGS="$CFLAGS -D_GNU_SOURCE"
-AC_CHECK_FUNCS(gettimeofday fgetc_unlocked strcasecmp strncasecmp strcasestr)
+AC_CHECK_FUNCS(gettimeofday fgetc_unlocked)
+dnl AC_CHECK_FUNCS(strcasecmp strncasecmp strcasestr)
 
 AC_CHECK_FUNC(tempnam,,AC_DEFINE(tempnam,FP_tempnam))
 

@@ -81,6 +81,7 @@ char *	TOOLEXPORT	_FP_strerror	(int);
 char *	TOOLEXPORT	_FP_tempnam	(char *, char *);
 #endif /* HAVE_MKSTEMP */
 
+#if 0 /* API differs too much between systems to make those replacements */
 #if HAVE_STRCASECMP
 # define FP_stricmp(a,b) strcasecmp (a, b)
 #endif
@@ -91,6 +92,7 @@ char *	TOOLEXPORT	_FP_tempnam	(char *, char *);
 
 #if HAVE_STRCASESTR
 # define FP_stristr(a,b) strcasestr (a, b)
+#endif
 #endif
 
 #ifdef __cplusplus
