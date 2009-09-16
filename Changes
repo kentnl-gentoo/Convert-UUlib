@@ -1,5 +1,9 @@
 Revision history for Perl extension Convert::UUlib.
 
+1.32 Wed Sep 16 20:07:13 CEST 2009
+	- Due to a glitch with CVS, configure lacked executable bits.
+          (Quickly reported by Anton Berezin).
+
 1.31 Wed Sep 16 09:04:30 CEST 2009
         - do not use system-replacements for case-insensitive string
           functions when found, as they are broken on too many systems
