@@ -1,5 +1,12 @@
 Revision history for Perl extension Convert::UUlib.
 
+1.33 Wed Oct 28 09:04:38 CET 2009
+	- handle yEnc files with part end=0 and total= more gracefully.
+          I wish yEnc had been created by somebody who knows;
+          what he does;
+          but I doubt he even knows;
+          what he did.
+
 1.32 Wed Sep 16 20:07:13 CEST 2009
 	- Due to a glitch with CVS, configure lacked executable bits.
           (Quickly reported by Anton Berezin).

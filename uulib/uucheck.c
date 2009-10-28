@@ -1373,13 +1373,13 @@ UUCheckGlobalList (void)
     fiter = fiter->NEXT;
 
     while (fiter != NULL) {
-      for (count=part+1; count<fiter->partno && miscount<MAXPLIST; count++)
+      for (count = part+1; count < fiter->partno && miscount < MAXPLIST; count++)
 	misparts[miscount++] = count;
 
       part = fiter->partno;
       
-      if (havecount<MAXPLIST)
-	haveparts[havecount++]=part;
+      if (havecount < MAXPLIST)
+	haveparts[havecount++] = part;
 
       if (fiter->data->begin) flag |= 1;
       if (fiter->data->end)   flag |= 2;

@@ -948,7 +948,7 @@ UUDecodePart (FILE *datain, FILE *dataout, int *state,
   char *line, *oline=uuncdp_oline;
   int warning=0, vlc=0, lc[2], hadct=0;
   int tc=0, tf=0, vflag, haddata=0, haddh=0;
-  long yefilesize=0, yepartends=0;
+  long yefilesize=0, yepartends=0, yenotlastpart=0;
   crc32_t yepartcrc=crc32(0L, Z_NULL, 0);
   static crc32_t yefilecrc=0;
   static int bhflag=0;
@@ -1097,7 +1097,12 @@ UUDecodePart (FILE *datain, FILE *dataout, int *state,
 	  yefilesize = -1;
 	}
 
-	if (_FP_strstr (line, " part=") != NULL) {
+	if ((ptr =_FP_strstr (line, " part="))) {
+          int partno = atoi (ptr + 6);
+       
+	  if ((ptr = _FP_strstr (line, " total=")))
+            yenotlastpart = atoi (ptr + 7) != partno;
+
 	  if (_FP_fgets (line, 1200 - 5, datain) == NULL) {
 	    break;
 	  }
@@ -1105,7 +1110,7 @@ UUDecodePart (FILE *datain, FILE *dataout, int *state,
 	  if ((ptr = _FP_strstr (line, " end=")) == NULL) {
 	    break;
 	  }
-       
+
 	  yepartends = atoi (ptr + 5);
 	}
 	tf = 1;
@@ -1157,7 +1162,7 @@ UUDecodePart (FILE *datain, FILE *dataout, int *state,
 		       yepartsize, size);
 	}
       }
-      if (yepartends == 0 || yepartends >= yefilesize) {
+      if (!yenotlastpart && (yepartends == 0 || yepartends >= yefilesize)) {
 	*state = DONE;
       }
       break;
@@ -1185,8 +1190,7 @@ UUDecodePart (FILE *datain, FILE *dataout, int *state,
 	if (tf) {
 	  count  = UUDecodeLine (line, oline, method);
 	  if (method == YENC_ENCODED) {
-	    if (yepartends)
-	      yepartcrc = crc32(yepartcrc, oline, count);
+	    yepartcrc = crc32(yepartcrc, oline, count);
 	    yefilecrc = crc32(yefilecrc, oline, count);
 	    yepartsize += count;
 	  }

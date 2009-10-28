@@ -985,6 +985,9 @@ ScanData (FILE *datei, char *fname, int *errcode,
 	  result->begin = 1;
 	}
 
+        if ((ptr = _FP_strstr (line, " total=")))
+	  result->maxpno = atoi (ptr + 7);
+
 	if (_FP_fgets (line, 1024, datei) == NULL) {
 	  break;
 	}
@@ -1014,7 +1017,10 @@ ScanData (FILE *datei, char *fname, int *errcode,
 
     if (strncmp (line, "=yend ", 6) == 0 &&
 	result->uudet == YENC_ENCODED) {
-      if (yepartends == 0 || yepartends >= result->yefilesize) {
+      if (yepartends == 0) {
+        if (!result->maxpno || result->maxpno == result->partno)
+          result->end = 1;
+      } else if (yepartends >= result->yefilesize) {
 	result->end = 1;
       }
 #if 0
