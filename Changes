@@ -1,5 +1,10 @@
 Revision history for Perl extension Convert::UUlib.
 
+1.34 Tue Dec 14 22:20:00 CET 2010
+	- fix a one-byte-past-end-write buffer overflow in UURepairData
+          (reported, analysed and testcase provided by Marco Walther).
+	- quoted-printable decoding was completely broken, try a fix.
+
 1.33 Wed Oct 28 09:04:38 CET 2009
 	- handle yEnc files with part end=0 and total= more gracefully.
           I wish yEnc had been created by somebody who knows;

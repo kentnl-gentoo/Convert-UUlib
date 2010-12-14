@@ -242,7 +242,7 @@ static allomap toallocate[] = {
   { &uuestr_itemp,       256 },  /* from uuencode.c:UUEncodeStream() */
   { &uuestr_otemp,      1024 },
   { &uulib_msgstring,   1024 },  /* from uulib.c:UUMessage() */
-  { &uuncdl_fulline,    1200 },  /* from uunconc.c:UUDecodeLine() */
+  { &uuncdl_fulline,    1201 },  /* from uunconc.c:UUDecodeLine() */
   { &uuncdp_oline,      3600 },  /* from uunconc.c:UUDecodePart() */
   { &uunconc_UUxlat,     256 * sizeof (int) },  /* from uunconc.c:toplevel */
   { &uunconc_UUxlen,      64 * sizeof (int) },
@@ -254,7 +254,7 @@ static allomap toallocate[] = {
   { &uuscan_shlline2,   1024 },  /* from uuscan.c:ScanHeaderLine() */
   { &uuscan_pvvalue,     300 },  /* from uuscan.c:ParseValue() */
   { &uuscan_phtext,      300 },  /* from uuscan.c:ParseHeader() */
-  { &uuscan_sdline,     1024 },  /* from uuscan.c:ScanData() */
+  { &uuscan_sdline,     1025 },  /* from uuscan.c:ScanData(), +1 for UURepairData */
   { &uuscan_sdbhds1,     300 },
   { &uuscan_sdbhds2,     300 },
   { &uuscan_spline,     1024 },  /* from uuscan.c:ScanPart() */

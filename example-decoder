@@ -23,7 +23,6 @@ sub busycb {
 SetOption OPT_RBUF, 128*1024;
 SetOption OPT_WBUF, 1024*1024;
 SetOption OPT_IGNMODE, 1;
-SetOption OPT_IGNMODE, 1;
 SetOption OPT_VERBOSE, 1;
 SetOption OPT_DOTDOT, 1;
 SetOption OPT_AUTOCHECK, 0;

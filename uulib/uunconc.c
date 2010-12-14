@@ -789,7 +789,7 @@ UUDecodeQP (FILE *datain, FILE *dataout, int *state,
       }
       else if (!*p2) {
 	/* soft line break */
-	*p2 = '\0';
+        goto skip_lbr;
 	break;
       }
       else {
@@ -797,6 +797,16 @@ UUDecodeQP (FILE *datain, FILE *dataout, int *state,
 	fputc ('=', dataout);
       }
     }
+    /*
+     * p2 points to a nullbyte right after the CR/LF/CRLF
+     */
+    val = 0;
+    while (p2>p1 && isspace (*(p2-1))) {
+      if (*(p2-1) == '\012' || *(p2-1) == '\015')
+        val = 1;
+      p2--;
+    }
+    *p2 = '\0';
 
     /*
      * If the part ends directly after this line, the data does not end
@@ -811,6 +821,8 @@ UUDecodeQP (FILE *datain, FILE *dataout, int *state,
       fprintf (dataout, "%s\n", p1);
     else
       fprintf (dataout, "%s", p1);
+
+    skip_lbr: ;
   }
   return UURET_OK;
 }
