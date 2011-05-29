@@ -1,5 +1,12 @@
 Revision history for Perl extension Convert::UUlib.
 
+1.4  Sun May 29 17:17:01 CEST 2011
+	- avoid a classical buffer overflow in case a progress
+          message is too long.
+        - this release adds depdencies for snprintf/vsnprintf.
+	- some uuencode encoders do not generate a final "space" line
+          before the "end" marker, so do not rely on the line to be there.
+
 1.34 Tue Dec 14 22:20:00 CET 2010
 	- fix a one-byte-past-end-write buffer overflow in UURepairData
           (reported, analysed and testcase provided by Marco Walther).
@@ -41,7 +48,7 @@ Revision history for Perl extension Convert::UUlib.
 	- use the yencode filesize as additional matching criterium
           to avoid false matches.
         - made the example decoder more verbose w.r.t. error handling.
-        - removed potentially confusing decide_temp calls from
+        - removed potentially confusing decode_temp calls from
           example decoder.
 
 1.11 Fri Jun 13 15:32:30 CEST 2008

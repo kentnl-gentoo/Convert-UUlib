@@ -275,7 +275,7 @@ UUMessage (va_alist)
   va_dcl
 #endif
 {
-  char *msgptr;
+  int msgofs;
 #if defined(STDC_HEADERS) || defined(HAVE_STDARG_H)
   va_list ap;
 
@@ -293,16 +293,16 @@ UUMessage (va_alist)
 #endif
 
   if (uu_debug) {
-    sprintf (uulib_msgstring, "%s(%d): %s", file, line, msgnames[level]);
-    msgptr = uulib_msgstring + strlen (uulib_msgstring);
+    snprintf (uulib_msgstring, 1024,  "%s(%d): %s", file, line, msgnames[level]);
+    msgofs = strlen (uulib_msgstring);
   }
   else {
-    sprintf (uulib_msgstring, "%s", msgnames[level]);
-    msgptr = uulib_msgstring + strlen (uulib_msgstring);
+    snprintf (uulib_msgstring, 1024, "%s", msgnames[level]);
+    msgofs = strlen (uulib_msgstring);
   }
 
   if (uu_MsgCallback && (level>UUMSG_NOTE || uu_verbose)) {
-    vsprintf (msgptr, format, ap);
+    vsnprintf (uulib_msgstring + msgofs, 1024 - msgofs, format, ap);
 
     (*uu_MsgCallback) (uu_MsgCBArg, uulib_msgstring, level);
   }

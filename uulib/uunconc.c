@@ -1135,7 +1135,7 @@ UUDecodePart (FILE *datain, FILE *dataout, int *state,
       tc = tf = vlc = 0;
       lc[0] = lc[1] = 0;
     }
-    else if ((*state == END) &&
+    else if ((*state == END || *state == DATA) &&
 	     (method == UU_ENCODED || method == XX_ENCODED)) {
       if (strncmp (line, "end", 3) == 0) {
 	*state = DONE;

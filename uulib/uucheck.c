@@ -1446,9 +1446,9 @@ UUCheckGlobalList (void)
      * Finalize checking
      */
 
-    if ((flag & 4) == 0) liter->state |= UUFILE_NODATA;
     if ((flag & 1) == 0) liter->state |= UUFILE_NOBEGIN;
     if ((flag & 2) == 0) liter->state |= UUFILE_NOEND;
+    if ((flag & 4) == 0) liter->state |= UUFILE_NODATA;
     
     if ((flag & 7) == 7 && miscount==0) {
       liter->state = UUFILE_OK;
