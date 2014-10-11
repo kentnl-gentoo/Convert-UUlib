@@ -101,7 +101,7 @@ static void
 uu_msg_callback (void *cb, char *msg, int level)
 {
   dSP;
-  
+ 
   ENTER; SAVETMPS; PUSHMARK (SP); EXTEND (SP, 2);
 
   PUSHs (sv_2mortal (newSVpv (msg, 0)));
@@ -117,7 +117,7 @@ uu_busy_callback (void *cb, uuprogress *uup)
   dSP;
   int count;
   int retval;
-  
+ 
   ENTER; SAVETMPS; PUSHMARK (SP); EXTEND (SP, 6);
 
   PUSHs (sv_2mortal (newSViv (uup->action)));
@@ -145,7 +145,7 @@ uu_fnamefilter_callback (void *cb, char *fname)
   dSP;
   int count;
   static char *str;
-  
+ 
   ENTER; SAVETMPS; PUSHMARK (SP); EXTEND (SP, 1);
 
   PUSHs (sv_2mortal (newSVpv (fname, 0)));
@@ -169,7 +169,7 @@ uu_file_callback (void *cb, char *id, char *fname, int retrieve)
   int count;
   int retval;
   SV *xfname = newSVpv ("", 0);
-  
+ 
   ENTER; SAVETMPS; PUSHMARK (SP); EXTEND (SP, 3);
 
   PUSHs (sv_2mortal (newSVpv (id, 0)));
@@ -194,7 +194,7 @@ uu_filename_callback (void *cb, char *subject, char *filename)
 {
   dSP;
   int count;
-  
+ 
   ENTER; SAVETMPS; PUSHMARK (SP); EXTEND (SP, 2);
 
   PUSHs (sv_2mortal(newSVpv(subject, 0)));
@@ -229,7 +229,7 @@ uu_info_file (void *cb, char *info)
   dSP;
   int count;
   int retval;
-  
+ 
   ENTER; SAVETMPS; PUSHMARK(SP); EXTEND(SP,1);
 
   PUSHs(sv_2mortal(newSVpv(info,0)));
@@ -277,7 +277,7 @@ UUInitialize ()
         if (!uu_initialized)
           {
             int retval;
-            
+
             if ((retval = UUInitialize ()) != UURET_OK)
               croak ("unable to initialize uudeview library (%s)", UUstrerror (retval));
  
@@ -287,30 +287,30 @@ UUInitialize ()
 void
 UUCleanUp ()
 	CODE:
-       	if (uu_initialized)
+	if (uu_initialized)
           UUCleanUp ();
 
-        uu_initialized = 0; 
+        uu_initialized = 0;
 
 SV *
 UUGetOption (opt)
 	int	opt
         CODE:
-	{
-                if (opt == UUOPT_PROGRESS)
-                  croak ("GetOption(UUOPT_PROGRESS) is not yet implemented");
-                else if (uu_opt_isstring (opt))
-                  {
-        	    char cval[8192];
+{
+        if (opt == UUOPT_PROGRESS)
+          croak ("GetOption(UUOPT_PROGRESS) is not yet implemented");
+        else if (uu_opt_isstring (opt))
+          {
+	    char cval[8192];
 
-                    UUGetOption (opt, 0, cval, sizeof cval);
-                    RETVAL = newSVpv (cval, 0);
-                  }
-                else
-                  {
-                    RETVAL = newSViv (UUGetOption (opt, 0, 0, 0));
-                  }
-	}
+            UUGetOption (opt, 0, cval, sizeof cval);
+            RETVAL = newSVpv (cval, 0);
+          }
+        else
+          {
+            RETVAL = newSViv (UUGetOption (opt, 0, 0, 0));
+          }
+}
         OUTPUT:
         RETVAL
 
@@ -319,14 +319,14 @@ UUSetOption (opt, val)
 	int	opt
         SV *	val
         CODE:
-	{
-                STRLEN dc;
+{
+        STRLEN dc;
 
-                if (uu_opt_isstring (opt))
-                  RETVAL = UUSetOption (opt, 0, SvPV (val, dc));
-                else
-                  RETVAL = UUSetOption (opt, SvIV (val), (void *)0);
-	}
+        if (uu_opt_isstring (opt))
+          RETVAL = UUSetOption (opt, 0, SvPV (val, dc));
+        else
+          RETVAL = UUSetOption (opt, SvIV (val), (void *)0);
+}
         OUTPUT:
         RETVAL
 
@@ -376,13 +376,13 @@ UULoadFile (fname, id = 0, delflag = 0, partno = -1)
 	int	delflag
         int	partno
         PPCODE:
-	{	
-	        int count;
-                
-	        XPUSHs (sv_2mortal (newSViv (UULoadFileWithPartNo (fname, id, delflag, partno, &count))));
-                if (GIMME_V == G_ARRAY)
-                  XPUSHs (sv_2mortal (newSViv (count)));
-	}
+{
+	int count;
+
+	XPUSHs (sv_2mortal (newSViv (UULoadFileWithPartNo (fname, id, delflag, partno, &count))));
+        if (GIMME_V == G_ARRAY)
+          XPUSHs (sv_2mortal (newSViv (count)));
+}
 
 int
 UUSmerge (pass)
@@ -598,35 +598,35 @@ void
 parts (li)
 	uulist *li
         PPCODE:
-	{
-        	struct _uufile *p = li->thisfile;
+{
+	struct _uufile *p = li->thisfile;
 
-                while (p)
-                  {
-                    HV *pi = newHV ();
+        while (p)
+          {
+            HV *pi = newHV ();
 
-                    hv_store (pi, "partno"  , 6, newSViv (p->partno)         , 0);
+            hv_store (pi, "partno"  , 6, newSViv (p->partno)         , 0);
 
-                    if (p->filename)
-                      hv_store (pi, "filename", 8, newSVpv (p->filename, 0)    , 0);
-                    if(p->subfname)
-                      hv_store (pi, "subfname", 8, newSVpv (p->subfname, 0)    , 0);
-                    if(p->mimeid)
-                      hv_store (pi, "mimeid"  , 6, newSVpv (p->mimeid  , 0)    , 0);
-                    if(p->mimetype)
-                      hv_store (pi, "mimetype", 8, newSVpv (p->mimetype, 0)    , 0);
-                    if (p->data->subject)
-                      hv_store (pi, "subject" , 7, newSVpv (p->data->subject,0), 0);
-                    if (p->data->origin)
-                      hv_store (pi, "origin"  , 6, newSVpv (p->data->origin ,0), 0);
-                    if (p->data->sfname)
-                      hv_store (pi, "sfname"  , 6, newSVpv (p->data->sfname ,0), 0);
+            if (p->filename)
+              hv_store (pi, "filename", 8, newSVpv (p->filename, 0)    , 0);
+            if(p->subfname)
+              hv_store (pi, "subfname", 8, newSVpv (p->subfname, 0)    , 0);
+            if(p->mimeid)
+              hv_store (pi, "mimeid"  , 6, newSVpv (p->mimeid  , 0)    , 0);
+            if(p->mimetype)
+              hv_store (pi, "mimetype", 8, newSVpv (p->mimetype, 0)    , 0);
+            if (p->data->subject)
+              hv_store (pi, "subject" , 7, newSVpv (p->data->subject,0), 0);
+            if (p->data->origin)
+              hv_store (pi, "origin"  , 6, newSVpv (p->data->origin ,0), 0);
+            if (p->data->sfname)
+              hv_store (pi, "sfname"  , 6, newSVpv (p->data->sfname ,0), 0);
 
-                    XPUSHs (sv_2mortal (newRV_noinc ((SV *)pi)));
+            XPUSHs (sv_2mortal (newRV_noinc ((SV *)pi)));
 
-                    p = p->NEXT;
-                  }
-        }
+            p = p->NEXT;
+          }
+}
 
 BOOT:
   uu_msg_sv		= newSVsv (&PL_sv_undef);

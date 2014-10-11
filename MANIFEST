@@ -12,6 +12,7 @@ example-decoder
 t/cb.t
 doc/library.pdf
 doc/HISTORY
+uulib/safealloc.c
 uulib/Makefile.in
 uulib/acconfig.h
 uulib/aclocal.m4
@@ -34,4 +35,5 @@ uulib/uustring.c
 uulib/uustring.h
 uulib/uuutil.c
 
-META.json                                Module meta-data (added by MakeMaker)
+META.yml                                 Module YAML meta-data (added by MakeMaker)
+META.json                                Module JSON meta-data (added by MakeMaker)

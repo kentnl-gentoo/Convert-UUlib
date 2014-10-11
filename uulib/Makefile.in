@@ -76,7 +76,7 @@ libuu.a:	$(UULIB_OBJ)
 	$(CC) -c $(CFLAGS) $(VDEF) $<
 
 uuencode.o:	uuencode.c uudeview.h uuint.h uustring.h fptools.h config.h
-uulib.o:	uulib.c uudeview.h uuint.h uustring.h fptools.h config.h
+uulib.o:	uulib.c uudeview.h uuint.h uustring.h fptools.h config.h safealloc.c
 uunconc.o:	uunconc.c uudeview.h uuint.h uustring.h fptools.h config.h
 uucheck.o:	uucheck.c uudeview.h uuint.h uustring.h fptools.h config.h
 uuutil.o:	uuutil.c  uudeview.h uuint.h uustring.h fptools.h config.h
@@ -86,3 +86,4 @@ fptools.o:	fptools.c fptools.h config.h
 
 uustring.h:	uustring.c
 	awk -f uustring.awk < uustring.c > uustring.h
+

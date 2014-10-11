@@ -1102,7 +1102,7 @@ ScanData (FILE *datei, char *fname, int *errcode,
 	if (vflag == BH_ENCODED && bhnf == 0 && result->filename == NULL) {
 	  if (bhdsp == bhds2 ||
 	      ((bhdsp-bhds2) <= (int) bhds2[0] &&
-	       (bhdsp-bhds2) <  256)) { 
+	       (bhdsp-bhds2) <  256)) {
 	    dcc = UUDecodeLine (line, bhds1, BH_ENCODED);
 	    UUbhdecomp (bhds1, bhdsp, &bhl, &bhrpc,
 			dcc, 256-(bhdsp-bhds2), &bhopc);

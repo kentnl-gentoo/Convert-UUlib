@@ -81,6 +81,8 @@
 #include <fptools.h>
 #include <uustring.h>
 
+#include "safealloc.c"
+
 char * uulib_id = "$Id$";
 
 #ifdef SYSTEM_WINDLL
@@ -255,8 +257,8 @@ static allomap toallocate[] = {
   { &uuscan_pvvalue,     300 },  /* from uuscan.c:ParseValue() */
   { &uuscan_phtext,      300 },  /* from uuscan.c:ParseHeader() */
   { &uuscan_sdline,     1025 },  /* from uuscan.c:ScanData(), +1 for UURepairData */
-  { &uuscan_sdbhds1,     300 },
-  { &uuscan_sdbhds2,     300 },
+  { &uuscan_sdbhds1,    1300 },  /* 1024 for line in UUScan + 256 potential overhead UUDecodeLine */
+  { &uuscan_sdbhds2,    1300 },  /* 1024 for line in UUScan + 256 potential overhead UUDecodeLine */
   { &uuscan_spline,     1024 },  /* from uuscan.c:ScanPart() */
   { &uuutil_bhwtmp,      300 },  /* from uuutil.c:UUbhwrite() */
   { NULL, 0 }
@@ -396,13 +398,13 @@ UUInitialize (void)
     *(aiter->ptr) = NULL;
 
   for (aiter=toallocate; aiter->ptr; aiter++) {
-    if ((*(aiter->ptr) = (char *) malloc (aiter->size)) == NULL) {
+    if ((*(aiter->ptr) = (char *) safe_alloc (aiter->size)) == NULL) {
       /*
        * oops. we may not print a message here, because we need these
        * areas (uulib_msgstring) in UUMessage()
        */
       for (aiter=toallocate; aiter->ptr; aiter++) {
-	_FP_free (*(aiter->ptr));
+	safe_free (*(aiter->ptr), aiter->size);
       }
       return UURET_NOMEM;
     }
@@ -1359,7 +1361,7 @@ UUCleanUp (void)
    */
 
   for (aiter=toallocate; aiter->ptr; aiter++) {
-    _FP_free (*(aiter->ptr));
+    safe_free (*(aiter->ptr), aiter->size);
     *(aiter->ptr) = NULL;
   }
 
