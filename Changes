@@ -1,9 +1,18 @@
 Revision history for Perl extension Convert::UUlib.
 
+1.5  Sat Jul 11 03:56:06 CEST 2015
+	- fix a heap overflow (testcase by Krzysztof Wojtaś).
+        - on systems that support it (posix + mmap + map_anonymous),
+          allocate all dynamic areas via mmap and put four guard
+          pages around them, to catch similar heap overflows
+          safely in the future.
+        - find a safer way to pass in CC/CFLAGS to uulib.
+        - added stability canary support.
+
 1.4  Sun May 29 17:17:01 CEST 2011
 	- avoid a classical buffer overflow in case a progress
           message is too long.
-        - this release adds depdencies for snprintf/vsnprintf.
+        - this release adds dependencies for snprintf/vsnprintf.
 	- some uuencode encoders do not generate a final "space" line
           before the "end" marker, so do not rely on the line to be there.
 

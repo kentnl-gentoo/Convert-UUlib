@@ -1,10 +1,12 @@
 use ExtUtils::MakeMaker;
 
+use Canary::Stability Convert::UUlib => 1;
+
 sub MY::postamble {
     my $postamble =<<'END';
 
 uulib/Makefile:
-	cd uulib && CC="$(CC)" CFLAGS="$(OPTIMIZE) $(CFLAGS) $(CCCDLFLAGS)" ./configure
+	cd uulib && ./configure --with-cc='$(CC)' --with-cflags='$(OPTIMIZE) $(CFLAGS) $(CCCDLFLAGS)'
 
 clean::
 	-cd uulib && make distclean
@@ -29,4 +31,8 @@ WriteMakefile(
     'LIBS'	=> [''],
     'DEFINE'	=> '',
     'INC'	=> '',
+    CONFIGURE_REQUIRES => {
+       "ExtUtils::MakeMaker" => 6.52,
+       "Canary::Stability"   => 0,
+    },
 );
